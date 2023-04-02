@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <item name="dark_blue" type="color">#2196F3</item>
+    <item name="title_color" type="color">#16FFEB3B</item>
+</resources>

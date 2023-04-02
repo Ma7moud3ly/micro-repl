@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">Micro Terminal</string>
+    <string name="micro_python">MicroPython</string>
+    <string name="circuit_python">Circuit Python</string>
+
+    <string name="home_terminal">Terminal</string>
+    <string name="home_editor">Editor</string>
+    <string name="home_scripts">Scripts</string>
+    <string name="home_explorer">Explorer</string>
+    <string name="home_settings">Settings</string>
+    <string name="home_connect">Connect</string>
+    <string name="home_connection_msg">Please connect your device and click Connect or restart the app</string>
+    <string name="home_connected">Connected</string>
+    <string name="home_disconnected">Disconnected</string>
+
+
+    <string name="editor_untitled">untitled</string>
+    <string name="editor_wait">Wait !</string>
+    <string name="editor_msg_save">Do you want to save this file ?</string>
+    <string name="editor_msg_save_changes">Do you want to save changes ?</string>
+    <string name="editor_msg_delete">Do you want to delete (%s) ?</string>
+    <string name="editor_msg_rename">Please write the new name of (%s)</string>
+
+    <string name="explorer_run">Run</string>
+    <string name="explorer_edit">Open in Editor</string>
+    <string name="explorer_open">Open Folder</string>
+    <string name="explorer_delete">Delete</string>
+    <string name="explorer_rename">Rename</string>
+
+</resources>
