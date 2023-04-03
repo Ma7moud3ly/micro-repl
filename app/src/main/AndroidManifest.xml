@@ -20,9 +20,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".fragments.EditorActivity" />
+        <activity android:name=".fragments.EditorFragment" />
         <activity android:name=".fragments.ScriptsActivity" />
-        <activity android:name=".fragments.ExplorerActivity" />
 
     </application>
 

@@ -22,7 +22,7 @@ import com.hoho.android.usbserial.util.SerialInputOutputManager
 
 class UsbManager(
     private val context: Context,
-    private val connectionStatus: ((status: ConnectionStatus) -> Unit)? = null,
+    private val onStatusChanges: ((status: ConnectionStatus) -> Unit)? = null,
     private val onReceiveData: ((data: String) -> Unit)? = null,
 ) : SerialInputOutputManager.Listener, DefaultLifecycleObserver {
 
@@ -64,7 +64,7 @@ class UsbManager(
 
     init {
         activity.lifecycle.addObserver(this)
-        connectionStatus?.invoke(ConnectionStatus.OnConnecting)
+        onStatusChanges?.invoke(ConnectionStatus.OnConnecting)
     }
 
     override fun onCreate(owner: LifecycleOwner) {
@@ -236,7 +236,7 @@ class UsbManager(
                 board = usbDevice.manufacturerName + " - " + usbDevice.productName,
                 isMicroPython = usbDevice.vendorId == supportedVendors[1]
             )
-            connectionStatus?.invoke(
+            onStatusChanges?.invoke(
                 ConnectionStatus.OnConnected(microDevice)
             )
         } else throwError(CANT_OPEN_PORT)
@@ -248,7 +248,7 @@ class UsbManager(
 
     override fun onNewData(bytes: ByteArray?) {
         val data = (bytes?.toString(Charsets.UTF_8) ?: "").trim()
-        val isDone = data.endsWith(">>>")
+        val isDone = data.contains(CommandsManager.endStatement)
         Log.i(TAG, "data = $data, isDone = $isDone")
         if (isReadSync) {
             syncData.append(data)
@@ -262,7 +262,7 @@ class UsbManager(
     override fun onRunError(e: Exception?) {
         val errorMessage = e?.message ?: ""
         Log.e(TAG, "onRunError - ${e?.message}")
-        connectionStatus?.invoke(ConnectionStatus.OnConnecting)
+        onStatusChanges?.invoke(ConnectionStatus.OnConnecting)
         Handler(activity.mainLooper).postDelayed({
             if (usbManager.deviceList.isEmpty()) throwError(CONNECTION_LOST, errorMessage)
             else throwError(CANT_OPEN_PORT, errorMessage)
@@ -273,7 +273,7 @@ class UsbManager(
         if (port?.isOpen == true) port?.close()
         serialInputOutputManager?.stop()
         activity.runOnUiThread {
-            connectionStatus?.invoke(ConnectionStatus.OnFailure(msg = msg, code = code))
+            onStatusChanges?.invoke(ConnectionStatus.OnFailure(msg = msg, code = code))
         }
     }
 

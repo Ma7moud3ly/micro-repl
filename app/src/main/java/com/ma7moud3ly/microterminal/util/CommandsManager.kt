@@ -2,14 +2,15 @@ package com.ma7moud3ly.microterminal.util
 
 object CommandsManager {
 
+    const val endStatement = "EXEC DONE"
+    private const val end = "print('\n','EXEC','DONE')"
     private fun container(s: String) = "print('\${',$s,'}\$')"
-
     fun listDir(path: String): String {
-        return "import os;print('\${',os.listdir('$path'),'}\$')"
+        return "import os;print('\${',os.listdir('$path'),'}\$;');$end"
     }
 
     fun iListDir(path: String): String {
-        return "import os;print('\${',list(os.ilistdir('$path')),'}\$')"
+        return "import os;print('\${',list(os.ilistdir('$path')),'}\$');$end"
     }
 
     fun readFile(path: String): String {
@@ -20,16 +21,21 @@ object CommandsManager {
         return "f = open('$path','w');x = f.write('$content');f.close();print('\${',x,'}\$')"
     }
 
-    fun removeFile(path: String): String {
-        return "import os;os.remove('$path');print('\${',{'status':1},'}\$')"
+    fun removeFile(file: MicroFile): String {
+        return "import os;os.remove('${file.name}');print('\${',list(os.ilistdir('${file.path}')),'}\$');$end"
     }
 
-    fun removeDirectory(path: String): String {
-        return "import os;os.rmdir('$path');print('\${',{'status':1},'}\$')"
+    fun removeDirectory(file: MicroFile): String {
+        return "import os;os.rmdir('${file.name}');print('\${',list(os.ilistdir('${file.path}')),'}\$');$end"
     }
 
-    fun makeDirectory(path: String): String {
-        return "import os;os.mkdir('$path');print('\${',{'status':1},'}\$')"
+    fun makeDirectory(file: MicroFile): String {
+        return "import os;os.mkdir('${file.name}');print('\${',list(os.ilistdir('${file.path}')),'}\$');$end"
+    }
+
+    fun makeFile(file: MicroFile): String {
+        return "import os;f = open('${file.name}','w');f.write('');f.close();" +
+                "print('\${',list(os.ilistdir('${file.path}')),'}\$');$end"
     }
 
     fun rename(src: String, dst: String): String {
@@ -38,13 +44,13 @@ object CommandsManager {
 
     private const val s1 = "\${"
     private const val s2 = "}\$"
-    fun extractData(data: String): String {
-        if (data.isEmpty()) return ""
+    fun extractResult(data: String, default: String = ""): String {
+        if (data.isEmpty()) return default
         val hasResponse = data.count { it == '$' } >= 4
         val i1 = data.lastIndexOf(s1)
         val i2 = data.lastIndexOf(s2)
         return if (hasResponse && i1 != -1 && i2 != -1 && i1 < i2)
             data.substring(i1 + s1.length, i2).trim()
-        else ""
+        else default
     }
 }

@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">Micro Terminal</string>
+    <string name="ok">Ok</string>
+    <string name="cancel">Cancel</string>
+
     <string name="micro_python">MicroPython</string>
     <string name="circuit_python">Circuit Python</string>
 
@@ -26,5 +29,8 @@
     <string name="explorer_open">Open Folder</string>
     <string name="explorer_delete">Delete</string>
     <string name="explorer_rename">Rename</string>
+    <string name="explorer_new_file">New File</string>
+    <string name="explorer_new_folder">New Folder</string>
+    <string name="explorer_refresh">Refresh</string>
 
 </resources>

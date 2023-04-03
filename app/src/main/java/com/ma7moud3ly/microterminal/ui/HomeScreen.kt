@@ -1,6 +1,5 @@
 package com.ma7moud3ly.microterminal.ui
 
-import android.content.Intent
 import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
@@ -17,11 +16,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -29,12 +28,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ma7moud3ly.microterminal.R
-import com.ma7moud3ly.microterminal.fragments.EditorActivity
-import com.ma7moud3ly.microterminal.fragments.ExplorerActivity
-import com.ma7moud3ly.microterminal.fragments.ScriptsActivity
+import com.ma7moud3ly.microterminal.fragments.AppViewModel
 import com.ma7moud3ly.microterminal.ui.theme.ProgressView
 import com.ma7moud3ly.microterminal.ui.theme.fontConsolas
 import com.ma7moud3ly.microterminal.util.ConnectionStatus
+import com.ma7moud3ly.microterminal.util.HomeUiEvents
 import com.ma7moud3ly.microterminal.util.MicroDevice
 import com.ma7moud3ly.microterminal.util.UsbManager
 
@@ -49,13 +47,22 @@ fun HomeScreenPreview() {
         isMicroPython = true
     )
     val status = ConnectionStatus.OnConnected(microDevice)
-    HomeScreen(status, onFindDevices = {})
+    Content(status)
 }
 
 @Composable
 fun HomeScreen(
+    viewModel: AppViewModel,
+    uiEvents: HomeUiEvents? = null
+) {
+    val status = viewModel.status.collectAsState()
+    Content(status.value, uiEvents)
+}
+
+@Composable
+private fun Content(
     status: ConnectionStatus = ConnectionStatus.OnConnecting,
-    onFindDevices: () -> Unit
+    uiEvents: HomeUiEvents? = null
 ) {
     Scaffold {
         Box(Modifier.padding(it)) {
@@ -71,8 +78,13 @@ fun HomeScreen(
                             UsbManager.NO_DEVICES -> Log.v(TAG, "NO_DEVICES")
                             UsbManager.PERMISSION_DENIED -> Log.v(TAG, "PERMISSION_DENIED")
                         }
-                        DeviceNotConnected(onClick = onFindDevices)
-                        HomeButtons(isConnected = false)
+                        DeviceNotConnected(onClick = {
+                            uiEvents?.onFindDevices()
+                        })
+                        HomeButtons(
+                            isConnected = false,
+                            uiEvents = uiEvents
+                        )
 
                     }
                     is ConnectionStatus.OnConnecting -> {
@@ -83,7 +95,10 @@ fun HomeScreen(
                     is ConnectionStatus.OnConnected -> {
                         Log.w(TAG, "OnConnected")
                         DeviceConnected(device = status.microDevice)
-                        HomeButtons(isConnected = true)
+                        HomeButtons(
+                            isConnected = true,
+                            uiEvents = uiEvents
+                        )
                     }
                 }
             }
@@ -223,8 +238,10 @@ private fun DeviceNotConnected(onClick: () -> Unit) {
 }
 
 @Composable
-private fun ColumnScope.HomeButtons(isConnected: Boolean) {
-    val context = LocalContext.current
+private fun ColumnScope.HomeButtons(
+    isConnected: Boolean,
+    uiEvents: HomeUiEvents? = null
+) {
     Box(
         modifier = Modifier
             .weight(1f)
@@ -241,29 +258,23 @@ private fun ColumnScope.HomeButtons(isConnected: Boolean) {
             if (isConnected) {
                 item {
                     HomeButton(R.drawable.terminal, R.string.home_terminal) {
-
+                        uiEvents?.onOpenTerminal()
                     }
                 }
                 item {
                     HomeButton(R.drawable.explorer, R.string.home_explorer) {
-                        context.startActivity(
-                            Intent(context, ExplorerActivity::class.java)
-                        )
+                        uiEvents?.onOpenExplorer()
                     }
                 }
             }
             item {
                 HomeButton(R.drawable.editor, R.string.home_editor) {
-                    context.startActivity(
-                        Intent(context, EditorActivity::class.java)
-                    )
+                    uiEvents?.onOpenEditor()
                 }
             }
             item {
                 HomeButton(R.drawable.scripts, R.string.home_scripts) {
-                    context.startActivity(
-                        Intent(context, ScriptsActivity::class.java)
-                    )
+                    uiEvents?.onOpenScripts()
                 }
             }
 

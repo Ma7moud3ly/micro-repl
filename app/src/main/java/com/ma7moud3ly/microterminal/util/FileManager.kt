@@ -1,34 +1,66 @@
 package com.ma7moud3ly.microterminal.util
 
 import android.util.Log
-import androidx.compose.runtime.mutableStateListOf
 import org.json.JSONArray
 
 
-class FileManager {
-    val files = mutableStateListOf<MicroFile>()
-
-    init {
-        val json = "[('main.py', 0x8000, 0, 268), ('man', 0x4000, 0, 0), ('well', 0x4000, 0, 4)]"
-        listDir(json)
-        Log.i(TAG, "files ---> ${files.toList()}")
+class FileManager(
+    private val usbManager: UsbManager,
+    private val onUpdateFiles: ((files: List<MicroFile>) -> Unit)? = null
+) {
+    fun listDir() {
+        val code = CommandsManager.iListDir("")
+        usbManager.writeSync(code, onResponse = { response ->
+            val result = CommandsManager.extractResult(response, default = "[]")
+            Log.i(TAG, "response $response")
+            Log.i(TAG, "response $result")
+            decodeFiles(result)
+        })
     }
 
-    fun listDir(json: String) {
+    fun remove(file: MicroFile) {
+        val code = if (file.isFile) CommandsManager.removeFile(file)
+        else CommandsManager.removeDirectory(file)
+        usbManager.writeSync(code, onResponse = { response ->
+            val result = CommandsManager.extractResult(response, default = "[]")
+            Log.i(TAG, "response $response")
+            Log.i(TAG, "response $result")
+            decodeFiles(result)
+        })
+    }
+
+    fun new(file: MicroFile) {
+        val code = if (file.isFile) CommandsManager.makeFile(file)
+        else CommandsManager.makeDirectory(file)
+        usbManager.writeSync(code, onResponse = { response ->
+            val result = CommandsManager.extractResult(response, default = "[]")
+            Log.i(TAG, "response $response")
+            Log.i(TAG, "response $result")
+            decodeFiles(result)
+        })
+    }
+
+    private fun decodeFiles(json: String) {
         val list = mutableListOf<MicroFile>()
         val jsonFormated = json.replace("(", "[").replace(")", "]")
-        val items = JSONArray(jsonFormated)
+        val items: JSONArray?
+        try {
+            items = JSONArray(jsonFormated)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return
+        }
         for (i in 0 until items.length()) {
             val item = items[i] as? JSONArray
             if (item?.length() == 4) {
-                val name = item[0] as? String ?: ""
-                val type = item[1] as? Int ?: 0x8000
-                val size = item[3] as? Int ?: 0
+                val name = (item[0] as? String) ?: ""
+                val type = (item[1] as? Int) ?: 0x8000
+                val size = (item[3] as? Int) ?: 0
                 list.add(MicroFile(name = name, type = type, size = size))
             }
         }
-        files.clear()
-        files.addAll(list)
+        Log.i(TAG, list.toString())
+        onUpdateFiles?.invoke(list)
     }
 
     companion object {
@@ -36,11 +68,11 @@ class FileManager {
     }
 }
 
-//[('main.py', 32768, 0, 268), ('man', 16384, 0, 0), ('well', 32768, 0, 4)]
 data class MicroFile(
     val name: String,
-    private val type: Int,
-    private val size: Int,
+    val path: String = "",
+    private val type: Int = FILE,
+    private val size: Int = 0,
 ) {
     val isFile: Boolean get() = type == FILE
     val canRun: Boolean get() = ext == ".py"

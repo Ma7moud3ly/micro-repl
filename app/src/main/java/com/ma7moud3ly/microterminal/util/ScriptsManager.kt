@@ -11,8 +11,8 @@ import android.util.Log
 import android.view.View
 import android.widget.EditText
 import androidx.compose.runtime.mutableStateListOf
-import com.ma7moud3ly.microterminal.fragments.EditorActivity
 import com.ma7moud3ly.microterminal.R
+import com.ma7moud3ly.microterminal.fragments.EditorFragment
 import java.io.*
 
 
@@ -130,7 +130,7 @@ class ScriptsManager(private val context: Context) {
 
 
     fun openScript(script: Script) {
-        val intent = Intent(context, EditorActivity::class.java)
+        val intent = Intent(context, EditorFragment::class.java)
         intent.putExtra("script", script.path)
         context.startActivity(intent)
     }

@@ -14,7 +14,9 @@
         android:weightSum="100" />
 
 
-    <include layout="@layout/editor_buttons" />
+    <include
+        android:id="@+id/buttons"
+        layout="@layout/editor_buttons" />
 
     <include layout="@layout/divider_blue" />
 
@@ -35,7 +37,6 @@
             android:focusable="true"
             android:gravity="center"
             android:maxLength="20"
-            android:onClick="editorButtons"
             android:paddingHorizontal="8dp"
             android:paddingVertical="4dp"
             android:text="untitled"

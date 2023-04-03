@@ -14,3 +14,4 @@ val dark = Color(0xFF222222)
 val black = Color(0xFF000000)
 val grey100 = Color(0xFFE8E8E8)
 val folderColor = Color(0xFFFFE69A)
+val fileColor = grey100

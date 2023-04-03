@@ -16,7 +16,6 @@ import android.view.View.OnTouchListener
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatDelegate
 import com.ma7moud3ly.microterminal.R
 import com.ma7moud3ly.microterminal.fragments.ScriptsActivity
 import java.io.File
@@ -24,14 +23,13 @@ import kotlin.math.pow
 import kotlin.math.sqrt
 
 class EditorManager(
+    private val context: Context,
     private val editor: EditText,
     private val lines: TextView,
     private val title: TextView,
-    private val run: View? = null,
-    private val onRun: (() -> Unit)?,
-    private val scriptToOpen: String? = null
+    private val scriptToOpen: String? = null,
+    private val afterEdit: (() -> Unit)? = null
 ) {
-    private val context = editor.context
     private val activity: Activity = context as Activity
     private val scriptsManager: ScriptsManager = ScriptsManager(context)
     private var showLines = false
@@ -52,26 +50,22 @@ class EditorManager(
         initLineCounter()
         initEditorGestureScale()
         initScript()
-        initRunButton()
     }
 
     private fun initScript() {
         if (scriptToOpen != null) scriptPath = File(scriptToOpen)
         scriptPath?.let {
-            editor.setText(scriptsManager.read(it))
+            val content = scriptsManager.read(it)
+            editor.setText(content)
             title.text = it.name
         }
-    }
-
-    private fun initRunButton() {
-        val name = title.text.trim()
-        run?.visibility = if (name.endsWith(".py")) View.VISIBLE else View.GONE
-        run?.setOnClickListener { onRun?.invoke() }
     }
 
     /**
      * Editor Lines
      */
+
+    val canRun: Boolean get() = scriptPath?.name?.endsWith(".py") == true
 
     fun toggleLines() {
         showLines = !showLines
@@ -221,7 +215,6 @@ class EditorManager(
             if (saved) {
                 val name = scriptPath?.name ?: ""
                 title.text = name
-                initRunButton()
                 Toast.makeText(context, "$name saved", Toast.LENGTH_SHORT).show()
             }
             afterSave()
@@ -248,7 +241,7 @@ class EditorManager(
         val intent = Intent(context, ScriptsActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         context.startActivity(intent)
-        activity.finish()
+        afterEdit?.invoke()
     }
 
     private fun newScript() {
@@ -266,7 +259,7 @@ class EditorManager(
             LIS -> scriptList()
             NEW -> newScript()
             SAV -> {}
-            END -> activity.finish()
+            END -> afterEdit?.invoke()
         }
     }
 
@@ -290,10 +283,6 @@ class EditorManager(
     fun toggleDarkMode() {
         isDark = isDark.not()
         setEditorSettings()
-        /*AppCompatDelegate.setDefaultNightMode(
-            if (isDark) AppCompatDelegate.MODE_NIGHT_YES
-            else AppCompatDelegate.MODE_NIGHT_NO
-        )*/
         activity.recreate()
     }
 
@@ -340,15 +329,18 @@ class EditorManager(
         const val END = 4
 
         fun initDarkMode(activity: Activity) {
-            val sharedPref = activity.getPreferences(Context.MODE_PRIVATE)
-            val isDark = sharedPref.getBoolean("dark_mode", false)
-            if (isDark) {
+            if (isDark(activity)) {
                 //AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
                 activity.setTheme(R.style.AppTheme_Dark)
             } else {
                 //AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
                 activity.setTheme(R.style.AppTheme)
             }
+        }
+
+        fun isDark(activity: Activity): Boolean {
+            val sharedPref = activity.getPreferences(Context.MODE_PRIVATE)
+            return sharedPref.getBoolean("dark_mode", false)
         }
     }
 }
