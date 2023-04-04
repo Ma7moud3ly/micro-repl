@@ -248,10 +248,10 @@ class UsbManager(
 
     override fun onNewData(bytes: ByteArray?) {
         val data = (bytes?.toString(Charsets.UTF_8) ?: "").trim()
-        val isDone = data.contains(CommandsManager.endStatement)
-        Log.i(TAG, "data = $data, isDone = $isDone")
         if (isReadSync) {
             syncData.append(data)
+            val isDone = syncData.contains(CommandsManager.END_OUTPUT)
+            Log.i(TAG, "isDone = $isDone")
             if (isDone) onReadSync?.invoke()
         } else {
             if (data.isEmpty()) return

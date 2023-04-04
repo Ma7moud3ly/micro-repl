@@ -12,8 +12,9 @@ interface ExplorerUiEvents {
     fun onRun(file: MicroFile)
     fun onOpenFolder(file: MicroFile)
     fun onRemove(file: MicroFile)
-    fun onRename(file: MicroFile, dst: String)
+    fun onRename(src: MicroFile, dst: MicroFile)
     fun onEdit(file: MicroFile)
     fun onNew(file: MicroFile)
     fun onRefresh()
+    fun onUp()
 }

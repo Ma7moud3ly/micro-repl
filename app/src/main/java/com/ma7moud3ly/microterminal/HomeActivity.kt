@@ -11,6 +11,7 @@ import com.ma7moud3ly.microterminal.fragments.ExplorerFragment
 import com.ma7moud3ly.microterminal.fragments.ScriptsActivity
 import com.ma7moud3ly.microterminal.ui.HomeScreen
 import com.ma7moud3ly.microterminal.ui.theme.AppTheme
+import com.ma7moud3ly.microterminal.util.EditorMode
 import com.ma7moud3ly.microterminal.util.HomeUiEvents
 import com.ma7moud3ly.microterminal.util.UsbManager
 
@@ -34,8 +35,13 @@ class HomeActivity : AppCompatActivity(), HomeUiEvents {
         }
     }
 
-    override fun onOpenEditor() {
+    fun openEditor(editorMode: EditorMode) {
+        viewModel.editorMode = editorMode
         editorFragment.show(supportFragmentManager, "")
+    }
+
+    override fun onOpenEditor() {
+        openEditor(editorMode = EditorMode.LOCAL)
     }
 
     override fun onOpenScripts() {

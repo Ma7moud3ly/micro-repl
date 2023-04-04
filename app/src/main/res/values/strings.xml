@@ -29,8 +29,12 @@
     <string name="explorer_open">Open Folder</string>
     <string name="explorer_delete">Delete</string>
     <string name="explorer_rename">Rename</string>
+    <string name="explorer_create">Create</string>
     <string name="explorer_new_file">New File</string>
+    <string name="explorer_up">Up</string>
     <string name="explorer_new_folder">New Folder</string>
     <string name="explorer_refresh">Refresh</string>
+    <string name="explorer_rename_label">Rename %s</string>
+
 
 </resources>

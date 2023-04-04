@@ -8,12 +8,13 @@ class FileManager(
     private val usbManager: UsbManager,
     private val onUpdateFiles: ((files: List<MicroFile>) -> Unit)? = null
 ) {
+    var path = ""
     fun listDir() {
-        val code = CommandsManager.iListDir("")
+        val code = CommandsManager.iListDir(path)
         usbManager.writeSync(code, onResponse = { response ->
             val result = CommandsManager.extractResult(response, default = "[]")
             Log.i(TAG, "response $response")
-            Log.i(TAG, "response $result")
+            Log.i(TAG, "result $result")
             decodeFiles(result)
         })
     }
@@ -24,7 +25,7 @@ class FileManager(
         usbManager.writeSync(code, onResponse = { response ->
             val result = CommandsManager.extractResult(response, default = "[]")
             Log.i(TAG, "response $response")
-            Log.i(TAG, "response $result")
+            Log.i(TAG, "result $result")
             decodeFiles(result)
         })
     }
@@ -35,8 +36,38 @@ class FileManager(
         usbManager.writeSync(code, onResponse = { response ->
             val result = CommandsManager.extractResult(response, default = "[]")
             Log.i(TAG, "response $response")
-            Log.i(TAG, "response $result")
+            Log.i(TAG, "result $result")
             decodeFiles(result)
+        })
+    }
+
+    fun rename(src: MicroFile, dst: MicroFile) {
+        val code = CommandsManager.rename(src, dst)
+        usbManager.writeSync(code, onResponse = { response ->
+            val result = CommandsManager.extractResult(response, default = "[]")
+            Log.i(TAG, "response $response")
+            Log.i(TAG, "result $result")
+            decodeFiles(result)
+        })
+    }
+
+    fun read(path: String, onRead: (content: String) -> Unit) {
+        val code = CommandsManager.readFile(path)
+        usbManager.writeSync(code, onResponse = { response ->
+            val result = CommandsManager.extractResult(response, default = "[]")
+            Log.i(TAG, "response $response")
+            Log.i(TAG, "result $result")
+            onRead.invoke(result)
+        })
+    }
+
+    fun write(path: String, content: String, onSave: () -> Unit) {
+        val code = CommandsManager.writeFile(path, content)
+        usbManager.writeSync(code, onResponse = { response ->
+            val result = CommandsManager.extractResult(response, default = "[]")
+            Log.i(TAG, "response $response")
+            Log.i(TAG, "result $result")
+            onSave.invoke()
         })
     }
 
@@ -56,7 +87,7 @@ class FileManager(
                 val name = (item[0] as? String) ?: ""
                 val type = (item[1] as? Int) ?: 0x8000
                 val size = (item[3] as? Int) ?: 0
-                list.add(MicroFile(name = name, type = type, size = size))
+                list.add(MicroFile(name = name, path = this.path, type = type, size = size))
             }
         }
         Log.i(TAG, list.toString())
@@ -70,10 +101,11 @@ class FileManager(
 
 data class MicroFile(
     val name: String,
-    val path: String = "",
+    var path: String = "",
     private val type: Int = FILE,
     private val size: Int = 0,
 ) {
+    val fullPath: String get() = if (path.isEmpty()) name else "$path/$name".replace("//", "/")
     val isFile: Boolean get() = type == FILE
     val canRun: Boolean get() = ext == ".py"
 

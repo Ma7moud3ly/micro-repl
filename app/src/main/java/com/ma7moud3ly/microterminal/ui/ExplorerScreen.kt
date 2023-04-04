@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -43,11 +44,11 @@ fun FileManagerScreen(
     viewModel: AppViewModel,
     uiEvents: ExplorerUiEvents? = null
 ) {
-    val root by remember { viewModel.path }
+    val root by remember { mutableStateOf(viewModel.root) }
     val files = viewModel.files.collectAsState()
     Content(
         files = { files.value },
-        root = { root },
+        root = { root.value },
         uiEvents = uiEvents
     )
 }
@@ -80,7 +81,6 @@ private fun Content(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ColumnScope.FilesList(
     files: List<MicroFile>,
@@ -113,27 +113,23 @@ private fun ColumnScope.FilesList(
             }
         }
     }
-    if (showFileOptions) AlertDialog(
-        onDismissRequest = { showFileOptions = false }
-    ) {
-        selectedFile?.let { file ->
-            FileOptionsList(
-                file = file,
-                uiEvents = uiEvents,
-                onItemClicked = { showFileOptions = false }
-            )
+
+    FileOptionsDialog(
+        isVisible = { showFileOptions },
+        file = { selectedFile!! },
+        uiEvents = uiEvents, onDismiss = {
+            showFileOptions = false
         }
-    }
+    )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Header(
     path: () -> String,
     uiEvents: ExplorerUiEvents? = null
 ) {
     LogCompositions(TAG, "Header")
-    var showNewFileDialog by remember { mutableStateOf(false) }
+    var showFileDialog by remember { mutableStateOf(false) }
     var isFile by remember { mutableStateOf(true) }
 
     Column {
@@ -146,7 +142,7 @@ private fun Header(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = path(), maxLines = 1,
+                text = "/${path()}", maxLines = 1,
                 style = MaterialTheme.typography.labelLarge,
                 color = Color.Black,
                 overflow = TextOverflow.Ellipsis,
@@ -155,18 +151,12 @@ private fun Header(
                     .padding(vertical = 8.dp, horizontal = 8.dp)
             )
 
-            IconHeader(title = R.string.explorer_refresh,
-                icon = R.drawable.refresh,
-                tint = Color.Black,
-                onClick = { uiEvents?.onRefresh() }
-            )
-
             IconHeader(title = R.string.explorer_new_file,
                 icon = R.drawable.new_file,
                 tint = fileColor,
                 onClick = {
                     isFile = true
-                    showNewFileDialog = true
+                    showFileDialog = true
                 }
             )
             IconHeader(title = R.string.explorer_new_folder,
@@ -174,8 +164,20 @@ private fun Header(
                 tint = folderColor,
                 onClick = {
                     isFile = false
-                    showNewFileDialog = true
+                    showFileDialog = true
                 }
+            )
+
+            IconHeader(title = R.string.explorer_refresh,
+                icon = R.drawable.refresh,
+                tint = Color.Black,
+                onClick = { uiEvents?.onRefresh() }
+            )
+
+            IconHeader(title = R.string.explorer_up,
+                icon = R.drawable.arrow_up,
+                tint = Color.Black,
+                onClick = { uiEvents?.onUp() }
             )
 
         }
@@ -187,24 +189,24 @@ private fun Header(
         )
     }
 
-    if (showNewFileDialog) AlertDialog(
-        onDismissRequest = { showNewFileDialog = false }
-    ) {
-        NewFileDialog(
-            onOk = {
-                showNewFileDialog = false
-                val microFile = MicroFile(
-                    name = it,
-                    path = path(),
-                    type = if (isFile) MicroFile.FILE
-                    else MicroFile.DIRECTORY
-                )
-                uiEvents?.onNew(microFile)
-            },
-            onCancel = { showNewFileDialog = false },
-            isFile = isFile
-        )
-    }
+    FileDialog(
+        isVisible = { showFileDialog },
+        file = {
+            MicroFile(
+                "",
+                path = path(),
+                type = if (isFile) MicroFile.FILE
+                else MicroFile.DIRECTORY
+            )
+        },
+        onOk = { file ->
+            uiEvents?.onNew(file)
+            showFileDialog = false
+        }, onCancel = {
+            showFileDialog = false
+        }
+    )
+
 }
 
 @Composable
@@ -219,7 +221,7 @@ private fun IconHeader(
         contentDescription = stringResource(
             id = title
         ), modifier = Modifier
-            .size(35.dp)
+            .size(28.dp)
             .clickable { onClick() },
         tint = tint
     )
@@ -254,11 +256,73 @@ private fun ItemFile(
     }
 }
 
+
+/**
+ * File Options Dialog
+ */
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun FileOptionsDialog(
+    isVisible: () -> Boolean,
+    file: () -> MicroFile,
+    onDismiss: () -> Unit,
+    uiEvents: ExplorerUiEvents? = null,
+) {
+    var showRenameFileDialog by remember { mutableStateOf(false) }
+    var selectedFile by remember { mutableStateOf<MicroFile?>(null) }
+
+    if (isVisible()) AlertDialog(
+        onDismissRequest = { onDismiss.invoke() }
+    ) {
+        val microFile = file()
+        FileOptionsList(
+            file = microFile,
+            onRun = {
+                onDismiss()
+                uiEvents?.onRun(microFile)
+            },
+            onEdit = {
+                onDismiss()
+                uiEvents?.onEdit(microFile)
+            },
+            onOpenFolder = {
+                onDismiss()
+                uiEvents?.onOpenFolder(microFile)
+            },
+            onRemove = {
+                onDismiss()
+                uiEvents?.onRemove(microFile)
+            },
+            onRename = {
+                onDismiss()
+                selectedFile = microFile
+                showRenameFileDialog = true
+            },
+        )
+    }
+
+    //rename dialog
+    FileDialog(
+        isVisible = { showRenameFileDialog },
+        file = { selectedFile!! },
+        onOk = { newFile ->
+            uiEvents?.onRename(selectedFile!!, newFile)
+            showRenameFileDialog = false
+        }, onCancel = {
+            showRenameFileDialog = false
+        }
+    )
+}
+
 @Composable
 private fun FileOptionsList(
     file: MicroFile,
-    uiEvents: ExplorerUiEvents? = null,
-    onItemClicked: (() -> Unit)? = null
+    onRun: () -> Unit,
+    onEdit: () -> Unit,
+    onOpenFolder: () -> Unit,
+    onRemove: () -> Unit,
+    onRename: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -267,37 +331,23 @@ private fun FileOptionsList(
     ) {
         if (file.canRun) ItemFileOption(
             title = R.string.explorer_run,
-            onClick = {
-                uiEvents?.onRun(file)
-                onItemClicked?.invoke()
-            }
+            onClick = onRun
         )
         if (file.isFile) ItemFileOption(
             title = R.string.explorer_edit,
-            onClick = {
-                uiEvents?.onEdit(file)
-                onItemClicked?.invoke()
-            }
+            onClick = onEdit
         )
         if (file.isFile.not()) ItemFileOption(
             title = R.string.explorer_open,
-            onClick = {
-                uiEvents?.onOpenFolder(file)
-                onItemClicked?.invoke()
-            }
+            onClick = onOpenFolder
         )
-        ItemFileOption(title = R.string.explorer_rename,
-            onClick = {
-                uiEvents?.onRename(file, "")
-                onItemClicked?.invoke()
-            }
+        ItemFileOption(
+            title = R.string.explorer_rename,
+            onClick = onRename
         )
         ItemFileOption(
             title = R.string.explorer_delete,
-            onClick = {
-                uiEvents?.onRemove(file)
-                onItemClicked?.invoke()
-            },
+            onClick = onRemove,
             showDivider = false
         )
     }
@@ -323,7 +373,7 @@ private fun ItemFileOption(
             style = MaterialTheme.typography.labelLarge,
             modifier = Modifier.padding(
                 horizontal = 16.dp,
-                vertical = 4.dp
+                vertical = 8.dp
             ),
         )
         if (showDivider) Divider(
@@ -335,17 +385,48 @@ private fun ItemFileOption(
     }
 }
 
+
+/**
+ * File Rename & New File Dialog
+ */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun NewFileDialog(
-    onOk: (name: String) -> Unit,
+private fun FileDialog(
+    isVisible: () -> Boolean,
+    file: () -> MicroFile,
+    onOk: (file: MicroFile) -> Unit,
     onCancel: () -> Unit,
-    isFile: Boolean = true
 ) {
-    val label = stringResource(
-        id = if (isFile) R.string.explorer_new_file
-        else R.string.explorer_new_folder
+    if (isVisible()) AlertDialog(
+        onDismissRequest = { onCancel.invoke() }
+    ) {
+        FileDialogContent(
+            file = file.invoke(),
+            onOk = onOk,
+            onCancel = onCancel,
+        )
+    }
+}
+
+@Composable
+private fun FileDialogContent(
+    file: MicroFile,
+    onOk: (file: MicroFile) -> Unit,
+    onCancel: () -> Unit,
+) {
+    val msg = if (file.name.isEmpty()) {
+        stringResource(id = R.string.explorer_create) + " " + stringResource(
+            id = if (file.isFile) R.string.explorer_new_file
+            else R.string.explorer_new_folder
+        ) + "at /" + file.path
+    } else stringResource(
+        id = R.string.explorer_rename_label, file.name
     )
-    var fileName by remember { mutableStateOf(label) }
+
+    val name = if (file.name.isNotEmpty()) file.name
+    else if (file.isFile) "file.txt"
+    else "folder"
+    var fileName by remember { mutableStateOf(name) }
 
     Column(
         Modifier
@@ -355,6 +436,12 @@ private fun NewFileDialog(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Text(
+            msg,
+            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
+        )
         TextField(
             value = fileName,
             onValueChange = { fileName = it },
@@ -362,10 +449,19 @@ private fun NewFileDialog(
         )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(
-                onClick = { onOk.invoke(fileName) },
+                onClick = {
+                    val newFile = MicroFile(
+                        name = fileName,
+                        path = file.path,
+                        type = if (file.isFile) MicroFile.FILE
+                        else MicroFile.DIRECTORY
+                    )
+                    onOk.invoke(newFile)
+                },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Black
-                )
+                ),
+                modifier = Modifier.weight(0.4f)
             ) {
                 Text(
                     text = stringResource(id = R.string.ok),
@@ -376,7 +472,8 @@ private fun NewFileDialog(
                 onClick = onCancel,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Black
-                )
+                ),
+                modifier = Modifier.weight(0.4f)
             ) {
                 Text(
                     text = stringResource(id = R.string.cancel),

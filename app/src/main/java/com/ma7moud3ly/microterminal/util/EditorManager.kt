@@ -27,7 +27,10 @@ class EditorManager(
     private val editor: EditText,
     private val lines: TextView,
     private val title: TextView,
-    private val scriptToOpen: String? = null,
+    private val editorMode: EditorMode,
+    private val scriptPath: String,
+    private val onRemoteOpen: ((path: String) -> Unit)? = null,
+    private val onRemoteSave: ((path: String, content: String) -> Unit)? = null,
     private val afterEdit: (() -> Unit)? = null
 ) {
     private val activity: Activity = context as Activity
@@ -40,9 +43,9 @@ class EditorManager(
     private var mBaseRatio = 0f
 
     private var actionAfterSave = -1
-
     private var isDark: Boolean = false
-    var scriptPath: File? = null
+
+    var scriptFile: File? = null
     var onKeyboardVisibilityChanges: ((visible: Boolean) -> Unit)? = null
 
     init {
@@ -53,11 +56,13 @@ class EditorManager(
     }
 
     private fun initScript() {
-        if (scriptToOpen != null) scriptPath = File(scriptToOpen)
-        scriptPath?.let {
-            val content = scriptsManager.read(it)
-            editor.setText(content)
+        if (scriptPath.isNotEmpty()) scriptFile = File(scriptPath)
+        scriptFile?.let {
             title.text = it.name
+            if (editorMode == EditorMode.LOCAL) {
+                val content = scriptsManager.read(it)
+                editor.setText(content)
+            } else onRemoteOpen?.invoke(scriptPath)
         }
     }
 
@@ -65,7 +70,7 @@ class EditorManager(
      * Editor Lines
      */
 
-    val canRun: Boolean get() = scriptPath?.name?.endsWith(".py") == true
+    val canRun: Boolean get() = scriptFile?.name?.endsWith(".py") == true
 
     fun toggleLines() {
         showLines = !showLines
@@ -191,7 +196,7 @@ class EditorManager(
             isDark = isDark,
             onYes = { saveFileAs() },
             onNo = { afterSave() }
-        ) else if (saveExisting()) scriptsManager.showDoYouWantDialog(
+        ) else if (saveRemotely() || saveExisting()) scriptsManager.showDoYouWantDialog(
             msg = context.getString(R.string.editor_msg_save_changes),
             isDark = isDark,
             onYes = { save() },
@@ -201,24 +206,33 @@ class EditorManager(
 
 
     private fun saveExisting(): Boolean {
-        return scriptPath != null && editor.text.toString() != scriptsManager.read(scriptPath!!)
+        return editorMode == EditorMode.LOCAL && scriptFile != null &&
+                editor.text.toString() != scriptsManager.read(scriptFile!!)
+    }
+
+    private fun saveRemotely(): Boolean {
+        return editorMode == EditorMode.REMOTE && scriptFile != null
+        //&& editor.text.toString() != scriptsManager.read(scriptFile!!)
     }
 
     private fun saveNew(): Boolean {
-        return scriptPath == null && editor.text.toString().trim().isNotEmpty()
+        return scriptFile == null && editor.text.toString().trim().isNotEmpty()
     }
 
 
     private fun save() {
-        if (scriptPath?.parentFile?.exists() == true) {
-            val saved = scriptsManager.write(scriptPath?.path!!, editor.text.toString())
+        if (editorMode == EditorMode.LOCAL && scriptFile?.parentFile?.exists() == true) {
+            val saved = scriptsManager.write(scriptFile?.path!!, editor.text.toString())
             if (saved) {
-                val name = scriptPath?.name ?: ""
+                val name = scriptFile?.name ?: ""
                 title.text = name
                 Toast.makeText(context, "$name saved", Toast.LENGTH_SHORT).show()
             }
             afterSave()
-        }
+        } else onRemoteSave?.invoke(
+            scriptPath,
+            editor.text.toString()
+        )
     }
 
 
@@ -229,7 +243,7 @@ class EditorManager(
             positiveButton = "Save", negativeButton = "Cancel",
             onOk = { input ->
                 scriptsManager.scriptDirectory()?.let {
-                    scriptPath = File(it, input)
+                    scriptFile = File(it, input)
                     save()
                 }
             }, onCancel = {
@@ -247,10 +261,10 @@ class EditorManager(
     private fun newScript() {
         editor.setText("")
         title.setText(R.string.editor_untitled)
-        scriptPath = null
+        scriptFile = null
     }
 
-    private fun afterSave() {
+    fun afterSave() {
         setEditorSettings()
         val action = this.actionAfterSave
         actionAfterSave = -1
@@ -265,10 +279,10 @@ class EditorManager(
 
 
     private fun shareScript() {
-        if (scriptPath == null) return
+        if (scriptFile == null) return
         val shareIntent = Intent()
         shareIntent.action = Intent.ACTION_SEND
-        val uri = Uri.fromFile(scriptPath)
+        val uri = Uri.fromFile(scriptFile)
         shareIntent.putExtra(Intent.EXTRA_STREAM, uri)
         shareIntent.type = "text/*"
         context.startActivity(
@@ -296,7 +310,7 @@ class EditorManager(
         sharedPrefEditor.putInt("font_size", fontSize)
         sharedPrefEditor.putBoolean("dark_mode", isDark)
         sharedPrefEditor.putBoolean("show_lines", showLines)
-        scriptPath?.let {
+        scriptFile?.let {
             sharedPrefEditor.putString("script", it.absolutePath)
         }
         sharedPrefEditor.apply()
@@ -311,11 +325,13 @@ class EditorManager(
         showLines(showLines)
         lines.setTextSize(TypedValue.COMPLEX_UNIT_DIP, fontSize.toFloat())
         editor.setTextSize(TypedValue.COMPLEX_UNIT_DIP, fontSize.toFloat())
-        val path = sharedPref.getString("script", "") ?: ""
-        scriptPath = if (path.isNotEmpty()) File(path) else null
-        if (scriptPath?.exists() == false) {
-            //when file is renamed or removed
-            scriptPath = null
+        if (editorMode == EditorMode.LOCAL) {
+            val path = sharedPref.getString("script", "") ?: ""
+            scriptFile = if (path.isNotEmpty()) File(path) else null
+            if (scriptFile?.exists() == false) {
+                //when file is renamed or removed
+                scriptFile = null
+            }
         }
     }
 
@@ -343,4 +359,9 @@ class EditorManager(
             return sharedPref.getBoolean("dark_mode", false)
         }
     }
+}
+
+enum class EditorMode {
+    LOCAL,
+    REMOTE
 }

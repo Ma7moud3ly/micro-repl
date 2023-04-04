@@ -2,55 +2,63 @@ package com.ma7moud3ly.microterminal.util
 
 object CommandsManager {
 
-    const val endStatement = "EXEC DONE"
-    private const val end = "print('\n','EXEC','DONE')"
-    private fun container(s: String) = "print('\${',$s,'}\$')"
+    const val END_OUTPUT = "EXEC DONE"
+    private const val END_STATEMENT = "print('EXEC','DONE')"
+    private const val RESULT_BEGIN = "@{"
+    private const val RESULT_END = "}@"
+
+    private fun responseStatement(path: String) =
+        "print('$RESULT_BEGIN',list(os.ilistdir('$path')),'$RESULT_END');$END_STATEMENT"
+
     fun listDir(path: String): String {
-        return "import os;print('\${',os.listdir('$path'),'}\$;');$end"
+        return "print('$RESULT_BEGIN',list(os.listdir('$path')),'$RESULT_END');$END_STATEMENT"
     }
 
     fun iListDir(path: String): String {
-        return "import os;print('\${',list(os.ilistdir('$path')),'}\$');$end"
+        return "import os;" + responseStatement(path)
     }
 
     fun readFile(path: String): String {
-        return "f = open('$path');x = f.read();f.close();print('\${',x,'}\$')"
+        return "f = open('$path');content = f.read();f.close();" +
+                "print('$RESULT_BEGIN',content,'$RESULT_END');$END_STATEMENT"
+
     }
 
     fun writeFile(path: String, content: String): String {
-        return "f = open('$path','w');x = f.write('$content');f.close();print('\${',x,'}\$')"
+        return "f = open('$path','w');x = f.write('$content');f.close();$END_STATEMENT"
     }
 
     fun removeFile(file: MicroFile): String {
-        return "import os;os.remove('${file.name}');print('\${',list(os.ilistdir('${file.path}')),'}\$');$end"
+        return "import os;os.remove('${file.fullPath}');" +
+                responseStatement(file.path)
     }
 
     fun removeDirectory(file: MicroFile): String {
-        return "import os;os.rmdir('${file.name}');print('\${',list(os.ilistdir('${file.path}')),'}\$');$end"
+        return "import os;os.rmdir('${file.fullPath}');" +
+                responseStatement(file.path)
     }
 
     fun makeDirectory(file: MicroFile): String {
-        return "import os;os.mkdir('${file.name}');print('\${',list(os.ilistdir('${file.path}')),'}\$');$end"
+        return "import os;os.mkdir('${file.fullPath}');" +
+                responseStatement(file.path)
     }
 
     fun makeFile(file: MicroFile): String {
-        return "import os;f = open('${file.name}','w');f.write('');f.close();" +
-                "print('\${',list(os.ilistdir('${file.path}')),'}\$');$end"
+        return "import os;f = open('${file.fullPath}','w');f.write('');f.close();" +
+                responseStatement(file.path)
     }
 
-    fun rename(src: String, dst: String): String {
-        return "import os;os.rename('$src','$dst');print('\${',{'status':1},'}\$')"
+    fun rename(src: MicroFile, dst: MicroFile): String {
+        return "import os;os.rename('${src.fullPath}','${dst.fullPath}');" + responseStatement(src.path)
     }
 
-    private const val s1 = "\${"
-    private const val s2 = "}\$"
     fun extractResult(data: String, default: String = ""): String {
         if (data.isEmpty()) return default
-        val hasResponse = data.count { it == '$' } >= 4
-        val i1 = data.lastIndexOf(s1)
-        val i2 = data.lastIndexOf(s2)
+        val hasResponse = data.count { it == '@' } >= 4
+        val i1 = data.lastIndexOf(RESULT_BEGIN)
+        val i2 = data.lastIndexOf(RESULT_END)
         return if (hasResponse && i1 != -1 && i2 != -1 && i1 < i2)
-            data.substring(i1 + s1.length, i2).trim()
+            data.substring(i1 + RESULT_BEGIN.length, i2).trim()
         else default
     }
 }

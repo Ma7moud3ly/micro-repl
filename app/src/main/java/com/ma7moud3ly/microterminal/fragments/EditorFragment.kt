@@ -5,8 +5,11 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.ma7moud3ly.microterminal.HomeActivity
 import com.ma7moud3ly.microterminal.databinding.FragmentEditorBinding
 import com.ma7moud3ly.microterminal.util.EditorManager
+import com.ma7moud3ly.microterminal.util.EditorMode
+import com.ma7moud3ly.microterminal.util.FileManager
 
 class EditorFragment : BaseFragment() {
     companion object {
@@ -14,6 +17,7 @@ class EditorFragment : BaseFragment() {
     }
 
     private var editorManager: EditorManager? = null
+    private var fileManager: FileManager? = null
     private lateinit var binding: FragmentEditorBinding
 
     override fun onCreateView(
@@ -32,6 +36,7 @@ class EditorFragment : BaseFragment() {
         onConnectionChanges = { connected ->
             binding.run.root.visibility = if (connected && editorManager?.canRun == true)
                 View.VISIBLE else View.GONE
+            Log.i(TAG, "onConnectionChanges - connected = $connected")
         }
 
         onBackPressed = {
@@ -40,17 +45,23 @@ class EditorFragment : BaseFragment() {
     }
 
     private fun initEditor() {
-        val scriptToOpen = if (arguments?.containsKey("script") == true)
-            arguments?.getString("script") else null
-        Log.i(TAG, "initEditor | scriptToOpen = $scriptToOpen")
+
+
+        if (viewModel.editorMode == EditorMode.REMOTE) {
+            val usbManager = (requireActivity() as HomeActivity).usbManager
+            fileManager = FileManager(usbManager)
+        }
 
         binding.run.root.visibility = View.GONE
         editorManager = EditorManager(
             requireContext(),
-            scriptToOpen = scriptToOpen,
+            editorMode = viewModel.editorMode,
+            scriptPath = viewModel.editorFile,
             editor = binding.editor,
             lines = binding.lines,
             title = binding.scriptTitle,
+            onRemoteOpen = onRemoteOpen,
+            onRemoteSave = onRemoteSave,
             afterEdit = { dismiss() }
         )
 
@@ -73,16 +84,49 @@ class EditorFragment : BaseFragment() {
         val btns = binding.buttons
         btns.edNew.setOnClickListener { em.checkSave(action = EditorManager.NEW) }
         btns.edSave.setOnClickListener { em.checkSave(action = EditorManager.SAV) }
-        btns.edShare.setOnClickListener { em.checkSave(action = EditorManager.SHR) }
+        //btns.edShare.setOnClickListener { em.checkSave(action = EditorManager.SHR) }
+        btns.edShare.visibility = View.GONE
         btns.edSaveAs.setOnClickListener { em.saveFileAs() }
         btns.edClear.setOnClickListener { em.clear() }
         btns.edZoomIn.setOnClickListener { em.zoomIn(true) }
         btns.edZoomOut.setOnClickListener { em.zoomIn(false) }
         btns.edDarkMode.setOnClickListener { em.toggleDarkMode() }
         btns.edLines.setOnClickListener { em.toggleLines() }
-        binding.scriptTitle.setOnClickListener { em.checkSave(action = EditorManager.LIS) }
+
+        if (viewModel.editorMode == EditorMode.LOCAL) {
+            btns.edNew.visibility = View.VISIBLE
+            btns.edSaveAs.visibility = View.VISIBLE
+            btns.edDarkMode.visibility = View.VISIBLE
+            binding.scriptTitle.setOnClickListener { em.checkSave(action = EditorManager.LIS) }
+        } else {
+            binding.scriptTitle.setOnClickListener {}
+            btns.edNew.visibility = View.GONE
+            btns.edSaveAs.visibility = View.GONE
+            btns.edDarkMode.visibility = View.GONE
+        }
 
     }
 
+    private val onRemoteOpen: (String) -> Unit = { path ->
+        Log.v(TAG, "isConnected = ${viewModel.isConnected}")
+        Log.i(TAG, "onRemoteOpen  = $path")
+        if (viewModel.isConnected) {
+            fileManager?.read(path, onRead = { content ->
+                requireActivity().runOnUiThread {
+                    binding.editor.setText(content)
+                }
+            })
+        } else dismiss()
+    }
+
+    private val onRemoteSave: (String, String) -> Unit = { path, content ->
+        Log.v(TAG, "isConnected = ${viewModel.isConnected}")
+        Log.i(TAG, "onRemoteSave $path | $content")
+        if (viewModel.isConnected) {
+            fileManager?.write(path, content.replace("\n", "\\n"), onSave = {
+                editorManager?.afterSave()
+            })
+        } else dismiss()
+    }
 
 }
