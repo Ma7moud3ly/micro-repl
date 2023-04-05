@@ -7,11 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.fragment.findNavController
-import com.ma7moud3ly.microterminal.managers.EditorMode
-import com.ma7moud3ly.microterminal.managers.ExplorerUiEvents
-import com.ma7moud3ly.microterminal.managers.MicroFile
 import com.ma7moud3ly.microterminal.ui.FileManagerScreen
 import com.ma7moud3ly.microterminal.ui.theme.AppTheme
+import com.ma7moud3ly.microterminal.utils.EditorMode
+import com.ma7moud3ly.microterminal.utils.ExplorerUiEvents
+import com.ma7moud3ly.microterminal.utils.MicroFile
 import java.io.File
 
 class ExplorerFragment : BaseFragment(), ExplorerUiEvents {
@@ -40,40 +40,43 @@ class ExplorerFragment : BaseFragment(), ExplorerUiEvents {
         }
 
         onUiReady {
-            initFileManager()
+            terminalManager?.terminateExecution {
+                initFileManager()
+            }
         }
     }
 
     private fun initFileManager() {
-        fileManager?.path = viewModel.root.value
-        fileManager?.listDir()
+        filesManager?.path = viewModel.root.value
+        filesManager?.listDir()
     }
 
-
-    companion object {
-        private const val TAG = "ExplorerFragment"
-    }
 
     override fun onRun(file: MicroFile) {
-        Log.i(TAG, "onRun( - $file")
+        filesManager?.read(file.fullPath, onRead = { script ->
+            Log.i(TAG, "onRun - $script")
+            viewModel.script = script
+            val action = ExplorerFragmentDirections.actionExplorerFragmentToTerminalFragment()
+            activity?.runOnUiThread { navigate(action) }
+        })
     }
 
     override fun onOpenFolder(file: MicroFile) {
         Log.i(TAG, "onOpenFolder - $file")
         val root = file.fullPath
         viewModel.root.value = root
-        fileManager?.path = root
-        fileManager?.listDir()
+        filesManager?.path = root
+        filesManager?.listDir()
     }
 
     override fun onRemove(file: MicroFile) {
         Log.i(TAG, "onRemove - $file")
-        fileManager?.remove(file)
+        filesManager?.remove(file)
     }
 
     override fun onRename(src: MicroFile, dst: MicroFile) {
         Log.i(TAG, "onRename - from ${src.name} to ${dst.name}")
-        fileManager?.rename(src, dst)
+        filesManager?.rename(src, dst)
     }
 
     override fun onEdit(file: MicroFile) {
@@ -86,12 +89,12 @@ class ExplorerFragment : BaseFragment(), ExplorerUiEvents {
 
     override fun onNew(file: MicroFile) {
         Log.i(TAG, "onNew - $file")
-        fileManager?.new(file)
+        filesManager?.new(file)
     }
 
     override fun onRefresh() {
         Log.i(TAG, "onRefresh")
-        fileManager?.listDir()
+        filesManager?.listDir()
     }
 
     override fun onUp() {
@@ -100,8 +103,13 @@ class ExplorerFragment : BaseFragment(), ExplorerUiEvents {
         val newRoot = File(root).parent ?: ""
         Log.i(TAG, "onUp from $root to $newRoot")
         viewModel.root.value = newRoot
-        fileManager?.path = newRoot
-        fileManager?.listDir()
+        filesManager?.path = newRoot
+        filesManager?.listDir()
+    }
+
+
+    companion object {
+        private const val TAG = "ExplorerFragment"
     }
 }
 

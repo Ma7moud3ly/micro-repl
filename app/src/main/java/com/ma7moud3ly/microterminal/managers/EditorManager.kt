@@ -18,6 +18,7 @@ import android.widget.TextView
 import android.widget.Toast
 import com.ma7moud3ly.microterminal.R
 import com.ma7moud3ly.microterminal.fragments.ScriptsFragment
+import com.ma7moud3ly.microterminal.utils.EditorMode
 import com.ma7moud3ly.microterminal.utils.ThemeMode
 import java.io.File
 import kotlin.math.pow
@@ -29,9 +30,10 @@ class EditorManager(
     private val lines: TextView,
     private val title: TextView,
     private val editorMode: EditorMode,
-    private val remoteScriptPath: String,
+    private val scriptPath: String,
     private val onRemoteOpen: ((path: String) -> Unit)? = null,
     private val onRemoteSave: ((path: String, content: String) -> Unit)? = null,
+    private val onRemoteRun: ((path: String) -> Unit)? = null,
     private val afterEdit: (() -> Unit)? = null
 ) {
     private val activity: Activity = context as Activity
@@ -57,13 +59,16 @@ class EditorManager(
     }
 
     private fun initScript() {
-        if (remoteScriptPath.isNotEmpty()) scriptFile = File(remoteScriptPath)
+        if (scriptPath.isNotEmpty()) scriptFile = File(scriptPath)
         scriptFile?.let {
-            title.text = it.name
             if (editorMode == EditorMode.LOCAL) {
+                title.text = it.name
                 val content = scriptsManager.read(it)
                 editor.setText(content)
-            } else onRemoteOpen?.invoke(remoteScriptPath)
+            } else {
+                title.text = it.path
+                onRemoteOpen?.invoke(scriptPath)
+            }
         }
     }
 
@@ -234,12 +239,13 @@ class EditorManager(
         } else {
             val content = editor.text.toString()
             remoteContentCached = content
-            onRemoteSave?.invoke(remoteScriptPath, content)
+            onRemoteSave?.invoke(scriptPath, content)
+            if (actionAfterSave == RUN) afterSave()
         }
     }
 
 
-    fun saveFileAs() {
+    private fun saveFileAs() {
         scriptsManager.showScriptNameDialog(
             msg = "Save Script as",
             placeholder = "main.py",
@@ -273,10 +279,11 @@ class EditorManager(
         actionAfterSave = -1
         when (action) {
             SHR -> shareScript()
-            LIS -> scriptList()
+            LIS -> if (saveNew()) saveFileAs()
             NEW -> newScript()
             SAV -> {}
             END -> afterEdit?.invoke()
+            RUN -> onRemoteRun?.invoke(editor.text.toString().trim())
         }
     }
 
@@ -344,10 +351,7 @@ class EditorManager(
         const val NEW = 2
         const val SAV = 3
         const val END = 4
+        const val RUN = 5
     }
 }
 
-enum class EditorMode {
-    LOCAL,
-    REMOTE
-}

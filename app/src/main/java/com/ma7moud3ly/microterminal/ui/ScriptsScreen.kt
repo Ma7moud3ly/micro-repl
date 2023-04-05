@@ -5,23 +5,21 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ma7moud3ly.microterminal.R
-import com.ma7moud3ly.microterminal.ui.theme.grey100
-import com.ma7moud3ly.microterminal.managers.Script
+import com.ma7moud3ly.microterminal.ui.theme.dividerColor
+import com.ma7moud3ly.microterminal.ui.theme.editorIconSize
+import com.ma7moud3ly.microterminal.utils.MicroScript
+import com.ma7moud3ly.microterminal.utils.ScriptsUiEvents
 
 
 @SuppressLint("UnrememberedMutableState")
@@ -29,40 +27,35 @@ import com.ma7moud3ly.microterminal.managers.Script
 @Composable
 fun ScriptsScreenPreview() {
     val scripts = mutableListOf(
-        Script("Main.py", ""),
-        Script("Main.M", "")
+        MicroScript("Main.py", ""),
+        MicroScript("Main.M", "")
     )
-    ScriptsScreen(scripts, {}, {}, {},{})
+    ScriptsScreen(scripts)
 }
 
 @Composable
 fun ScriptsScreen(
-    scripts: List<Script>,
-    onOpen: (script: Script) -> Unit,
-    onDelete: (script: Script) -> Unit,
-    onRename: (script: Script) -> Unit,
-    onRun: (script: Script) -> Unit
+    scripts: List<MicroScript>,
+    uiEvents: ScriptsUiEvents? = null,
 ) {
     Scaffold {
         Box(Modifier.padding(it)) {
-            Column(
-                Modifier.padding(horizontal = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
 
-                Header()
+                Header(onUp = { uiEvents?.onUp() })
 
                 if (scripts.isNotEmpty()) scripts.forEach { script ->
                     ItemScript(
                         script = script,
-                        onOpen = onOpen,
-                        onRename = onRename,
-                        onDelete = onDelete,
-                        onRun = onRun
+                        onOpen = { uiEvents?.onOpen(script) },
+                        onRename = { uiEvents?.onRename(script) },
+                        onDelete = { uiEvents?.onDelete(script) },
+                        onRun = { uiEvents?.onRun(script) },
                     )
                 } else Text(
                     text = "No scripts saved yet!",
-                    style = MaterialTheme.typography.labelLarge
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier.padding(horizontal = 16.dp)
                 )
 
             }
@@ -71,75 +64,93 @@ fun ScriptsScreen(
 }
 
 @Composable
-private fun Header() {
-    Column {
-
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            stringResource(id = R.string.home_scripts),
-            style = MaterialTheme.typography.titleMedium.copy(
-                fontWeight = FontWeight.Bold
+private fun Header(onUp: () -> Unit) {
+    val title =
+        stringResource(id = R.string.home_scripts) + " @ " +
+                stringResource(id = R.string.this_device)
+    Column(
+        Modifier.padding(vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Row(
+            Modifier.padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
             )
-        )
-
-        Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.weight(1f))
+            IconHeader(
+                title = R.string.explorer_up,
+                icon = R.drawable.arrow_up,
+                tint = MaterialTheme.colorScheme.primary,
+                onClick = onUp
+            )
+        }
 
         Divider(
             Modifier
                 .fillMaxWidth()
-                .height(1.dp)
-                .background(colorResource(id = R.color.dark_blue))
+                .height(1.dp),
+            color = dividerColor
         )
-        Spacer(modifier = Modifier.height(8.dp))
     }
 }
 
 @Composable
 private fun ItemScript(
-    script: Script,
-    onOpen: (script: Script) -> Unit,
-    onDelete: (script: Script) -> Unit,
-    onRename: (script: Script) -> Unit,
-    onRun: (script: Script) -> Unit
+    script: MicroScript,
+    onOpen: (script: MicroScript) -> Unit,
+    onDelete: (script: MicroScript) -> Unit,
+    onRename: (script: MicroScript) -> Unit,
+    onRun: (script: MicroScript) -> Unit
 ) {
     Row(
-        Modifier
+        modifier = Modifier
+            .padding(horizontal = 16.dp) //margin
             .background(
-                color = grey100,
+                color = MaterialTheme.colorScheme.secondary,
                 shape = RoundedCornerShape(8.dp)
-            )
-            .padding(
-                horizontal = 16.dp,
-                vertical = 8.dp
             )
             .fillMaxWidth()
             .wrapContentHeight()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
             .clickable { onOpen.invoke(script) },
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = script.name,
-            style = MaterialTheme.typography.labelMedium,
-            modifier = Modifier.weight(1f)
-        )
-        if (script.isPython) Icon(
-            imageVector = Icons.Default.PlayArrow,
-            contentDescription = "",
-            tint = Color.Red,
-            modifier = Modifier.clickable { onRun.invoke(script) }
+            color = Color.Black,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.weight(1f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
         Icon(
-            imageVector = Icons.Default.Edit,
-            contentDescription = "",
-            tint = Color.Black,
-            modifier = Modifier.clickable { onRename.invoke(script) }
+            painter = painterResource(id = R.drawable.edit),
+            contentDescription = stringResource(id = R.string.explorer_edit),
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier
+                .size(editorIconSize)
+                .clickable { onRename.invoke(script) }
         )
         Icon(
-            imageVector = Icons.Default.Delete,
-            contentDescription = "",
-            tint = Color.Black,
-            modifier = Modifier.clickable { onDelete.invoke(script) }
+            painter = painterResource(id = R.drawable.delete),
+            contentDescription = stringResource(id = R.string.explorer_delete),
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier
+                .size(editorIconSize)
+                .clickable { onDelete.invoke(script) }
         )
+        /*if (script.isPython) Icon(
+            painter = painterResource(id = R.drawable.run),
+            contentDescription = stringResource(id = R.string.explorer_run),
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier
+                .size(editorIconSize)
+                .clickable { onRun.invoke(script) }
+        )*/
     }
 }

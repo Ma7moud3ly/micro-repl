@@ -13,6 +13,7 @@ import android.widget.EditText
 import androidx.compose.runtime.mutableStateListOf
 import com.ma7moud3ly.microterminal.R
 import com.ma7moud3ly.microterminal.fragments.EditorFragment
+import com.ma7moud3ly.microterminal.utils.MicroScript
 import java.io.*
 
 
@@ -20,8 +21,12 @@ class ScriptsManager(private val context: Context) {
     companion object {
         private const val TAG = "ScriptsManager"
     }
+    val scripts = mutableStateListOf<MicroScript>()
 
-    val scripts = mutableStateListOf<Script>()
+    init {
+        updateScriptsList()
+    }
+
 
     fun scriptDirectory(): File? {
         if (context.getExternalFilesDir("scripts")?.exists() == false) {
@@ -31,13 +36,13 @@ class ScriptsManager(private val context: Context) {
         return context.getExternalFilesDir("scripts")
     }
 
-    fun updateScriptsList() {
-        val list = mutableListOf<Script>()
+    private fun updateScriptsList() {
+        val list = mutableListOf<MicroScript>()
         scriptDirectory()?.let { it ->
             it.listFiles()?.forEach { file ->
                 val name = file.name
                 val path = file.absolutePath
-                val script = Script(name = name, path = path)
+                val script = MicroScript(name = name, path = path)
                 list.add(script)
             }
         }
@@ -113,29 +118,9 @@ class ScriptsManager(private val context: Context) {
      * Script Actions
      */
 
-    private fun shareScript(path: String) {
-        if (path.isEmpty()) return
-        val shareIntent = Intent()
-        shareIntent.action = Intent.ACTION_SEND
-        val uri = Uri.fromFile(File(path))
-        shareIntent.putExtra(Intent.EXTRA_STREAM, uri)
-        shareIntent.type = "text/*"
-        context.startActivity(
-            Intent.createChooser(
-                shareIntent,
-                context.resources.getString(R.string.app_name)
-            )
-        )
-    }
 
 
-    fun openScript(script: Script) {
-        val intent = Intent(context, EditorFragment::class.java)
-        intent.putExtra("script", script.path)
-        context.startActivity(intent)
-    }
-
-    fun deleteScript(script: Script) {
+    fun deleteScript(script: MicroScript) {
         val msg = context.getString(R.string.editor_msg_delete, script.name)
         showDoYouWantDialog(
             msg = msg,
@@ -147,7 +132,7 @@ class ScriptsManager(private val context: Context) {
         )
     }
 
-    fun renameScript(script: Script) {
+    fun renameScript(script: MicroScript) {
         val msg = context.getString(R.string.editor_msg_rename, script.name)
         showScriptNameDialog(
             msg = msg,
@@ -160,7 +145,7 @@ class ScriptsManager(private val context: Context) {
         )
     }
 
-    private fun delete(script: Script): Boolean {
+    private fun delete(script: MicroScript): Boolean {
         val file = script.file
         return if (!file.exists()) false
         else try {
@@ -171,7 +156,7 @@ class ScriptsManager(private val context: Context) {
         }
     }
 
-    private fun rename(script: Script, newName: String): Boolean {
+    private fun rename(script: MicroScript, newName: String): Boolean {
         val newFile = File(script.parentFile, newName)
         val oldFile = script.file
         if (!oldFile.exists()) return false
@@ -267,8 +252,3 @@ class ScriptsManager(private val context: Context) {
     }
 }
 
-data class Script(val name: String, val path: String) {
-    val file: File get() = File(path)
-    val parentFile: File get() = file.parentFile!!
-    val isPython: Boolean get() = name.trim().endsWith(".py")
-}

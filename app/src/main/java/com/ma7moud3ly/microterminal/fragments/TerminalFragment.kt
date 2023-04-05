@@ -8,9 +8,9 @@ import android.widget.Toast
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.fragment.findNavController
 import com.ma7moud3ly.microterminal.R
-import com.ma7moud3ly.microterminal.managers.TerminalUiEvents
 import com.ma7moud3ly.microterminal.ui.TerminalScreen
 import com.ma7moud3ly.microterminal.ui.theme.AppTheme
+import com.ma7moud3ly.microterminal.utils.TerminalUiEvents
 import com.ma7moud3ly.microterminal.utils.ThemeMode
 
 
@@ -38,20 +38,21 @@ class TerminalFragment : BaseFragment(), TerminalUiEvents {
             if (connected.not()) findNavController().popBackStack()
         }
 
+        viewModel.terminalOutput.value = ""
+        viewModel.terminalInput.value = ""
+
         if (viewModel.script.isNotEmpty()) {
-            viewModel.newExecution = true
-            terminalManager?.eval(viewModel.script)
+            terminalManager?.execute(viewModel.script, terminateFirst = true)
         }
+
     }
 
-    override fun onExecute(code: String) {
+    override fun onRun(code: String) {
         viewModel.history.push(code)
-        viewModel.newExecution = true
-        terminalManager?.execute(code)
+        terminalManager?.run(code)
     }
 
     override fun onTerminate() {
-        viewModel.newExecution = true
         terminalManager?.terminateExecution {
             Toast.makeText(
                 requireContext(),
@@ -62,7 +63,6 @@ class TerminalFragment : BaseFragment(), TerminalUiEvents {
     }
 
     override fun onSoftReset() {
-        viewModel.newExecution = true
         viewModel.microDevice?.let {
             terminalManager?.softResetDevice(it) {
                 Toast.makeText(
@@ -88,5 +88,10 @@ class TerminalFragment : BaseFragment(), TerminalUiEvents {
 
     override fun onDarkMode() {
         ThemeMode.toggleMode(requireActivity())
+    }
+
+    override fun onDestroy() {
+        onTerminate()
+        super.onDestroy()
     }
 }

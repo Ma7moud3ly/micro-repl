@@ -12,6 +12,7 @@ val Pink40 = Color(0xFF7D5260)
 
 val dark = Color(0xFF222222)
 val black = Color(0xFF000000)
+val dividerColor = Color(0xFF2196F3)
 val grey100 = Color(0xFFE8E8E8)
 val folderColor = Color(0xFFFFE69A)
 val fileColor = grey100

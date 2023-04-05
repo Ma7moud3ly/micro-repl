@@ -26,13 +26,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ma7moud3ly.microterminal.MainViewModel
 import com.ma7moud3ly.microterminal.R
-import com.ma7moud3ly.microterminal.managers.ConnectionStatus
 import com.ma7moud3ly.microterminal.managers.DeviceManager
-import com.ma7moud3ly.microterminal.managers.HomeUiEvents
-import com.ma7moud3ly.microterminal.managers.MicroDevice
 import com.ma7moud3ly.microterminal.ui.theme.ProgressView
 import com.ma7moud3ly.microterminal.ui.theme.fontConsolas
 import com.ma7moud3ly.microterminal.ui.theme.grey100
+import com.ma7moud3ly.microterminal.utils.ConnectionStatus
+import com.ma7moud3ly.microterminal.utils.HomeUiEvents
+import com.ma7moud3ly.microterminal.utils.MicroDevice
 
 private const val TAG = "HomeScreen"
 
@@ -235,7 +235,8 @@ private fun DeviceNotConnected(onClick: () -> Unit) {
         )
         Text(
             text = stringResource(id = R.string.home_connection_msg),
-            style = MaterialTheme.typography.bodyMedium
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(horizontal = 16.dp)
         )
     }
 }

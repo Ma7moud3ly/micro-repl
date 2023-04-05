@@ -1,13 +1,21 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_gravity="center"
     android:focusable="true"
     android:focusableInTouchMode="true"
-    android:gravity="end"
+    android:gravity="center"
     android:orientation="horizontal"
     android:padding="5dp"
     android:weightSum="9">
+
+
+    <ImageView
+        android:id="@+id/edRun"
+        style="@style/editor_buttons"
+        android:src="@drawable/run"
+        app:tint="@color/dark_blue" />
 
     <ImageView
         android:id="@+id/edShare"
@@ -17,8 +25,8 @@
     <ImageView
         android:id="@+id/edOpen"
         style="@style/editor_buttons"
-        android:visibility="gone"
-        android:src="@drawable/open" />
+        android:src="@drawable/open"
+        android:visibility="gone" />
 
 
     <ImageView
@@ -31,10 +39,6 @@
         style="@style/editor_buttons"
         android:src="@drawable/save" />
 
-    <ImageView
-        android:id="@+id/edSaveAs"
-        style="@style/editor_buttons"
-        android:src="@drawable/save_as" />
 
     <ImageView
         android:id="@+id/edClear"

@@ -1,10 +1,11 @@
 package com.ma7moud3ly.microterminal.managers
 
 import android.util.Log
+import com.ma7moud3ly.microterminal.utils.MicroFile
 import org.json.JSONArray
 
 
-class FileManager(
+class FilesManager(
     private val deviceManager: DeviceManager,
     private val onUpdateFiles: ((files: List<MicroFile>) -> Unit)? = null
 ) {
@@ -57,11 +58,11 @@ class FileManager(
     }
 
     fun read(path: String, onRead: (content: String) -> Unit) {
-        val code = CommandsManager.readFile(path)
+        val code = CommandsManager.readFile2(path)
         deviceManager.writeSync(code, onResponse = { response ->
             val result = CommandsManager.extractResult(
                 response, default = ""
-            ).replace("\r\n", "\n")
+            ).replace("\\n", "\n")
 
             Log.i(TAG, "response $response")
             Log.i(TAG, "result $result")
@@ -70,7 +71,7 @@ class FileManager(
     }
 
     fun write(path: String, content: String, onSave: () -> Unit) {
-        val code = CommandsManager.writeFile(path, content.replace("\n", "\r\n"))
+        val code = CommandsManager.writeFile(path, content, parseJson = true)
         Log.i(TAG, "code $code")
         deviceManager.writeSync(code, onResponse = { response ->
             val result = CommandsManager.extractResult(response, default = "[]")
@@ -102,28 +103,5 @@ class FileManager(
         Log.i(TAG, list.toString())
         onUpdateFiles?.invoke(list)
     }
-
-
 }
 
-data class MicroFile(
-    val name: String,
-    var path: String = "",
-    private val type: Int = FILE,
-    private val size: Int = 0,
-) {
-    val fullPath: String get() = if (path.isEmpty()) name else "$path/$name".replace("//", "/")
-    val isFile: Boolean get() = type == FILE
-    val canRun: Boolean get() = ext == ".py"
-
-    private val ext: String
-        get() {
-            return if (isFile && name.contains(".")) name.substring(name.indexOf(".")).trim()
-            else ""
-        }
-
-    companion object {
-        const val DIRECTORY = 0x4000
-        const val FILE = 0x8000
-    }
-}

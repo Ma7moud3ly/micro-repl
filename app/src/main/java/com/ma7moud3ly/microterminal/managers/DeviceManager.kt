@@ -18,6 +18,8 @@ import androidx.lifecycle.LifecycleOwner
 import com.hoho.android.usbserial.driver.UsbSerialPort
 import com.hoho.android.usbserial.driver.UsbSerialProber
 import com.hoho.android.usbserial.util.SerialInputOutputManager
+import com.ma7moud3ly.microterminal.utils.ConnectionStatus
+import com.ma7moud3ly.microterminal.utils.MicroDevice
 
 
 class DeviceManager(
@@ -119,9 +121,13 @@ class DeviceManager(
     }
 
     fun write(code: String, onWrite: (() -> Unit)? = null) {
-        val cmd = "\u000D" + code + "\u000D"
-        port?.write(cmd.toByteArray(Charsets.UTF_8), WRITTING_TIMEOUT)
-        onWrite?.invoke()
+        try {
+            val cmd = "\u000D" + code + "\u000D"
+            port?.write(cmd.toByteArray(Charsets.UTF_8), WRITTING_TIMEOUT)
+            onWrite?.invoke()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     fun read(
@@ -250,7 +256,8 @@ class DeviceManager(
         val data = (bytes?.toString(Charsets.UTF_8) ?: "").trim()
         if (isReadSync) {
             syncData.append(data)
-            val isDone = syncData.contains(CommandsManager.END_OUTPUT)
+            val isDone = isExecutionDone(data) || isExecutionDone(syncData.toString())
+            Log.w(TAG, "syncData - $syncData")
             Log.i(TAG, "isDone = $isDone")
             if (isDone) onReadSync?.invoke()
         } else {
@@ -269,6 +276,13 @@ class DeviceManager(
             )
             else onReceiveData?.invoke(data)
         }
+    }
+
+    private fun isExecutionDone(data: String): Boolean {
+        return data.contains(CommandsManager.END_OUTPUT)
+                || data.contains(CommandsManager.END_OUTPUT2)
+                //|| data.contains("OSError:")
+                || data.contains("ENOENT")
     }
 
     override fun onRunError(e: Exception?) {
@@ -295,15 +309,3 @@ class DeviceManager(
     }
 }
 
-
-sealed class ConnectionStatus {
-    data class OnFailure(val msg: String = "", val code: Int) : ConnectionStatus()
-    object OnConnecting : ConnectionStatus()
-    data class OnConnected(val microDevice: MicroDevice) : ConnectionStatus()
-}
-
-data class MicroDevice(
-    val port: String,
-    val board: String,
-    val isMicroPython: Boolean
-)

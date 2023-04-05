@@ -25,22 +25,36 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/title_color"
-        android:orientation="horizontal">
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingHorizontal="8dp"
+        android:paddingVertical="4dp">
+
+        <TextView
+            android:id="@+id/script_source"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/this_device"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="2dp"
+            android:text="://"
+            android:textSize="14sp"
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/script_title"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_weight="1"
             android:clickable="true"
             android:focusable="true"
             android:gravity="center"
-            android:maxLength="20"
-            android:paddingHorizontal="8dp"
-            android:paddingVertical="4dp"
             android:text="untitled"
-            android:textSize="11sp"
-            android:textStyle="bold" />
+            android:textSize="14sp" />
 
     </LinearLayout>
 
@@ -74,7 +88,7 @@
             <EditText
                 android:id="@+id/editor"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="675dp"
                 android:background="@null"
                 android:breakStrategy="high_quality"
                 android:clickable="true"
@@ -93,8 +107,8 @@
                 android:textSize="14sp" />
 
             <include
-                android:id="@+id/run"
-                layout="@layout/button_run" />
+                android:id="@+id/device"
+                layout="@layout/button_round" />
 
         </FrameLayout>
     </LinearLayout>

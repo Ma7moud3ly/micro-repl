@@ -1,5 +1,7 @@
 package com.ma7moud3ly.microterminal.managers
 
+import com.ma7moud3ly.microterminal.utils.MicroDevice
+
 class TerminalManager(
     private val deviceManager: DeviceManager
 ) {
@@ -28,14 +30,19 @@ class TerminalManager(
         onReset?.invoke()
     }
 
-    fun execute(code: String, onExecute: (() -> Unit)? = null) {
+    fun run(code: String, onRun: (() -> Unit)? = null) {
         deviceManager.write(code)
-        onExecute?.invoke()
+        onRun?.invoke()
     }
 
-    fun eval(code: String, onEval: (() -> Unit)? = null) {
-        val cmd = "content = '''$code''';eval(content)"
+    fun execute(
+        code: String,
+        terminateFirst: Boolean = false,
+        onExecute: (() -> Unit)? = null
+    ) {
+        val cmd = CommandsManager.execute(code, toJson = true)
+        if (terminateFirst) deviceManager.write("\u0003")
         deviceManager.write(cmd)
-        onEval?.invoke()
+        onExecute?.invoke()
     }
 }

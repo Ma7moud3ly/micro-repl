@@ -6,10 +6,12 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,11 +31,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ma7moud3ly.microterminal.MainViewModel
 import com.ma7moud3ly.microterminal.R
-import com.ma7moud3ly.microterminal.managers.TerminalUiEvents
 import com.ma7moud3ly.microterminal.ui.theme.AppTheme
 import com.ma7moud3ly.microterminal.ui.theme.LogCompositions
 import com.ma7moud3ly.microterminal.ui.theme.fontConsolas
 import com.ma7moud3ly.microterminal.ui.theme.terminalIconSize
+import com.ma7moud3ly.microterminal.utils.TerminalUiEvents
 
 private const val TAG = "TerminalScreen"
 
@@ -46,7 +48,7 @@ fun TerminalScreenPreview() {
             terminalOutput = { "" },
             terminalInput = { "" },
             onClear = {},
-            onExecute = {},
+            onRun = {},
             onInputChanges = {},
             scriptPath = { "" })
     }
@@ -70,8 +72,8 @@ fun TerminalScreen(
         onInputChanges = { terminalInput = it },
         terminalOutput = { terminalOutput },
         scriptPath = { scriptPath },
-        onExecute = {
-            uiEvents?.onExecute(terminalInput)
+        onRun = {
+            uiEvents?.onRun(terminalInput)
             terminalInput = ""
         },
         onClear = {
@@ -88,7 +90,7 @@ private fun ScreenContent(
     onInputChanges: (input: String) -> Unit,
     terminalOutput: () -> String,
     scriptPath: () -> String,
-    onExecute: () -> Unit,
+    onRun: () -> Unit,
     onClear: () -> Unit,
     uiEvents: TerminalUiEvents? = null,
 ) {
@@ -109,7 +111,7 @@ private fun ScreenContent(
                     .padding(vertical = 16.dp)
             ) {
                 Toolbar(
-                    onSend = onExecute,
+                    onSend = onRun,
                     onTerminate = { uiEvents?.onTerminate() },
                     onReset = { uiEvents?.onSoftReset() },
                     onDarkMode = { uiEvents?.onDarkMode() },
@@ -127,7 +129,7 @@ private fun ScreenContent(
                     input = terminalInput,
                     output = terminalOutput,
                     onInputChanges = onInputChanges,
-                    onKeyboardSend = onExecute
+                    onKeyboardSend = onRun
                 )
             }
         }
@@ -162,6 +164,7 @@ private fun ColumnScope.Terminal(
             .fillMaxWidth()
             .weight(1f)
             .padding(horizontal = 8.dp)
+            .verticalScroll(rememberScrollState())
     ) {
         SelectionContainer {
             Text(

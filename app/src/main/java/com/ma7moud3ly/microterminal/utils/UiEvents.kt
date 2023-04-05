@@ -1,4 +1,4 @@
-package com.ma7moud3ly.microterminal.managers
+package com.ma7moud3ly.microterminal.utils
 
 interface HomeUiEvents {
     fun onOpenEditor()
@@ -6,7 +6,6 @@ interface HomeUiEvents {
     fun onOpenExplorer()
     fun onOpenTerminal()
     fun onFindDevices()
-
     fun onReset()
     fun onSoftReset()
     fun onTerminate()
@@ -24,12 +23,20 @@ interface ExplorerUiEvents {
 }
 
 interface TerminalUiEvents {
-    fun onExecute(code: String)
+    fun onRun(code: String)
     fun onTerminate()
-
     fun onSoftReset()
-
     fun onUp()
     fun onDown()
     fun onDarkMode()
+}
+
+interface ScriptsUiEvents {
+    fun onRun(script: MicroScript)
+    fun onOpen(script: MicroScript)
+    fun onDelete(script: MicroScript)
+    fun onRename(script: MicroScript)
+
+    fun onUp()
+
 }

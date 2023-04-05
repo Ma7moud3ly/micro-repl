@@ -8,13 +8,12 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavDirections
-import androidx.navigation.fragment.findNavController
 import com.ma7moud3ly.microterminal.MainActivity
 import com.ma7moud3ly.microterminal.MainViewModel
-import com.ma7moud3ly.microterminal.managers.ConnectionStatus
 import com.ma7moud3ly.microterminal.managers.DeviceManager
-import com.ma7moud3ly.microterminal.managers.FileManager
+import com.ma7moud3ly.microterminal.managers.FilesManager
 import com.ma7moud3ly.microterminal.managers.TerminalManager
+import com.ma7moud3ly.microterminal.utils.ConnectionStatus
 import com.ma7moud3ly.microterminal.utils.ThemeMode
 import kotlinx.coroutines.launch
 
@@ -47,8 +46,10 @@ open class BaseFragment : Fragment() {
 
     fun navigate(action: NavDirections) {
         try {
-            findNavController().navigate(action)
+            //findNavController().navigate(action)
+            activity?.navHost?.navController?.navigate(action)
         } catch (e: java.lang.Exception) {
+            requireActivity().recreate()
             e.printStackTrace()
         }
     }
@@ -63,7 +64,7 @@ open class BaseFragment : Fragment() {
 
     val deviceManager: DeviceManager? get() = activity?.deviceManager
     val terminalManager: TerminalManager? get() = activity?.terminalManager
-    val fileManager: FileManager? get() = activity?.fileManager
+    val filesManager: FilesManager? get() = activity?.filesManager
 
     val isDarkMode: Boolean get() = ThemeMode.isDark(requireActivity())
 

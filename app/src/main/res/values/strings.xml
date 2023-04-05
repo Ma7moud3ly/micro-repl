@@ -1,8 +1,9 @@
 <resources>
     <string name="app_name">Micro Terminal</string>
-    <string name="ok">Ok</string>
-    <string name="cancel">Cancel</string>
+    <string name="dialog_ok">OK</string>
+    <string name="dialog_cancel">Cancel</string>
 
+    <string name="this_device">My Phone</string>
     <string name="micro_python">MicroPython</string>
     <string name="circuit_python">Circuit Python</string>
 
@@ -12,7 +13,9 @@
     <string name="home_explorer">Explorer</string>
     <string name="home_settings">Settings</string>
     <string name="home_connect">Connect</string>
-    <string name="home_connection_msg">Please connect your device and click Connect or restart the app</string>
+    <string name="home_connection_msg">Please connect your device and click Connect ☝️
+        \nIn the worst case restarting the app is required
+        \nRarely you might need to unplug your board 🥺</string>
     <string name="home_connected">Connected</string>
     <string name="home_disconnected">Disconnected</string>
 
@@ -50,4 +53,5 @@
     <string name="terminal_zoom_in">Zoom in</string>
     <string name="terminal_zoom_out">Zoom out</string>
     <string name="terminal_dark_mode">Dark mode</string>
+
 </resources>

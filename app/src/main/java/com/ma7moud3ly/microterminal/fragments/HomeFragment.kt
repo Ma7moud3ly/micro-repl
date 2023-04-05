@@ -7,10 +7,10 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.compose.ui.platform.ComposeView
 import com.ma7moud3ly.microterminal.R
-import com.ma7moud3ly.microterminal.managers.EditorMode
-import com.ma7moud3ly.microterminal.managers.HomeUiEvents
 import com.ma7moud3ly.microterminal.ui.HomeScreen
 import com.ma7moud3ly.microterminal.ui.theme.AppTheme
+import com.ma7moud3ly.microterminal.utils.EditorMode
+import com.ma7moud3ly.microterminal.utils.HomeUiEvents
 
 class HomeFragment : BaseFragment(), HomeUiEvents {
 

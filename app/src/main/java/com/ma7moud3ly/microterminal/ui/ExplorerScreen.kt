@@ -18,18 +18,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ma7moud3ly.microterminal.MainViewModel
 import com.ma7moud3ly.microterminal.R
-import com.ma7moud3ly.microterminal.managers.ExplorerUiEvents
-import com.ma7moud3ly.microterminal.managers.MicroFile
 import com.ma7moud3ly.microterminal.ui.theme.LogCompositions
 import com.ma7moud3ly.microterminal.ui.theme.fileColor
 import com.ma7moud3ly.microterminal.ui.theme.folderColor
 import com.ma7moud3ly.microterminal.ui.theme.grey100
+import com.ma7moud3ly.microterminal.utils.ExplorerUiEvents
+import com.ma7moud3ly.microterminal.utils.MicroFile
 
 private const val TAG = "FileManagerScreen"
 private val iconSize = 80.dp
@@ -37,7 +38,7 @@ private val iconSize = 80.dp
 @Preview(showSystemUi = true)
 @Composable
 fun FileManagerScreenPreview() {
-    Content(files = { listOf() }, root = { "/" })
+    Content(files = { listOf() }, root = { "" })
 }
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -48,9 +49,11 @@ fun FileManagerScreen(
 ) {
     val root by remember { mutableStateOf(viewModel.root) }
     val files = viewModel.files.collectAsState()
+    val isMicroPython = viewModel.microDevice?.isMicroPython == true
     Content(
         files = { files.value },
         root = { root.value },
+        isMicroPython = isMicroPython,
         uiEvents = uiEvents
     )
 }
@@ -59,6 +62,7 @@ fun FileManagerScreen(
 private fun Content(
     files: () -> List<MicroFile>,
     root: () -> String,
+    isMicroPython: Boolean = true,
     uiEvents: ExplorerUiEvents? = null
 ) {
     LogCompositions(TAG, "Content")
@@ -71,6 +75,7 @@ private fun Content(
             Column {
                 Header(
                     path = root,
+                    isMicroPython = isMicroPython,
                     uiEvents = uiEvents
                 )
                 FilesList(
@@ -127,6 +132,7 @@ private fun ColumnScope.FilesList(
 @Composable
 private fun Header(
     path: () -> String,
+    isMicroPython: Boolean = true,
     uiEvents: ExplorerUiEvents? = null
 ) {
     LogCompositions(TAG, "Header")
@@ -142,13 +148,23 @@ private fun Header(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
+                text = stringResource(
+                    id = if (isMicroPython) R.string.micro_python
+                    else R.string.circuit_python
+                ),
+                style = MaterialTheme.typography.labelLarge.copy(
+                    fontWeight = FontWeight.Bold
+                ),
+                color = MaterialTheme.colorScheme.primary,
+            )
+            Text(
                 text = "/${path()}", maxLines = 1,
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.primary,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
                     .weight(1f)
-                    .padding(vertical = 8.dp, horizontal = 8.dp)
+                    .padding(end = 8.dp)
             )
 
             IconHeader(title = R.string.explorer_new_file,
@@ -210,7 +226,7 @@ private fun Header(
 }
 
 @Composable
-private fun IconHeader(
+fun IconHeader(
     @StringRes title: Int,
     @DrawableRes icon: Int,
     tint: Color,
@@ -467,7 +483,7 @@ private fun FileDialogContent(
                 modifier = Modifier.weight(0.4f)
             ) {
                 Text(
-                    text = stringResource(id = R.string.ok),
+                    text = stringResource(id = R.string.dialog_ok),
                     style = MaterialTheme.typography.labelMedium
                 )
             }
@@ -479,7 +495,7 @@ private fun FileDialogContent(
                 modifier = Modifier.weight(0.4f)
             ) {
                 Text(
-                    text = stringResource(id = R.string.cancel),
+                    text = stringResource(id = R.string.dialog_cancel),
                     style = MaterialTheme.typography.labelMedium
                 )
             }
