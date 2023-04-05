@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace 'com.ma7moud3ly.microterminal'
+    namespace 'micro.repl.ma7moud3ly'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.ma7moud3ly.microterminal"
+        applicationId "micro.repl.ma7moud3ly"
         minSdk 24
         targetSdk 33
         versionCode 1

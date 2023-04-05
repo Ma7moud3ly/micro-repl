@@ -14,5 +14,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "Micro Terminal"
+rootProject.name = "Micro REPL"
 include ':app'

@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/homeFragment"
-        android:name="com.ma7moud3ly.microterminal.fragments.HomeFragment"
+        android:name="micro.repl.ma7moud3ly.fragments.HomeFragment"
         android:label="HomeFragment">
         <action
             android:id="@+id/action_homeFragment_to_editorFragment"
@@ -25,8 +25,8 @@
 
     <fragment
         android:id="@+id/editorFragment"
-        android:name="com.ma7moud3ly.microterminal.fragments.EditorFragment"
-        android:label="EditorFragment" >
+        android:name="micro.repl.ma7moud3ly.fragments.EditorFragment"
+        android:label="EditorFragment">
         <action
             android:id="@+id/action_editorFragment_to_terminalFragment"
             app:destination="@id/terminalFragment" />
@@ -34,8 +34,8 @@
 
     <fragment
         android:id="@+id/explorerFragment"
-        android:name="com.ma7moud3ly.microterminal.fragments.ExplorerFragment"
-        android:label="ExplorerFragment" >
+        android:name="micro.repl.ma7moud3ly.fragments.ExplorerFragment"
+        android:label="ExplorerFragment">
         <action
             android:id="@+id/action_explorerFragment_to_editorFragment"
             app:destination="@id/editorFragment" />
@@ -46,8 +46,8 @@
 
     <fragment
         android:id="@+id/scriptsFragment"
-        android:name="com.ma7moud3ly.microterminal.fragments.ScriptsFragment"
-        android:label="ScriptsFragment" >
+        android:name="micro.repl.ma7moud3ly.fragments.ScriptsFragment"
+        android:label="ScriptsFragment">
         <action
             android:id="@+id/action_scriptsFragment_to_terminalFragment"
             app:destination="@id/terminalFragment" />
@@ -58,7 +58,7 @@
 
     <fragment
         android:id="@+id/terminalFragment"
-        android:name="com.ma7moud3ly.microterminal.fragments.TerminalFragment"
+        android:name="micro.repl.ma7moud3ly.fragments.TerminalFragment"
         android:label="TerminalFragment" />
 
 </navigation>
