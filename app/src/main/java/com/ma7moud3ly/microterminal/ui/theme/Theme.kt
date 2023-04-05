@@ -2,30 +2,26 @@ package com.ma7moud3ly.microterminal.ui.theme
 
 import android.app.Activity
 import android.os.Build
+import android.view.View
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
+    primary = Color.White,
     secondary = PurpleGrey80,
     tertiary = Pink80
 )
 
 private val LightColorScheme = lightColorScheme(
     primary = Color.Black,
-    secondary = black,
+    secondary = PurpleGrey80,
     tertiary = Pink40
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
@@ -41,6 +37,7 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun AppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+    darkStatusBar: Boolean = false,
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
@@ -54,18 +51,28 @@ fun AppTheme(
         else -> LightColorScheme
     }
     val view = LocalView.current
-    val activity = view.context as Activity
-    if (!view.isInEditMode) {
-        SideEffect {
-            activity.window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(activity.window, view).isAppearanceLightStatusBars =
-                darkTheme
-        }
-    }
+    ConfigureStatusBar(view, darkStatusBar || darkTheme)
 
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
         content = content
     )
+}
+
+@Composable
+private fun ConfigureStatusBar(
+    view: View,
+    darkTheme: Boolean
+) {
+    if (!view.isInEditMode) {
+        val activity = view.context as Activity
+        SideEffect {
+            activity.window.statusBarColor =
+                if (darkTheme) Color.Black.toArgb() else Color.White.toArgb()
+            WindowCompat.getInsetsController(
+                activity.window, view
+            ).isAppearanceLightStatusBars = darkTheme.not()
+        }
+    }
 }

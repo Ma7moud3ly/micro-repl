@@ -1,17 +1,22 @@
-package com.ma7moud3ly.microterminal.util
+package com.ma7moud3ly.microterminal.managers
 
 import android.util.Log
 import org.json.JSONArray
 
 
 class FileManager(
-    private val usbManager: UsbManager,
+    private val deviceManager: DeviceManager,
     private val onUpdateFiles: ((files: List<MicroFile>) -> Unit)? = null
 ) {
+
+    companion object {
+        private const val TAG = "FileManager"
+    }
+
     var path = ""
     fun listDir() {
         val code = CommandsManager.iListDir(path)
-        usbManager.writeSync(code, onResponse = { response ->
+        deviceManager.writeSync(code, onResponse = { response ->
             val result = CommandsManager.extractResult(response, default = "[]")
             Log.i(TAG, "response $response")
             Log.i(TAG, "result $result")
@@ -22,7 +27,7 @@ class FileManager(
     fun remove(file: MicroFile) {
         val code = if (file.isFile) CommandsManager.removeFile(file)
         else CommandsManager.removeDirectory(file)
-        usbManager.writeSync(code, onResponse = { response ->
+        deviceManager.writeSync(code, onResponse = { response ->
             val result = CommandsManager.extractResult(response, default = "[]")
             Log.i(TAG, "response $response")
             Log.i(TAG, "result $result")
@@ -33,7 +38,7 @@ class FileManager(
     fun new(file: MicroFile) {
         val code = if (file.isFile) CommandsManager.makeFile(file)
         else CommandsManager.makeDirectory(file)
-        usbManager.writeSync(code, onResponse = { response ->
+        deviceManager.writeSync(code, onResponse = { response ->
             val result = CommandsManager.extractResult(response, default = "[]")
             Log.i(TAG, "response $response")
             Log.i(TAG, "result $result")
@@ -43,7 +48,7 @@ class FileManager(
 
     fun rename(src: MicroFile, dst: MicroFile) {
         val code = CommandsManager.rename(src, dst)
-        usbManager.writeSync(code, onResponse = { response ->
+        deviceManager.writeSync(code, onResponse = { response ->
             val result = CommandsManager.extractResult(response, default = "[]")
             Log.i(TAG, "response $response")
             Log.i(TAG, "result $result")
@@ -53,8 +58,11 @@ class FileManager(
 
     fun read(path: String, onRead: (content: String) -> Unit) {
         val code = CommandsManager.readFile(path)
-        usbManager.writeSync(code, onResponse = { response ->
-            val result = CommandsManager.extractResult(response, default = "[]")
+        deviceManager.writeSync(code, onResponse = { response ->
+            val result = CommandsManager.extractResult(
+                response, default = ""
+            ).replace("\r\n", "\n")
+
             Log.i(TAG, "response $response")
             Log.i(TAG, "result $result")
             onRead.invoke(result)
@@ -62,8 +70,9 @@ class FileManager(
     }
 
     fun write(path: String, content: String, onSave: () -> Unit) {
-        val code = CommandsManager.writeFile(path, content)
-        usbManager.writeSync(code, onResponse = { response ->
+        val code = CommandsManager.writeFile(path, content.replace("\n", "\r\n"))
+        Log.i(TAG, "code $code")
+        deviceManager.writeSync(code, onResponse = { response ->
             val result = CommandsManager.extractResult(response, default = "[]")
             Log.i(TAG, "response $response")
             Log.i(TAG, "result $result")
@@ -94,9 +103,7 @@ class FileManager(
         onUpdateFiles?.invoke(list)
     }
 
-    companion object {
-        private const val TAG = "FileManager"
-    }
+
 }
 
 data class MicroFile(

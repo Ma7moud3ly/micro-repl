@@ -36,5 +36,18 @@
     <string name="explorer_refresh">Refresh</string>
     <string name="explorer_rename_label">Rename %s</string>
 
-
+    <string name="terminal_run">Run</string>
+    <string name="terminal_terminate">Terminate</string>
+    <string name="terminal_terminate_msg">Terminate Execution</string>
+    <string name="terminal_reset">Reset</string>
+    <string name="terminal_reset_msg">Reset Device</string>
+    <string name="terminal_soft_reset">Soft reset</string>
+    <string name="terminal_soft_reset_msg">Reset Interpreter</string>
+    <string name="terminal_clear">Clear</string>
+    <string name="terminal_new_line">New line</string>
+    <string name="terminal_up">Undo</string>
+    <string name="terminal_down">Redo</string>
+    <string name="terminal_zoom_in">Zoom in</string>
+    <string name="terminal_zoom_out">Zoom out</string>
+    <string name="terminal_dark_mode">Dark mode</string>
 </resources>

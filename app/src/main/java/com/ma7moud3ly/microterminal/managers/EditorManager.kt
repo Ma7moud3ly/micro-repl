@@ -1,4 +1,4 @@
-package com.ma7moud3ly.microterminal.util
+package com.ma7moud3ly.microterminal.managers
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -17,7 +17,8 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import com.ma7moud3ly.microterminal.R
-import com.ma7moud3ly.microterminal.fragments.ScriptsActivity
+import com.ma7moud3ly.microterminal.fragments.ScriptsFragment
+import com.ma7moud3ly.microterminal.utils.ThemeMode
 import java.io.File
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -28,7 +29,7 @@ class EditorManager(
     private val lines: TextView,
     private val title: TextView,
     private val editorMode: EditorMode,
-    private val scriptPath: String,
+    private val remoteScriptPath: String,
     private val onRemoteOpen: ((path: String) -> Unit)? = null,
     private val onRemoteSave: ((path: String, content: String) -> Unit)? = null,
     private val afterEdit: (() -> Unit)? = null
@@ -43,7 +44,7 @@ class EditorManager(
     private var mBaseRatio = 0f
 
     private var actionAfterSave = -1
-    private var isDark: Boolean = false
+    var remoteContentCached = ""
 
     var scriptFile: File? = null
     var onKeyboardVisibilityChanges: ((visible: Boolean) -> Unit)? = null
@@ -56,13 +57,13 @@ class EditorManager(
     }
 
     private fun initScript() {
-        if (scriptPath.isNotEmpty()) scriptFile = File(scriptPath)
+        if (remoteScriptPath.isNotEmpty()) scriptFile = File(remoteScriptPath)
         scriptFile?.let {
             title.text = it.name
             if (editorMode == EditorMode.LOCAL) {
                 val content = scriptsManager.read(it)
                 editor.setText(content)
-            } else onRemoteOpen?.invoke(scriptPath)
+            } else onRemoteOpen?.invoke(remoteScriptPath)
         }
     }
 
@@ -193,14 +194,14 @@ class EditorManager(
 
         if (saveNew()) scriptsManager.showDoYouWantDialog(
             msg = context.getString(R.string.editor_msg_save),
-            isDark = isDark,
             onYes = { saveFileAs() },
-            onNo = { afterSave() }
+            onNo = { afterSave() },
+            isDark = ThemeMode.isDark(activity),
         ) else if (saveRemotely() || saveExisting()) scriptsManager.showDoYouWantDialog(
             msg = context.getString(R.string.editor_msg_save_changes),
-            isDark = isDark,
             onYes = { save() },
-            onNo = { afterSave() }
+            onNo = { afterSave() },
+            isDark = ThemeMode.isDark(activity),
         ) else afterSave()
     }
 
@@ -211,8 +212,9 @@ class EditorManager(
     }
 
     private fun saveRemotely(): Boolean {
-        return editorMode == EditorMode.REMOTE && scriptFile != null
-        //&& editor.text.toString() != scriptsManager.read(scriptFile!!)
+        return editorMode == EditorMode.REMOTE && scriptFile != null &&
+                editor.text.toString() != remoteContentCached
+
     }
 
     private fun saveNew(): Boolean {
@@ -229,10 +231,11 @@ class EditorManager(
                 Toast.makeText(context, "$name saved", Toast.LENGTH_SHORT).show()
             }
             afterSave()
-        } else onRemoteSave?.invoke(
-            scriptPath,
-            editor.text.toString()
-        )
+        } else {
+            val content = editor.text.toString()
+            remoteContentCached = content
+            onRemoteSave?.invoke(remoteScriptPath, content)
+        }
     }
 
 
@@ -252,7 +255,7 @@ class EditorManager(
     }
 
     private fun scriptList() {
-        val intent = Intent(context, ScriptsActivity::class.java)
+        val intent = Intent(context, ScriptsFragment::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         context.startActivity(intent)
         afterEdit?.invoke()
@@ -295,9 +298,7 @@ class EditorManager(
 
 
     fun toggleDarkMode() {
-        isDark = isDark.not()
-        setEditorSettings()
-        activity.recreate()
+        ThemeMode.toggleMode(activity)
     }
 
 
@@ -308,10 +309,11 @@ class EditorManager(
     private fun setEditorSettings() {
         val sharedPrefEditor = activity.getPreferences(Context.MODE_PRIVATE).edit()
         sharedPrefEditor.putInt("font_size", fontSize)
-        sharedPrefEditor.putBoolean("dark_mode", isDark)
         sharedPrefEditor.putBoolean("show_lines", showLines)
-        scriptFile?.let {
-            sharedPrefEditor.putString("script", it.absolutePath)
+        if (editorMode == EditorMode.LOCAL) {
+            scriptFile?.let {
+                sharedPrefEditor.putString("script", it.absolutePath)
+            }
         }
         sharedPrefEditor.apply()
     }
@@ -321,7 +323,6 @@ class EditorManager(
         val sharedPref = activity.getPreferences(Context.MODE_PRIVATE)
         fontSize = sharedPref.getInt("font_size", 12)
         showLines = sharedPref.getBoolean("show_lines", true)
-        isDark = sharedPref.getBoolean("dark_mode", false)
         showLines(showLines)
         lines.setTextSize(TypedValue.COMPLEX_UNIT_DIP, fontSize.toFloat())
         editor.setTextSize(TypedValue.COMPLEX_UNIT_DIP, fontSize.toFloat())
@@ -343,21 +344,6 @@ class EditorManager(
         const val NEW = 2
         const val SAV = 3
         const val END = 4
-
-        fun initDarkMode(activity: Activity) {
-            if (isDark(activity)) {
-                //AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-                activity.setTheme(R.style.AppTheme_Dark)
-            } else {
-                //AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-                activity.setTheme(R.style.AppTheme)
-            }
-        }
-
-        fun isDark(activity: Activity): Boolean {
-            val sharedPref = activity.getPreferences(Context.MODE_PRIVATE)
-            return sharedPref.getBoolean("dark_mode", false)
-        }
     }
 }
 

@@ -6,17 +6,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
-import com.ma7moud3ly.microterminal.HomeActivity
+import androidx.navigation.fragment.findNavController
+import com.ma7moud3ly.microterminal.managers.EditorMode
+import com.ma7moud3ly.microterminal.managers.ExplorerUiEvents
+import com.ma7moud3ly.microterminal.managers.MicroFile
 import com.ma7moud3ly.microterminal.ui.FileManagerScreen
 import com.ma7moud3ly.microterminal.ui.theme.AppTheme
-import com.ma7moud3ly.microterminal.util.EditorMode
-import com.ma7moud3ly.microterminal.util.ExplorerUiEvents
-import com.ma7moud3ly.microterminal.util.FileManager
-import com.ma7moud3ly.microterminal.util.MicroFile
 import java.io.File
 
 class ExplorerFragment : BaseFragment(), ExplorerUiEvents {
-    private var fileManager: FileManager? = null
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -24,7 +22,7 @@ class ExplorerFragment : BaseFragment(), ExplorerUiEvents {
     ): View {
         return ComposeView(requireContext()).apply {
             setContent {
-                AppTheme {
+                AppTheme(darkTheme = isDarkMode) {
                     FileManagerScreen(
                         viewModel = viewModel,
                         uiEvents = this@ExplorerFragment
@@ -38,7 +36,7 @@ class ExplorerFragment : BaseFragment(), ExplorerUiEvents {
         super.onViewCreated(view, savedInstanceState)
 
         onConnectionChanges = { connected ->
-            if (connected.not()) dismiss()
+            if (connected.not()) findNavController().popBackStack()
         }
 
         onUiReady {
@@ -47,10 +45,6 @@ class ExplorerFragment : BaseFragment(), ExplorerUiEvents {
     }
 
     private fun initFileManager() {
-        val usbManager = (requireActivity() as HomeActivity).usbManager
-        fileManager = FileManager(usbManager, onUpdateFiles = {
-            viewModel.files.value = it
-        })
         fileManager?.path = viewModel.root.value
         fileManager?.listDir()
     }
@@ -84,10 +78,10 @@ class ExplorerFragment : BaseFragment(), ExplorerUiEvents {
 
     override fun onEdit(file: MicroFile) {
         Log.i(TAG, "onEdit - $file")
-        viewModel.editorFile = file.fullPath
-        (requireActivity() as HomeActivity).openEditor(
-            editorMode = EditorMode.REMOTE
-        )
+        viewModel.scriptPath.value = file.fullPath
+        viewModel.editorMode = EditorMode.REMOTE
+        val action = ExplorerFragmentDirections.actionExplorerFragmentToEditorFragment()
+        navigate(action)
     }
 
     override fun onNew(file: MicroFile) {
@@ -102,7 +96,7 @@ class ExplorerFragment : BaseFragment(), ExplorerUiEvents {
 
     override fun onUp() {
         val root = viewModel.root.value
-        if (root.isEmpty()) dismiss()
+        if (root.isEmpty()) findNavController().popBackStack()
         val newRoot = File(root).parent ?: ""
         Log.i(TAG, "onUp from $root to $newRoot")
         viewModel.root.value = newRoot

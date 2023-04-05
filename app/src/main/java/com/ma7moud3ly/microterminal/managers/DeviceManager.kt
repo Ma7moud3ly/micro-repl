@@ -1,4 +1,4 @@
-package com.ma7moud3ly.microterminal.util
+package com.ma7moud3ly.microterminal.managers
 
 import android.annotation.SuppressLint
 import android.app.PendingIntent
@@ -20,19 +20,24 @@ import com.hoho.android.usbserial.driver.UsbSerialProber
 import com.hoho.android.usbserial.util.SerialInputOutputManager
 
 
-class UsbManager(
+class DeviceManager(
     private val context: Context,
     private val onStatusChanges: ((status: ConnectionStatus) -> Unit)? = null,
     private val onReceiveData: ((data: String) -> Unit)? = null,
+    private val onReset: (() -> Unit)? = null
 ) : SerialInputOutputManager.Listener, DefaultLifecycleObserver {
 
     companion object {
-        private const val TAG = "UsbManager"
+        private const val TAG = "DeviceManager"
         private const val ACTION_USB_PERMISSION = "USB_PERMISSION"
         const val NO_DEVICES = 0
         const val CANT_OPEN_PORT = 1
         const val CONNECTION_LOST = 2
         const val PERMISSION_DENIED = 3
+
+        private const val READING_TIMEOUT = 5000
+        private const val WRITTING_TIMEOUT = 2000
+        private const val MICROPYTHON_RESET_MSG = "MPY: soft reboot"
     }
 
     private val activity = context as AppCompatActivity
@@ -50,9 +55,6 @@ class UsbManager(
         9114, //Adafruit Industries LLC
         11914 //Raspberry Pi (Trading) Limited
     )
-
-    private val readingTimeOut = 5000
-    private val writtingTimeOut = 2000
 
 
     /**
@@ -91,7 +93,6 @@ class UsbManager(
 
     private val isPortOpen: Boolean get() = port?.isOpen == true
 
-
     private var onReadSync: (() -> Unit)? = null
     private var syncData = StringBuilder("")
     private var isReadSync = false
@@ -111,7 +112,7 @@ class UsbManager(
         }
         val cmd = "\u000D" + code + "\u000D"
         try {
-            port?.write(cmd.toByteArray(Charsets.UTF_8), writtingTimeOut)
+            port?.write(cmd.toByteArray(Charsets.UTF_8), WRITTING_TIMEOUT)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -119,13 +120,13 @@ class UsbManager(
 
     fun write(code: String, onWrite: (() -> Unit)? = null) {
         val cmd = "\u000D" + code + "\u000D"
-        port?.write(cmd.toByteArray(Charsets.UTF_8), writtingTimeOut)
+        port?.write(cmd.toByteArray(Charsets.UTF_8), WRITTING_TIMEOUT)
         onWrite?.invoke()
     }
 
     fun read(
         bufferSize: Int = 50,
-        timeout: Int = readingTimeOut,
+        timeout: Int = READING_TIMEOUT,
         sep: String = "\n",
         onRead: ((data: String) -> Unit)? = null
     ) {
@@ -151,11 +152,6 @@ class UsbManager(
         return dst
     }
 
-    fun terminateExecution(onWrite: (() -> Unit)? = null) {
-        val cmd = "\u0003"
-        port?.write(cmd.toByteArray(Charsets.UTF_8), readingTimeOut)
-        onWrite?.invoke()
-    }
 
     fun detectUsbDevices() {
         usbManager = context.getSystemService(Context.USB_SERVICE) as UsbManager
@@ -208,7 +204,6 @@ class UsbManager(
     }
 
     private fun connectToSerial(usbDevice: UsbDevice) {
-
         val allDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(usbManager)
         if (allDrivers.isNullOrEmpty()) return
         Log.i(TAG, "allDrivers - $allDrivers")
@@ -224,7 +219,13 @@ class UsbManager(
         port = ports[0]
         Log.i(TAG, "port - $port")
         port?.open(connection)
-        port?.dtr = true
+        try {
+            port?.dtr = true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            throwError(CANT_OPEN_PORT)
+            return
+        }
         port?.setParameters(115200, 8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE)
         serialInputOutputManager = SerialInputOutputManager(port, this)
         serialInputOutputManager?.start()
@@ -242,7 +243,6 @@ class UsbManager(
         } else throwError(CANT_OPEN_PORT)
 
         Log.i(TAG, "is open ${port?.isOpen}")
-
     }
 
 
@@ -254,8 +254,20 @@ class UsbManager(
             Log.i(TAG, "isDone = $isDone")
             if (isDone) onReadSync?.invoke()
         } else {
+            Log.i(TAG, "onNewData - $data")
             if (data.isEmpty()) return
-            onReceiveData?.invoke(data)
+            else if (data.contains(MICROPYTHON_RESET_MSG)) {
+                onReset?.invoke()
+                return
+            }
+            //remove >>> at end
+            if (data.endsWith("\n>>>")) onReceiveData?.invoke(
+                data.substring(
+                    startIndex = 0,
+                    endIndex = data.length - 4
+                )
+            )
+            else onReceiveData?.invoke(data)
         }
     }
 

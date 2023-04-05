@@ -5,11 +5,11 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.ma7moud3ly.microterminal.HomeActivity
+import androidx.activity.OnBackPressedCallback
+import androidx.navigation.fragment.findNavController
 import com.ma7moud3ly.microterminal.databinding.FragmentEditorBinding
-import com.ma7moud3ly.microterminal.util.EditorManager
-import com.ma7moud3ly.microterminal.util.EditorMode
-import com.ma7moud3ly.microterminal.util.FileManager
+import com.ma7moud3ly.microterminal.managers.EditorManager
+import com.ma7moud3ly.microterminal.managers.EditorMode
 
 class EditorFragment : BaseFragment() {
     companion object {
@@ -17,7 +17,6 @@ class EditorFragment : BaseFragment() {
     }
 
     private var editorManager: EditorManager? = null
-    private var fileManager: FileManager? = null
     private lateinit var binding: FragmentEditorBinding
 
     override fun onCreateView(
@@ -32,43 +31,45 @@ class EditorFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         onUiReady { initEditor() }
-
         onConnectionChanges = { connected ->
             binding.run.root.visibility = if (connected && editorManager?.canRun == true)
                 View.VISIBLE else View.GONE
             Log.i(TAG, "onConnectionChanges - connected = $connected")
         }
 
-        onBackPressed = {
-            editorManager?.checkSave(action = EditorManager.END)
-        }
+        requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner, object : OnBackPressedCallback(enabled = true) {
+                override fun handleOnBackPressed() {
+                    editorManager?.checkSave(action = EditorManager.END)
+                }
+            }
+        )
     }
 
     private fun initEditor() {
-
-
-        if (viewModel.editorMode == EditorMode.REMOTE) {
-            val usbManager = (requireActivity() as HomeActivity).usbManager
-            fileManager = FileManager(usbManager)
-        }
+        Log.i(TAG, "viewModel.editorMode = ${viewModel.editorMode}")
 
         binding.run.root.visibility = View.GONE
         editorManager = EditorManager(
             requireContext(),
             editorMode = viewModel.editorMode,
-            scriptPath = viewModel.editorFile,
+            remoteScriptPath = if (viewModel.editorMode == EditorMode.REMOTE)
+                viewModel.scriptPath.value else "",
             editor = binding.editor,
             lines = binding.lines,
             title = binding.scriptTitle,
             onRemoteOpen = onRemoteOpen,
             onRemoteSave = onRemoteSave,
-            afterEdit = { dismiss() }
+            afterEdit = { findNavController().popBackStack() }
         )
 
         val canRun = (editorManager?.canRun == true) && viewModel.isConnected
         binding.run.root.visibility = if (canRun) View.VISIBLE else View.GONE
-        binding.run.root.setOnClickListener {
 
+        binding.run.root.setOnClickListener {
+            viewModel.script = binding.editor.text.toString().trim().replace("\n", "\\r\\n")
+            val action = EditorFragmentDirections.actionEditorFragmentToTerminalFragment()
+            navigate(action)
         }
 
         editorManager?.onKeyboardVisibilityChanges = { visible ->
@@ -112,21 +113,22 @@ class EditorFragment : BaseFragment() {
         Log.i(TAG, "onRemoteOpen  = $path")
         if (viewModel.isConnected) {
             fileManager?.read(path, onRead = { content ->
+                editorManager?.remoteContentCached = content
                 requireActivity().runOnUiThread {
                     binding.editor.setText(content)
                 }
             })
-        } else dismiss()
+        } else findNavController().popBackStack()
     }
 
     private val onRemoteSave: (String, String) -> Unit = { path, content ->
         Log.v(TAG, "isConnected = ${viewModel.isConnected}")
         Log.i(TAG, "onRemoteSave $path | $content")
         if (viewModel.isConnected) {
-            fileManager?.write(path, content.replace("\n", "\\n"), onSave = {
+            fileManager?.write(path, content, onSave = {
                 editorManager?.afterSave()
             })
-        } else dismiss()
+        } else findNavController().popBackStack()
     }
 
 }

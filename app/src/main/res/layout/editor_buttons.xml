@@ -4,7 +4,7 @@
     android:layout_gravity="center"
     android:focusable="true"
     android:focusableInTouchMode="true"
-    android:gravity="center"
+    android:gravity="end"
     android:orientation="horizontal"
     android:padding="5dp"
     android:weightSum="9">

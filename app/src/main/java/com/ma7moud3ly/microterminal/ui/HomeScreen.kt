@@ -11,10 +11,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
@@ -27,14 +24,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.ma7moud3ly.microterminal.MainViewModel
 import com.ma7moud3ly.microterminal.R
-import com.ma7moud3ly.microterminal.fragments.AppViewModel
+import com.ma7moud3ly.microterminal.managers.ConnectionStatus
+import com.ma7moud3ly.microterminal.managers.DeviceManager
+import com.ma7moud3ly.microterminal.managers.HomeUiEvents
+import com.ma7moud3ly.microterminal.managers.MicroDevice
 import com.ma7moud3ly.microterminal.ui.theme.ProgressView
 import com.ma7moud3ly.microterminal.ui.theme.fontConsolas
-import com.ma7moud3ly.microterminal.util.ConnectionStatus
-import com.ma7moud3ly.microterminal.util.HomeUiEvents
-import com.ma7moud3ly.microterminal.util.MicroDevice
-import com.ma7moud3ly.microterminal.util.UsbManager
+import com.ma7moud3ly.microterminal.ui.theme.grey100
 
 private const val TAG = "HomeScreen"
 
@@ -52,7 +50,7 @@ fun HomeScreenPreview() {
 
 @Composable
 fun HomeScreen(
-    viewModel: AppViewModel,
+    viewModel: MainViewModel,
     uiEvents: HomeUiEvents? = null
 ) {
     val status = viewModel.status.collectAsState()
@@ -73,10 +71,10 @@ private fun Content(
                         Log.e(TAG, "OnFailure")
                         val msg = status.msg
                         when (status.code) {
-                            UsbManager.CONNECTION_LOST -> Log.v(TAG, "CONNECTION_LOST - $msg")
-                            UsbManager.CANT_OPEN_PORT -> Log.v(TAG, "CANT_OPEN_PORT")
-                            UsbManager.NO_DEVICES -> Log.v(TAG, "NO_DEVICES")
-                            UsbManager.PERMISSION_DENIED -> Log.v(TAG, "PERMISSION_DENIED")
+                            DeviceManager.CONNECTION_LOST -> Log.v(TAG, "CONNECTION_LOST - $msg")
+                            DeviceManager.CANT_OPEN_PORT -> Log.v(TAG, "CANT_OPEN_PORT")
+                            DeviceManager.NO_DEVICES -> Log.v(TAG, "NO_DEVICES")
+                            DeviceManager.PERMISSION_DENIED -> Log.v(TAG, "PERMISSION_DENIED")
                         }
                         DeviceNotConnected(onClick = {
                             uiEvents?.onFindDevices()
@@ -95,6 +93,11 @@ private fun Content(
                     is ConnectionStatus.OnConnected -> {
                         Log.w(TAG, "OnConnected")
                         DeviceConnected(device = status.microDevice)
+                        SectionHomeCommands(
+                            onReset = { uiEvents?.onReset() },
+                            onSoftReset = { uiEvents?.onSoftReset() },
+                            onTerminate = { uiEvents?.onTerminate() }
+                        )
                         HomeButtons(
                             isConnected = true,
                             uiEvents = uiEvents
@@ -237,6 +240,78 @@ private fun DeviceNotConnected(onClick: () -> Unit) {
     }
 }
 
+/**
+ * Home Screen Commands
+ * reset / restart / terminate
+ */
+
+@Composable
+private fun SectionHomeCommands(
+    onReset: () -> Unit,
+    onSoftReset: () -> Unit,
+    onTerminate: () -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        modifier = Modifier
+            .wrapContentWidth()
+            .wrapContentHeight()
+            .padding(horizontal = 16.dp)
+
+    ) {
+        CommandButton(
+            title = R.string.terminal_reset,
+            icon = R.drawable.refresh,
+            color = grey100,
+            onClick = onReset
+        )
+        CommandButton(
+            title = R.string.terminal_terminate,
+            icon = R.drawable.terminate,
+            color = grey100,
+            onClick = onTerminate
+        )
+        CommandButton(
+            title = R.string.terminal_soft_reset,
+            icon = R.drawable.soft_reset,
+            color = grey100,
+            onClick = onSoftReset
+        )
+    }
+}
+
+@Composable
+private fun CommandButton(
+    @StringRes title: Int,
+    @DrawableRes icon: Int,
+    color: Color = Color.White,
+    onClick: () -> Unit
+) {
+    val label = stringResource(id = title)
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        modifier = Modifier
+            .wrapContentWidth()
+            .background(color = color, shape = RoundedCornerShape(8.dp))
+            .clickable { onClick.invoke() }
+            .padding(horizontal = 8.dp, vertical = 2.dp)
+
+    ) {
+        Text(text = label, style = MaterialTheme.typography.labelSmall)
+        Icon(
+            painter = painterResource(id = icon),
+            contentDescription = label
+        )
+    }
+}
+
+/**
+ * Home Buttons
+ * Terminal / Script / Explorer / Editor
+ */
+
 @Composable
 private fun ColumnScope.HomeButtons(
     isConnected: Boolean,
@@ -244,8 +319,7 @@ private fun ColumnScope.HomeButtons(
 ) {
     Box(
         modifier = Modifier
-            .weight(1f)
-            .background(Color.White),
+            .weight(1f),
         contentAlignment = if (isConnected) Alignment.Center
         else Alignment.TopCenter
     ) {

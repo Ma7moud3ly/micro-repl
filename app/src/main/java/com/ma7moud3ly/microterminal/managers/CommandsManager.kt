@@ -1,4 +1,4 @@
-package com.ma7moud3ly.microterminal.util
+package com.ma7moud3ly.microterminal.managers
 
 object CommandsManager {
 
@@ -19,13 +19,14 @@ object CommandsManager {
     }
 
     fun readFile(path: String): String {
-        return "f = open('$path');content = f.read();f.close();" +
+        return "f = open('$path',encoding='utf-8');content = f.read();f.close();" +
                 "print('$RESULT_BEGIN',content,'$RESULT_END');$END_STATEMENT"
 
     }
 
     fun writeFile(path: String, content: String): String {
-        return "f = open('$path','w');x = f.write('$content');f.close();$END_STATEMENT"
+        return "content = '''$content''';f = open('$path','w',encoding='utf-8');" +
+                "f.write(content);f.close();$END_STATEMENT"
     }
 
     fun removeFile(file: MicroFile): String {

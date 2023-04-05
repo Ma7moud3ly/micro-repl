@@ -1,4 +1,4 @@
-package com.ma7moud3ly.microterminal.util
+package com.ma7moud3ly.microterminal.managers
 
 import android.app.AlertDialog
 import android.content.Context

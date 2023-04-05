@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/homeFragment">
+
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.ma7moud3ly.microterminal.fragments.HomeFragment"
+        android:label="HomeFragment">
+        <action
+            android:id="@+id/action_homeFragment_to_editorFragment"
+            app:destination="@id/editorFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_explorerFragment"
+            app:destination="@id/explorerFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_scriptsFragment"
+            app:destination="@id/scriptsFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_terminalFragment"
+            app:destination="@id/terminalFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/editorFragment"
+        android:name="com.ma7moud3ly.microterminal.fragments.EditorFragment"
+        android:label="EditorFragment" >
+        <action
+            android:id="@+id/action_editorFragment_to_terminalFragment"
+            app:destination="@id/terminalFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/explorerFragment"
+        android:name="com.ma7moud3ly.microterminal.fragments.ExplorerFragment"
+        android:label="ExplorerFragment" >
+        <action
+            android:id="@+id/action_explorerFragment_to_editorFragment"
+            app:destination="@id/editorFragment" />
+        <action
+            android:id="@+id/action_explorerFragment_to_terminalFragment"
+            app:destination="@id/terminalFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/scriptsFragment"
+        android:name="com.ma7moud3ly.microterminal.fragments.ScriptsFragment"
+        android:label="ScriptsFragment" >
+        <action
+            android:id="@+id/action_scriptsFragment_to_terminalFragment"
+            app:destination="@id/terminalFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/terminalFragment"
+        android:name="com.ma7moud3ly.microterminal.fragments.TerminalFragment"
+        android:label="TerminalFragment" />
+
+</navigation>

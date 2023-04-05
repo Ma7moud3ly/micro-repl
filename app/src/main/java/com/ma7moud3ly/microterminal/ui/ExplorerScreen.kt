@@ -8,6 +8,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,14 +22,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.ma7moud3ly.microterminal.MainViewModel
 import com.ma7moud3ly.microterminal.R
-import com.ma7moud3ly.microterminal.fragments.AppViewModel
+import com.ma7moud3ly.microterminal.managers.ExplorerUiEvents
+import com.ma7moud3ly.microterminal.managers.MicroFile
 import com.ma7moud3ly.microterminal.ui.theme.LogCompositions
 import com.ma7moud3ly.microterminal.ui.theme.fileColor
 import com.ma7moud3ly.microterminal.ui.theme.folderColor
 import com.ma7moud3ly.microterminal.ui.theme.grey100
-import com.ma7moud3ly.microterminal.util.ExplorerUiEvents
-import com.ma7moud3ly.microterminal.util.MicroFile
 
 private const val TAG = "FileManagerScreen"
 private val iconSize = 80.dp
@@ -41,7 +43,7 @@ fun FileManagerScreenPreview() {
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun FileManagerScreen(
-    viewModel: AppViewModel,
+    viewModel: MainViewModel,
     uiEvents: ExplorerUiEvents? = null
 ) {
     val root by remember { mutableStateOf(viewModel.root) }
@@ -95,8 +97,7 @@ private fun ColumnScope.FilesList(
             .fillMaxWidth()
             .weight(1f)
             .padding(8.dp)
-            .fillMaxHeight()
-            .background(color = Color.White),
+            .fillMaxHeight(),
         columns = GridCells.Adaptive(iconSize),
         verticalArrangement = Arrangement.spacedBy(4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -135,7 +136,6 @@ private fun Header(
     Column {
         Row(
             Modifier
-                .background(Color.White)
                 .fillMaxWidth()
                 .padding(horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -144,7 +144,7 @@ private fun Header(
             Text(
                 text = "/${path()}", maxLines = 1,
                 style = MaterialTheme.typography.labelLarge,
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.primary,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
                     .weight(1f)
@@ -170,13 +170,13 @@ private fun Header(
 
             IconHeader(title = R.string.explorer_refresh,
                 icon = R.drawable.refresh,
-                tint = Color.Black,
+                tint = MaterialTheme.colorScheme.primary,
                 onClick = { uiEvents?.onRefresh() }
             )
 
             IconHeader(title = R.string.explorer_up,
                 icon = R.drawable.arrow_up,
-                tint = Color.Black,
+                tint = MaterialTheme.colorScheme.primary,
                 onClick = { uiEvents?.onUp() }
             )
 
@@ -272,7 +272,9 @@ private fun FileOptionsDialog(
     var showRenameFileDialog by remember { mutableStateOf(false) }
     var selectedFile by remember { mutableStateOf<MicroFile?>(null) }
 
-    if (isVisible()) AlertDialog(
+    if (isVisible()) AlertDialog(modifier = Modifier.background(
+        color = Color.White
+    ),
         onDismissRequest = { onDismiss.invoke() }
     ) {
         val microFile = file()
@@ -324,11 +326,7 @@ private fun FileOptionsList(
     onRemove: () -> Unit,
     onRename: () -> Unit,
 ) {
-    Column(
-        modifier = Modifier
-            .background(color = Color.White)
-            .fillMaxWidth()
-    ) {
+    Column(modifier = Modifier.fillMaxWidth()) {
         if (file.canRun) ItemFileOption(
             title = R.string.explorer_run,
             onClick = onRun
@@ -365,12 +363,13 @@ private fun ItemFileOption(
             .clickable { onClick.invoke() }
             .fillMaxWidth()
             .wrapContentHeight()
-            .background(Color.White)
 
     ) {
         Text(
             stringResource(id = title),
-            style = MaterialTheme.typography.labelLarge,
+            style = MaterialTheme.typography.labelLarge.copy(
+                color = Color.Black
+            ),
             modifier = Modifier.padding(
                 horizontal = 16.dp,
                 vertical = 8.dp
@@ -380,7 +379,7 @@ private fun ItemFileOption(
             Modifier
                 .fillMaxWidth()
                 .height(1.dp)
-                .background(Color.Black)
+                .background(colorResource(id = R.color.light_blue))
         )
     }
 }
@@ -398,6 +397,7 @@ private fun FileDialog(
     onCancel: () -> Unit,
 ) {
     if (isVisible()) AlertDialog(
+        modifier = Modifier.background(color = MaterialTheme.colorScheme.secondary),
         onDismissRequest = { onCancel.invoke() }
     ) {
         FileDialogContent(
@@ -418,7 +418,7 @@ private fun FileDialogContent(
         stringResource(id = R.string.explorer_create) + " " + stringResource(
             id = if (file.isFile) R.string.explorer_new_file
             else R.string.explorer_new_folder
-        ) + "at /" + file.path
+        ) + " @ /" + file.path
     } else stringResource(
         id = R.string.explorer_rename_label, file.name
     )
@@ -431,21 +431,24 @@ private fun FileDialogContent(
     Column(
         Modifier
             .fillMaxWidth()
-            .background(color = Color.White)
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             msg,
-            style = MaterialTheme.typography.labelMedium,
+            style = MaterialTheme.typography.labelMedium.copy(color = Color.Black),
             modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center, maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
-        TextField(
+        BasicTextField(
             value = fileName,
             onValueChange = { fileName = it },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(shape = RoundedCornerShape(8.dp), color = grey100)
+                .padding(vertical = 16.dp, horizontal = 8.dp)
         )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(
@@ -459,7 +462,7 @@ private fun FileDialogContent(
                     onOk.invoke(newFile)
                 },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Black
+                    containerColor = MaterialTheme.colorScheme.primary
                 ),
                 modifier = Modifier.weight(0.4f)
             ) {
@@ -471,7 +474,7 @@ private fun FileDialogContent(
             Button(
                 onClick = onCancel,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Black
+                    containerColor = MaterialTheme.colorScheme.primary
                 ),
                 modifier = Modifier.weight(0.4f)
             ) {
