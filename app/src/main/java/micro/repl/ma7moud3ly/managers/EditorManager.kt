@@ -1,3 +1,10 @@
+/*
+ * Created by Mahmoud Aly - engma7moud3ly@gmail.com
+ * Project Micro REPL - https://github.com/Ma7moud3ly/micro-repl
+ * Copyright (c) 2023 . MIT license.
+ *
+ */
+
 package micro.repl.ma7moud3ly.managers
 
 import android.annotation.SuppressLint
@@ -23,6 +30,11 @@ import java.io.File
 import kotlin.math.pow
 import kotlin.math.sqrt
 
+/**
+ * This class manages our micro text editor
+ * to handle saving/retrieving scripts locally
+ *  or in micro device storages..
+ */
 class EditorManager(
     private val context: Context,
     private val editor: EditText,

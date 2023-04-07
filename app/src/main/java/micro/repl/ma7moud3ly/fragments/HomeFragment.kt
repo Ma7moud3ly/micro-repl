@@ -1,5 +1,14 @@
+/*
+ * Created by Mahmoud Aly - engma7moud3ly@gmail.com
+ * Project Micro REPL - https://github.com/Ma7moud3ly/micro-repl
+ * Copyright (c) 2023 . MIT license.
+ *
+ */
+
 package micro.repl.ma7moud3ly.fragments
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -12,6 +21,7 @@ import micro.repl.ma7moud3ly.ui.HomeScreen
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.utils.EditorMode
 import micro.repl.ma7moud3ly.utils.HomeUiEvents
+
 
 class HomeFragment : BaseFragment(), HomeUiEvents {
 
@@ -47,6 +57,17 @@ class HomeFragment : BaseFragment(), HomeUiEvents {
         Log.i(TAG, "onOpenExplorer")
         val action = HomeFragmentDirections.actionHomeFragmentToExplorerFragment()
         navigate(action)
+    }
+
+    override fun onHelp() {
+        try {
+            val browserIntent = Intent(
+                Intent.ACTION_VIEW, Uri.parse(getString(R.string.home_help_link))
+            )
+            startActivity(browserIntent)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     override fun onOpenTerminal() {
@@ -94,6 +115,7 @@ class HomeFragment : BaseFragment(), HomeUiEvents {
             ).show()
         }
     }
+
 
     companion object {
         private const val TAG = "HomeFragment"

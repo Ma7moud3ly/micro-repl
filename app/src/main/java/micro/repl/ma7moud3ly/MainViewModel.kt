@@ -1,3 +1,10 @@
+/*
+ * Created by Mahmoud Aly - engma7moud3ly@gmail.com
+ * Project Micro REPL - https://github.com/Ma7moud3ly/micro-repl
+ * Copyright (c) 2023 . MIT license.
+ *
+ */
+
 package micro.repl.ma7moud3ly
 
 import androidx.compose.runtime.mutableStateOf
@@ -6,26 +13,31 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import micro.repl.ma7moud3ly.utils.*
 
 class MainViewModel : ViewModel() {
+    //the device connectivity status OnConnected or OnConnecting or OnFailure
     val status = MutableStateFlow<ConnectionStatus>(ConnectionStatus.OnConnecting)
-
-    val root = mutableStateOf("")
-    val files = MutableStateFlow<List<MicroFile>>(listOf())
     val isConnected: Boolean get() = status.value is ConnectionStatus.OnConnected
+    //the connected device
     val microDevice: MicroDevice? get() = (status.value as? ConnectionStatus.OnConnected)?.microDevice
 
-    //for editor
-    private var editorMode = EditorMode.LOCAL
-    var scriptPath = mutableStateOf("")
-        private set
-    var scriptContent = ""
-        private set
+    // the current path in files explorer
+    val root = mutableStateOf("")
+    // files list in files explorer
+    val files = MutableStateFlow<List<MicroFile>>(listOf())
 
+    /**
+     * for editor
+     */
+
+    //is script saved locally or in micropython device
+    private var editorMode = EditorMode.LOCAL
     val isLocalScript: Boolean get() = editorMode == EditorMode.LOCAL
 
-    //for terminal
-    val terminalInput = mutableStateOf("")
-    val terminalOutput = mutableStateOf("")
-    val history = TerminalHistory()
+    //the script path
+    var scriptPath = mutableStateOf("")
+        private set
+    //python code in script
+    var scriptContent = ""
+        private set
 
     fun initScript(
         path: String,
@@ -45,4 +57,13 @@ class MainViewModel : ViewModel() {
         this.scriptContent = content
     }
 
+
+    /**
+     * for terminal
+     */
+
+    val terminalInput = mutableStateOf("")
+    val terminalOutput = mutableStateOf("")
+    //commands history
+    val history = TerminalHistory()
 }

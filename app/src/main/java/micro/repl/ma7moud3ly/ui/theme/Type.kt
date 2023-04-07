@@ -1,3 +1,10 @@
+/*
+ * Created by Mahmoud Aly - engma7moud3ly@gmail.com
+ * Project Micro REPL - https://github.com/Ma7moud3ly/micro-repl
+ * Copyright (c) 2023 . MIT license.
+ *
+ */
+
 package micro.repl.ma7moud3ly.ui.theme
 
 import androidx.compose.material3.Typography
@@ -23,7 +30,6 @@ private val fontRoboto = FontFamily(
     Font(R.font.roboto_medium, FontWeight.Medium),
     Font(R.font.roboto_bold, FontWeight.Bold)
 )
-
 private val labelLarge = TextStyle(
     fontWeight = FontWeight.Medium,
     fontSize = 14.sp,

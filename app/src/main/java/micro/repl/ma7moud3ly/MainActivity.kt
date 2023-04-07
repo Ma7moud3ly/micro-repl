@@ -1,3 +1,10 @@
+/*
+ * Created by Mahmoud Aly - engma7moud3ly@gmail.com
+ * Project Micro REPL - https://github.com/Ma7moud3ly/micro-repl
+ * Copyright (c) 2023 . MIT license.
+ *
+ */
+
 package micro.repl.ma7moud3ly
 
 import android.os.Bundle
@@ -14,10 +21,11 @@ import micro.repl.ma7moud3ly.utils.ThemeMode
 class MainActivity : AppCompatActivity() {
 
     private val viewModel by viewModels<MainViewModel>()
-    var navHost: NavHostFragment? = null
+
     lateinit var boardManager: BoardManager
     lateinit var terminalManager: TerminalManager
     lateinit var filesManager: FilesManager
+    var navHost: NavHostFragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,7 +45,7 @@ class MainActivity : AppCompatActivity() {
             },
             onReceiveData = { data ->
                 viewModel.terminalOutput.value += data
-            }, onReset = { viewModel.terminalOutput.value = "" }
+            }
         )
 
         terminalManager = TerminalManager(boardManager)

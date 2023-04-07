@@ -1,3 +1,10 @@
+/*
+ * Created by Mahmoud Aly - engma7moud3ly@gmail.com
+ * Project Micro REPL - https://github.com/Ma7moud3ly/micro-repl
+ * Copyright (c) 2023 . MIT license.
+ *
+ */
+
 package micro.repl.ma7moud3ly.managers
 
 import android.util.Log
@@ -5,6 +12,11 @@ import micro.repl.ma7moud3ly.utils.MicroFile
 import org.json.JSONArray
 
 
+/**
+ * This class manages our micro file explorer
+ * is has methods to list files/directories and decode them as MicroFile list
+ * also it has methods to rename/remove/create files and folders
+ */
 class FilesManager(
     private val boardManager: BoardManager,
     private val onUpdateFiles: ((files: List<MicroFile>) -> Unit)? = null
@@ -58,7 +70,7 @@ class FilesManager(
     }
 
     fun read(path: String, onRead: (content: String) -> Unit) {
-        val code = CommandsManager.readFile2(path)
+        val code = CommandsManager.readFile(path)
         boardManager.writeSync(code, onResponse = { response ->
             val result = CommandsManager.extractResult(
                 response, default = ""

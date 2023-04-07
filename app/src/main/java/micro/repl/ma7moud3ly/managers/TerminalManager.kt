@@ -1,7 +1,18 @@
+/*
+ * Created by Mahmoud Aly - engma7moud3ly@gmail.com
+ * Project Micro REPL - https://github.com/Ma7moud3ly/micro-repl
+ * Copyright (c) 2023 . MIT license.
+ *
+ */
+
 package micro.repl.ma7moud3ly.managers
 
 import micro.repl.ma7moud3ly.utils.MicroDevice
 
+/**
+ * This class manages the terminal commands
+ * such reset interpreter / stop execution / eval code / execute script
+ */
 class TerminalManager(
     private val boardManager: BoardManager
 ) {
@@ -33,7 +44,6 @@ class TerminalManager(
 
     fun executeScript(
         code: String,
-        terminateFirst: Boolean = false,
         onExecute: (() -> Unit)? = null
     ) {
         val cmd = CommandsManager.execute(code, toJson = true)

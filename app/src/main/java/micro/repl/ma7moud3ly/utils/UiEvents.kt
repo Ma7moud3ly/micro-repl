@@ -1,3 +1,10 @@
+/*
+ * Created by Mahmoud Aly - engma7moud3ly@gmail.com
+ * Project Micro REPL - https://github.com/Ma7moud3ly/micro-repl
+ * Copyright (c) 2023 . MIT license.
+ *
+ */
+
 package micro.repl.ma7moud3ly.utils
 
 interface HomeUiEvents {
@@ -9,6 +16,9 @@ interface HomeUiEvents {
     fun onReset()
     fun onSoftReset()
     fun onTerminate()
+
+    fun onHelp()
+
 }
 
 interface ExplorerUiEvents {
@@ -36,7 +46,6 @@ interface ScriptsUiEvents {
     fun onOpen(script: MicroScript)
     fun onDelete(script: MicroScript)
     fun onRename(script: MicroScript)
-
     fun onUp()
 
 }

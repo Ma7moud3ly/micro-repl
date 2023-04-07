@@ -1,3 +1,10 @@
+/*
+ * Created by Mahmoud Aly - engma7moud3ly@gmail.com
+ * Project Micro REPL - https://github.com/Ma7moud3ly/micro-repl
+ * Copyright (c) 2023 . MIT license.
+ *
+ */
+
 package micro.repl.ma7moud3ly.managers
 
 import android.annotation.SuppressLint
@@ -15,7 +22,6 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import com.google.gson.Gson
 import com.hoho.android.usbserial.driver.UsbSerialPort
 import com.hoho.android.usbserial.driver.UsbSerialProber
 import com.hoho.android.usbserial.util.SerialInputOutputManager
@@ -25,11 +31,15 @@ import micro.repl.ma7moud3ly.utils.ConnectionStatus
 import micro.repl.ma7moud3ly.utils.MicroDevice
 
 
+/**
+ * This class is responsible for:
+ * - USB to Serial connection between the microcontroller and smartphone.
+ * - sending & receiving data/commands.
+ */
 class BoardManager(
     private val context: Context,
     private val onStatusChanges: ((status: ConnectionStatus) -> Unit)? = null,
     private val onReceiveData: ((data: String) -> Unit)? = null,
-    private val onReset: (() -> Unit)? = null
 ) : SerialInputOutputManager.Listener, DefaultLifecycleObserver {
 
     companion object {
@@ -46,12 +56,19 @@ class BoardManager(
     }
 
     private val activity = context as AppCompatActivity
-    private var permissionGranted = false
+
     private lateinit var usbManager: UsbManager
-    private var port: UsbSerialPort? = null
     private var serialInputOutputManager: SerialInputOutputManager? = null
+    private var port: UsbSerialPort? = null
+    private val isPortOpen: Boolean get() = port?.isOpen == true
+
+    private var onReadSync: (() -> Unit)? = null
+    private var syncData = StringBuilder("")
+    private var isReadSync = false
+    private var permissionGranted = false
 
     //devices to connect with
+    //only micropython is supported right now
     private val supportedManufacturers = listOf(
         "MicroPython" // for micro python
         //"Raspberry Pi", //for circuit python
@@ -63,9 +80,10 @@ class BoardManager(
 
 
     /**
+     * How does it work ?
      * 1 - Detect Connected Devices
-     * 2 - Check for device Permission
-     * 3 - Connect to Device
+     * 2 - Check for usb Permission
+     * 3 - Connect to MicroPython/CircuitPython Device
      */
 
 
@@ -84,6 +102,7 @@ class BoardManager(
         Log.i(TAG, "onDestroy")
         super.onDestroy(owner)
         try {
+            //unregister usb broadcast receiver on destroy to avoid repeating its callback
             context.unregisterReceiver(usbReceiver)
             if (port?.isOpen == true) port?.close()
         } catch (e: Exception) {
@@ -96,12 +115,10 @@ class BoardManager(
      * Public Methods
      */
 
-    private val isPortOpen: Boolean get() = port?.isOpen == true
 
-    private var onReadSync: (() -> Unit)? = null
-    private var syncData = StringBuilder("")
-    private var isReadSync = false
-
+    /**
+     * Write python code to serial port and return response in the callback
+     */
     fun writeSync(
         code: String,
         onResponse: ((data: String) -> Unit)? = null
@@ -123,8 +140,16 @@ class BoardManager(
         }
     }
 
+    /**
+     * Write python statement to the serial REPL
+     * don't wait to response it will be echoed to SerialInputOutputManager listener
+     */
     fun write(code: String, onWrite: (() -> Unit)? = null) {
         try {
+            /*\u000D == \r
+             MicroPython requires \r after code to echo response
+             also \r is required before code to print >>>
+            */
             val cmd = "\u000D" + code + "\u000D"
             port?.write(cmd.toByteArray(Charsets.UTF_8), WRITTING_TIMEOUT)
             onWrite?.invoke()
@@ -133,6 +158,9 @@ class BoardManager(
         }
     }
 
+    /**
+     * Write REPL commands that don't require to echo >>>
+     */
     fun writeCommand(code: String, onWrite: (() -> Unit)? = null) {
         try {
             port?.write(code.toByteArray(Charsets.UTF_8), WRITTING_TIMEOUT)
@@ -142,35 +170,10 @@ class BoardManager(
         }
     }
 
-    fun read(
-        bufferSize: Int = 50,
-        timeout: Int = READING_TIMEOUT,
-        sep: String = "\n",
-        onRead: ((data: String) -> Unit)? = null
-    ) {
-        val sb = java.lang.StringBuilder("")
-        var i = 0
-        do {
-            val buffer = ByteArray(bufferSize)
-            port?.read(buffer, timeout)
-            val output = trimBytes(buffer)
-            val data = String(output, Charsets.UTF_8).trim()
-            sb.append(data).append(sep)
-        } while (output.isNotEmpty() && output[0] != zero)
-        onRead?.invoke(sb.toString())
-    }
 
-    private val zero = 0.toByte()
-    private fun trimBytes(src: ByteArray): ByteArray {
-        var i = src.size
-        while (i-- > 0 && src[i] == zero) {
-        }
-        val dst = ByteArray(i + 1)
-        System.arraycopy(src, 0, dst, 0, i + 1)
-        return dst
-    }
-
-
+    /**
+     * List the connected devices & connect to the supported devices only
+     */
     fun detectUsbDevices() {
         usbManager = context.getSystemService(Context.USB_SERVICE) as UsbManager
         val deviceList = usbManager.deviceList
@@ -187,7 +190,6 @@ class BoardManager(
             else requestUsbPermission(supportedDevice)
         } else if (deviceList.isNotEmpty()) throwError(NOT_SUPPORTED)
         else throwError(NO_DEVICES)
-
     }
 
 
@@ -226,30 +228,37 @@ class BoardManager(
         }
     }
 
+    /**
+     * Make a serial connection to a usb device
+     */
     private fun connectToSerial(usbDevice: UsbDevice) {
         val allDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(usbManager)
         if (allDrivers.isNullOrEmpty()) return
         Log.i(TAG, "allDrivers - $allDrivers")
         val ports = allDrivers[0].ports
         if (ports.isEmpty()) return
-
         Log.i(TAG, "ports - $ports")
-
         val connection = usbManager.openDevice(usbDevice) ?: return
-
         Log.i(TAG, "connection - $connection")
+
 
         port = ports[0]
         Log.i(TAG, "port - $port")
+
+        //select port index = 0, micropython usually has one port
         port?.open(connection)
         try {
+            //Micropython is considered  as CdcAcmSerial port
+            //so it requires to enable DTR to exchange data.
             port?.dtr = true
         } catch (e: Exception) {
             e.printStackTrace()
             throwError(CANT_OPEN_PORT)
             return
         }
+        //set serial connection parameters
         port?.setParameters(115200, 8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE)
+        // listen for micropython outputs in onNewData callback
         serialInputOutputManager = SerialInputOutputManager(port, this)
         serialInputOutputManager?.start()
 
@@ -271,6 +280,9 @@ class BoardManager(
 
     override fun onNewData(bytes: ByteArray?) {
         val data = (bytes?.toString(Charsets.UTF_8) ?: "")
+        // when writeSync is called, we need to collect all responses
+        // comes to onNewData and append them to a string builder
+        //finally with isDone = true, response is called-back to writeSync method
         if (isReadSync) {
             syncData.append(data)
             val isDone = isExecutionDone(data) || isExecutionDone(syncData.toString())
@@ -278,8 +290,13 @@ class BoardManager(
             Log.i(TAG, "isDone = $isDone")
             if (isDone) onReadSync?.invoke()
         } else {
+            // in normal write mode, when micropython responses to commands
+            //the output is echoed directly to onReceiveData callback
+
             Log.i(TAG, "onNewData - $data")
-            Log.w(TAG, "onNewData - ${Gson().toJson(data)}")
+            //Log.w(TAG, "onNewData - ${Gson().toJson(data)}")
+
+            //some preprocessing to responses to remove extra >>>
             if (data.isEmpty()) return
             else if (data.endsWith(END_OF_REPL_RESPONSE2))
                 onReceiveData?.invoke(
@@ -299,6 +316,10 @@ class BoardManager(
         }
     }
 
+    /**
+     * we use this to detect the end of execution in sync writing mode
+     * this logic might be changed :3
+     */
     private fun isExecutionDone(data: String): Boolean {
         return data.contains(CommandsManager.END_OUTPUT)
                 || data.contains(CommandsManager.END_OUTPUT2)

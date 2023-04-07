@@ -17,6 +17,9 @@
     <string name="home_connected">Connected</string>
     <string name="home_disconnected">Disconnected</string>
     <string name="home_connecting">Connecting</string>
+    <string name="home_help">for support or bugs reporting  🧐🐞</string>
+    <string name="home_help_link">https://github.com/Ma7moud3ly/micro-repl</string>
+
     <string name="error_no_devices">No devices connected!</string>
     <string name="error_not_supported">This device is not supported!
          Right now we support only MicroPython-based devices..</string>

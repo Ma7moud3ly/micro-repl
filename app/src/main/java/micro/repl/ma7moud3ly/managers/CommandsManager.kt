@@ -1,11 +1,23 @@
+/*
+ * Created by Mahmoud Aly - engma7moud3ly@gmail.com
+ * Project Micro REPL - https://github.com/Ma7moud3ly/micro-repl
+ * Copyright (c) 2023 . MIT license.
+ *
+ */
+
 package micro.repl.ma7moud3ly.managers
 
 import com.google.gson.Gson
 import micro.repl.ma7moud3ly.utils.MicroFile
 
+/**
+ * This class manages building commands to send to the python REPL
+ * also decoding the responses of REPL to extract data.
+ */
 object CommandsManager {
 
     /**
+     * MicroPython REPL commands
      * References ->
      * https://docs.micropython.org/en/latest/esp8266/tutorial/repl.html
      * https://www.techonthenet.com/unicode/chart.php
@@ -16,12 +28,14 @@ object CommandsManager {
     const val REPL_MODE = "\u0002" //CTRL + B = Start of text (STX)
     const val TERMINATE = "\u0003" //CTRL + C = End of text (ETX)
     const val SOFT_RESET = "\u0004" //CTRL + D = End of transmission (EOT)
-    const val CR = "\u000D" // \r = Carriage return (CR)
-    const val LF = "\u000A" // \n = Line feed (LF)
-    const val CRLF = "\u000D\u000A" // \n = Line feed (LF)
+
 
     //////////////////////////
 
+    /**
+     * Extra commands to detect the end of code execution
+     * this logic might be changed :3
+     */
     const val END_OUTPUT = "EXEC DONE"
     const val END_OUTPUT2 = "EXECDONE"
     const val END_OF_REPL_RESPONSE = "\n>>> "
@@ -48,11 +62,6 @@ object CommandsManager {
     }
 
     fun readFile(path: String): String {
-        return "f = open('$path',encoding='utf-8');content = f.read();f.close();" +
-                "print('$RESULT_BEGIN',content,'$RESULT_END');$END_STATEMENT"
-    }
-
-    fun readFile2(path: String): String {
         return "import json;f = open('$path',encoding='utf-8');content = f.read();f.close();" +
                 "print('$RESULT_BEGIN',json.dumps(content),'$RESULT_END');$END_STATEMENT"
     }

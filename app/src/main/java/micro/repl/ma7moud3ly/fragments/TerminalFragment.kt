@@ -1,3 +1,10 @@
+/*
+ * Created by Mahmoud Aly - engma7moud3ly@gmail.com
+ * Project Micro REPL - https://github.com/Ma7moud3ly/micro-repl
+ * Copyright (c) 2023 . MIT license.
+ *
+ */
+
 package micro.repl.ma7moud3ly.fragments
 
 import android.os.Bundle
@@ -42,7 +49,7 @@ class TerminalFragment : BaseFragment(), TerminalUiEvents {
         viewModel.terminalInput.value = ""
 
         if (viewModel.scriptContent.isNotEmpty()) {
-            terminalManager?.executeScript(viewModel.scriptContent, terminateFirst = true)
+            terminalManager?.executeScript(viewModel.scriptContent)
         } else {
             terminalManager?.softResetDevice()
         }

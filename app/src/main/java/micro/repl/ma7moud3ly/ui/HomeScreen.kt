@@ -1,3 +1,10 @@
+/*
+ * Created by Mahmoud Aly - engma7moud3ly@gmail.com
+ * Project Micro REPL - https://github.com/Ma7moud3ly/micro-repl
+ * Copyright (c) 2023 . MIT license.
+ *
+ */
+
 package micro.repl.ma7moud3ly.ui
 
 import android.util.Log
@@ -21,9 +28,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import micro.repl.ma7moud3ly.BuildConfig
 import micro.repl.ma7moud3ly.MainViewModel
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.ui.theme.ProgressView
@@ -96,6 +105,7 @@ private fun HomeScreenContent(
                         )
                     }
                 }
+                Footer(onHelp = { uiEvents?.onHelp() })
             }
         }
     }
@@ -374,6 +384,32 @@ private fun HomeButton(
                 fontFamily = font04b03
             ),
             fontWeight = FontWeight.W900
+        )
+    }
+}
+
+@Composable
+private fun Footer(onHelp: () -> Unit) {
+    val version = stringResource(id = R.string.app_name) + " V " + BuildConfig.VERSION_NAME
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp, horizontal = 16.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = version,
+            style = MaterialTheme.typography.labelSmall.copy(
+                fontWeight = FontWeight.Bold
+            )
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = stringResource(id = R.string.home_help),
+            style = MaterialTheme.typography.labelSmall.copy(
+                textDecoration = TextDecoration.Underline
+            ), modifier = Modifier.clickable { onHelp() }
         )
     }
 }

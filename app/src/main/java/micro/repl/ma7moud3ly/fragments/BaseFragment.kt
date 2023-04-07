@@ -1,3 +1,10 @@
+/*
+ * Created by Mahmoud Aly - engma7moud3ly@gmail.com
+ * Project Micro REPL - https://github.com/Ma7moud3ly/micro-repl
+ * Copyright (c) 2023 . MIT license.
+ *
+ */
+
 package micro.repl.ma7moud3ly.fragments
 
 import android.os.Bundle
@@ -19,8 +26,16 @@ import micro.repl.ma7moud3ly.utils.ThemeMode
 
 open class BaseFragment : Fragment() {
 
-    var onConnectionChanges: ((connected: Boolean) -> Unit)? = null
     val viewModel by activityViewModels<MainViewModel>()
+    var onConnectionChanges: ((connected: Boolean) -> Unit)? = null
+
+
+    private val mainActivity: MainActivity? get() = activity as? MainActivity
+    val boardManager: BoardManager? get() = mainActivity?.boardManager
+    val terminalManager: TerminalManager? get() = mainActivity?.terminalManager
+    val filesManager: FilesManager? get() = mainActivity?.filesManager
+    val isDarkMode: Boolean get() = ThemeMode.isDark(requireActivity())
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -46,20 +61,10 @@ open class BaseFragment : Fragment() {
 
     fun navigate(action: NavDirections) {
         try {
-            //findNavController().navigate(action)
             mainActivity?.navHost?.navController?.navigate(action)
         } catch (e: java.lang.Exception) {
             requireActivity().recreate()
             e.printStackTrace()
         }
     }
-
-    private val mainActivity: MainActivity? get() = activity as? MainActivity
-
-    val boardManager: BoardManager? get() = mainActivity?.boardManager
-    val terminalManager: TerminalManager? get() = mainActivity?.terminalManager
-    val filesManager: FilesManager? get() = mainActivity?.filesManager
-
-    val isDarkMode: Boolean get() = ThemeMode.isDark(requireActivity())
-
 }

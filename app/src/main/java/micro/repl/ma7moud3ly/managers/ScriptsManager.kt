@@ -1,3 +1,10 @@
+/*
+ * Created by Mahmoud Aly - engma7moud3ly@gmail.com
+ * Project Micro REPL - https://github.com/Ma7moud3ly/micro-repl
+ * Copyright (c) 2023 . MIT license.
+ *
+ */
+
 package micro.repl.ma7moud3ly.managers
 
 import android.app.AlertDialog
@@ -14,6 +21,10 @@ import micro.repl.ma7moud3ly.utils.MicroScript
 import java.io.*
 
 
+/**
+ * This class manages saving and retrieving  scripts locally
+ * in the app external storage /storage/android/data/package-name/
+ */
 class ScriptsManager(private val context: Context) {
     companion object {
         private const val TAG = "ScriptsManager"
