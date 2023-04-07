@@ -1,6 +1,5 @@
 package micro.repl.ma7moud3ly.ui
 
-import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
@@ -36,6 +35,7 @@ import micro.repl.ma7moud3ly.ui.theme.LogCompositions
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
 import micro.repl.ma7moud3ly.ui.theme.terminalIconSize
 import micro.repl.ma7moud3ly.utils.TerminalUiEvents
+import java.io.File
 
 private const val TAG = "TerminalScreen"
 
@@ -50,7 +50,8 @@ fun TerminalScreenPreview() {
             onClear = {},
             onRun = {},
             onInputChanges = {},
-            scriptPath = { "" })
+            scriptPath = { "" },
+            scriptLocal = { true })
     }
 }
 
@@ -64,7 +65,6 @@ fun TerminalScreen(
     val scriptPath by remember { viewModel.scriptPath }
 
     LogCompositions(tag = TAG, msg = "TerminalScreen")
-    Log.w(TAG, "outer |$terminalInput|")
 
     ScreenContent(
         uiEvents = uiEvents,
@@ -72,9 +72,11 @@ fun TerminalScreen(
         onInputChanges = { terminalInput = it },
         terminalOutput = { terminalOutput },
         scriptPath = { scriptPath },
+        scriptLocal = { viewModel.isLocalScript },
         onRun = {
             uiEvents?.onRun(terminalInput)
             terminalInput = ""
+            terminalOutput += "\n"
         },
         onClear = {
             terminalInput = ""
@@ -90,6 +92,7 @@ private fun ScreenContent(
     onInputChanges: (input: String) -> Unit,
     terminalOutput: () -> String,
     scriptPath: () -> String,
+    scriptLocal: () -> Boolean,
     onRun: () -> Unit,
     onClear: () -> Unit,
     uiEvents: TerminalUiEvents? = null,
@@ -122,8 +125,7 @@ private fun ScreenContent(
                     onZoomOut = { fontSize = zoom(fontSize, zoomIn = false) },
                 )
                 Hr()
-                Title(scriptPath())
-                Hr()
+                Title(scriptPath(), scriptLocal())
                 Terminal(
                     fontSize = { fontSize },
                     input = terminalInput,
@@ -295,16 +297,27 @@ private fun Toolbar(
 }
 
 @Composable
-private fun Title(script: String) {
-    if (script.isNotEmpty()) Box(Modifier.fillMaxWidth()) {
+private fun Title(
+    scriptPath: String,
+    scriptLocal: Boolean
+) {
+    if (scriptPath.isNotEmpty()) Column {
+        val source = stringResource(
+            id = if (scriptLocal) R.string.this_device
+            else R.string.micro_python
+        )
+        val name = if (scriptLocal) File(scriptPath).name else scriptPath
+        val title = "$source:// $name"
         Text(
-            text = script,
+            text = title,
             style = MaterialTheme.typography.labelMedium,
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .padding(vertical = 1.dp, horizontal = 8.dp)
         )
+        Spacer(modifier = Modifier.height(4.dp))
+        Hr()
     }
 }
 
@@ -336,7 +349,7 @@ private fun Hr() {
     Divider(
         Modifier
             .fillMaxWidth()
-            .height(1.dp)
-            .background(color = colorResource(id = R.color.light_blue))
+            .height(1.dp),
+        color = colorResource(id = R.color.light_blue)
     )
 }

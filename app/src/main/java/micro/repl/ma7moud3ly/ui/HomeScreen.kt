@@ -26,9 +26,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import micro.repl.ma7moud3ly.MainViewModel
 import micro.repl.ma7moud3ly.R
-import micro.repl.ma7moud3ly.managers.DeviceManager
 import micro.repl.ma7moud3ly.ui.theme.ProgressView
-import micro.repl.ma7moud3ly.ui.theme.fontConsolas
+import micro.repl.ma7moud3ly.ui.theme.font04b03
 import micro.repl.ma7moud3ly.ui.theme.grey100
 import micro.repl.ma7moud3ly.utils.ConnectionStatus
 import micro.repl.ma7moud3ly.utils.HomeUiEvents
@@ -69,13 +68,7 @@ private fun HomeScreenContent(
                 when (status) {
                     is ConnectionStatus.OnFailure -> {
                         Log.e(TAG, "OnFailure")
-                        val msg = status.msg
-                        when (status.code) {
-                            DeviceManager.CONNECTION_LOST -> Log.v(TAG, "CONNECTION_LOST - $msg")
-                            DeviceManager.CANT_OPEN_PORT -> Log.v(TAG, "CANT_OPEN_PORT")
-                            DeviceManager.NO_DEVICES -> Log.v(TAG, "NO_DEVICES")
-                            DeviceManager.PERMISSION_DENIED -> Log.v(TAG, "PERMISSION_DENIED")
-                        }
+
                         DeviceNotConnected(onClick = {
                             uiEvents?.onFindDevices()
                         })
@@ -83,7 +76,6 @@ private fun HomeScreenContent(
                             isConnected = false,
                             uiEvents = uiEvents
                         )
-
                     }
                     is ConnectionStatus.OnConnecting -> {
                         Log.w(TAG, "OnConnecting....")
@@ -375,10 +367,11 @@ private fun HomeButton(
                 .width(100.dp)
                 .aspectRatio(1f)
         )
+        Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = buttonTitle,
             style = MaterialTheme.typography.bodyLarge.copy(
-                fontFamily = fontConsolas
+                fontFamily = font04b03
             ),
             fontWeight = FontWeight.W900
         )

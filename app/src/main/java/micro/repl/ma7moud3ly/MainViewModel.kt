@@ -14,13 +14,35 @@ class MainViewModel : ViewModel() {
     val microDevice: MicroDevice? get() = (status.value as? ConnectionStatus.OnConnected)?.microDevice
 
     //for editor
-    var editorMode = EditorMode.LOCAL
+    private var editorMode = EditorMode.LOCAL
     var scriptPath = mutableStateOf("")
+        private set
+    var scriptContent = ""
+        private set
+
+    val isLocalScript: Boolean get() = editorMode == EditorMode.LOCAL
 
     //for terminal
     val terminalInput = mutableStateOf("")
     val terminalOutput = mutableStateOf("")
     val history = TerminalHistory()
-    var script = ""
+
+    fun initScript(
+        path: String,
+        source: EditorMode,
+        content: String = "",
+    ) {
+        this.editorMode = source
+        this.scriptPath.value = path
+        this.scriptContent = content
+    }
+
+    fun initScript(
+        path: String,
+        content: String
+    ) {
+        this.scriptPath.value = path
+        this.scriptContent = content
+    }
 
 }

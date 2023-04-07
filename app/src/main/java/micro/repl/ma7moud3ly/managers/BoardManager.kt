@@ -15,14 +15,17 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import com.google.gson.Gson
 import com.hoho.android.usbserial.driver.UsbSerialPort
 import com.hoho.android.usbserial.driver.UsbSerialProber
 import com.hoho.android.usbserial.util.SerialInputOutputManager
+import micro.repl.ma7moud3ly.managers.CommandsManager.END_OF_REPL_RESPONSE
+import micro.repl.ma7moud3ly.managers.CommandsManager.END_OF_REPL_RESPONSE2
 import micro.repl.ma7moud3ly.utils.ConnectionStatus
 import micro.repl.ma7moud3ly.utils.MicroDevice
 
 
-class DeviceManager(
+class BoardManager(
     private val context: Context,
     private val onStatusChanges: ((status: ConnectionStatus) -> Unit)? = null,
     private val onReceiveData: ((data: String) -> Unit)? = null,
@@ -30,16 +33,16 @@ class DeviceManager(
 ) : SerialInputOutputManager.Listener, DefaultLifecycleObserver {
 
     companion object {
-        private const val TAG = "DeviceManager"
+        private const val TAG = "BoardManager"
         private const val ACTION_USB_PERMISSION = "USB_PERMISSION"
         const val NO_DEVICES = 0
         const val CANT_OPEN_PORT = 1
         const val CONNECTION_LOST = 2
         const val PERMISSION_DENIED = 3
+        const val NOT_SUPPORTED = 4
 
         private const val READING_TIMEOUT = 5000
         private const val WRITTING_TIMEOUT = 2000
-        private const val MICROPYTHON_RESET_MSG = "MPY: soft reboot"
     }
 
     private val activity = context as AppCompatActivity
@@ -50,12 +53,12 @@ class DeviceManager(
 
     //devices to connect with
     private val supportedManufacturers = listOf(
-        "Raspberry Pi", //for circuit python
         "MicroPython" // for micro python
+        //"Raspberry Pi", //for circuit python
     )
     private val supportedVendors = listOf(
-        9114, //Adafruit Industries LLC
         11914 //Raspberry Pi (Trading) Limited
+        // 9114, //Adafruit Industries LLC
     )
 
 
@@ -130,6 +133,15 @@ class DeviceManager(
         }
     }
 
+    fun writeCommand(code: String, onWrite: (() -> Unit)? = null) {
+        try {
+            port?.write(code.toByteArray(Charsets.UTF_8), WRITTING_TIMEOUT)
+            onWrite?.invoke()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     fun read(
         bufferSize: Int = 50,
         timeout: Int = READING_TIMEOUT,
@@ -162,16 +174,20 @@ class DeviceManager(
     fun detectUsbDevices() {
         usbManager = context.getSystemService(Context.USB_SERVICE) as UsbManager
         val deviceList = usbManager.deviceList
+
+        val supportedDevice: UsbDevice? = deviceList.values.filter {
+            supportedVendors.contains(it.vendorId)
+        }.getOrNull(0)
+
         Log.i(TAG, "detectUsbDevices - deviceList =  ${deviceList.size}")
-        if (deviceList.isEmpty()) throwError(NO_DEVICES)
-        deviceList.values.forEach { device ->
-            if (supportedVendors.contains(device.vendorId)) {
-                Log.i(TAG, "found---->" + device.manufacturerName.toString())
-                if (usbManager.hasPermission(device)) connectToSerial(device)
-                else requestUsbPermission(device)
-                return@forEach
-            }
-        }
+
+        if (supportedDevice != null) {
+            Log.w(TAG, "detectUsbDevices - supported =  ${supportedDevice.manufacturerName}")
+            if (usbManager.hasPermission(supportedDevice)) connectToSerial(supportedDevice)
+            else requestUsbPermission(supportedDevice)
+        } else if (deviceList.isNotEmpty()) throwError(NOT_SUPPORTED)
+        else throwError(NO_DEVICES)
+
     }
 
 
@@ -182,7 +198,7 @@ class DeviceManager(
         val permissionIntent = PendingIntent.getBroadcast(
             context,
             0, Intent(ACTION_USB_PERMISSION),
-            0
+            if (SDK_INT >= 31) (PendingIntent.FLAG_MUTABLE or 0) else 0
         )
 
         val filter = IntentFilter(ACTION_USB_PERMISSION)
@@ -193,10 +209,11 @@ class DeviceManager(
 
     private val usbReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
+            Log.i(TAG, "onReceive")
             if (permissionGranted || isPortOpen) return
             if (ACTION_USB_PERMISSION == intent.action) {
                 synchronized(this) {
-                    Log.d(TAG, "onReceive")
+                    Log.d(TAG, "synchronized-onReceive")
                     val device: UsbDevice = intent.parcelable(UsbManager.EXTRA_DEVICE) ?: return
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                         permissionGranted = true
@@ -241,7 +258,7 @@ class DeviceManager(
             val microDevice = MicroDevice(
                 port = usbDevice.deviceName,
                 board = usbDevice.manufacturerName + " - " + usbDevice.productName,
-                isMicroPython = usbDevice.vendorId == supportedVendors[1]
+                isMicroPython = usbDevice.vendorId == supportedVendors[0]
             )
             onStatusChanges?.invoke(
                 ConnectionStatus.OnConnected(microDevice)
@@ -253,7 +270,7 @@ class DeviceManager(
 
 
     override fun onNewData(bytes: ByteArray?) {
-        val data = (bytes?.toString(Charsets.UTF_8) ?: "").trim()
+        val data = (bytes?.toString(Charsets.UTF_8) ?: "")
         if (isReadSync) {
             syncData.append(data)
             val isDone = isExecutionDone(data) || isExecutionDone(syncData.toString())
@@ -262,18 +279,22 @@ class DeviceManager(
             if (isDone) onReadSync?.invoke()
         } else {
             Log.i(TAG, "onNewData - $data")
+            Log.w(TAG, "onNewData - ${Gson().toJson(data)}")
             if (data.isEmpty()) return
-            else if (data.contains(MICROPYTHON_RESET_MSG)) {
-                onReset?.invoke()
-                return
-            }
-            //remove >>> at end
-            if (data.endsWith("\n>>>")) onReceiveData?.invoke(
-                data.substring(
-                    startIndex = 0,
-                    endIndex = data.length - 4
+            else if (data.endsWith(END_OF_REPL_RESPONSE2))
+                onReceiveData?.invoke(
+                    data.substring(
+                        startIndex = 0,
+                        endIndex = data.length - END_OF_REPL_RESPONSE2.length
+                    )
                 )
-            )
+            else if (data.endsWith(END_OF_REPL_RESPONSE))
+                onReceiveData?.invoke(
+                    data.substring(
+                        startIndex = 0,
+                        endIndex = data.length - END_OF_REPL_RESPONSE.length
+                    )
+                )
             else onReceiveData?.invoke(data)
         }
     }
@@ -298,9 +319,7 @@ class DeviceManager(
     private fun throwError(code: Int, msg: String = "") {
         if (port?.isOpen == true) port?.close()
         serialInputOutputManager?.stop()
-        activity.runOnUiThread {
-            onStatusChanges?.invoke(ConnectionStatus.OnFailure(msg = msg, code = code))
-        }
+        onStatusChanges?.invoke(ConnectionStatus.OnFailure(msg = msg, code = code))
     }
 
     private inline fun <reified T : Parcelable> Intent.parcelable(key: String): T? = when {

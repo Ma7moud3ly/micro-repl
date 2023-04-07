@@ -6,7 +6,6 @@ import android.content.DialogInterface
 import android.net.Uri
 import android.text.Html
 import android.text.InputType
-import android.util.Log
 import android.view.View
 import android.widget.EditText
 import androidx.compose.runtime.mutableStateListOf
@@ -19,6 +18,7 @@ class ScriptsManager(private val context: Context) {
     companion object {
         private const val TAG = "ScriptsManager"
     }
+
     val scripts = mutableStateListOf<MicroScript>()
 
     init {
@@ -43,9 +43,6 @@ class ScriptsManager(private val context: Context) {
                 val script = MicroScript(name = name, path = path)
                 list.add(script)
             }
-        }
-        list.forEach {
-            Log.i(TAG, it.name)
         }
         scripts.clear()
         scripts.addAll(list)
@@ -115,7 +112,6 @@ class ScriptsManager(private val context: Context) {
     /**
      * Script Actions
      */
-
 
 
     fun deleteScript(script: MicroScript) {

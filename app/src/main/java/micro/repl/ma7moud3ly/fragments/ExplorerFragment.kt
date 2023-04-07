@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.fragment.findNavController
 import micro.repl.ma7moud3ly.ui.FileManagerScreen
@@ -44,6 +45,14 @@ class ExplorerFragment : BaseFragment(), ExplorerUiEvents {
                 initFileManager()
             }
         }
+
+        requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner, object : OnBackPressedCallback(enabled = true) {
+                override fun handleOnBackPressed() {
+                    onUp()
+                }
+            }
+        )
     }
 
     private fun initFileManager() {
@@ -53,9 +62,13 @@ class ExplorerFragment : BaseFragment(), ExplorerUiEvents {
 
 
     override fun onRun(file: MicroFile) {
-        filesManager?.read(file.fullPath, onRead = { script ->
-            Log.i(TAG, "onRun - $script")
-            viewModel.script = script
+        filesManager?.read(file.fullPath, onRead = { content ->
+            Log.i(TAG, "onRun - $content")
+            viewModel.initScript(
+                path = file.fullPath,
+                content = content,
+                source = EditorMode.REMOTE
+            )
             val action = ExplorerFragmentDirections.actionExplorerFragmentToTerminalFragment()
             activity?.runOnUiThread { navigate(action) }
         })
@@ -81,8 +94,10 @@ class ExplorerFragment : BaseFragment(), ExplorerUiEvents {
 
     override fun onEdit(file: MicroFile) {
         Log.i(TAG, "onEdit - $file")
-        viewModel.scriptPath.value = file.fullPath
-        viewModel.editorMode = EditorMode.REMOTE
+        viewModel.initScript(
+            path = file.fullPath,
+            source = EditorMode.REMOTE
+        )
         val action = ExplorerFragmentDirections.actionExplorerFragmentToEditorFragment()
         navigate(action)
     }

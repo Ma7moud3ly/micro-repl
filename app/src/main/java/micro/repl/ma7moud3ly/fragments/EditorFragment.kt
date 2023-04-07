@@ -10,7 +10,6 @@ import androidx.navigation.fragment.findNavController
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.databinding.FragmentEditorBinding
 import micro.repl.ma7moud3ly.managers.EditorManager
-import micro.repl.ma7moud3ly.utils.EditorMode
 
 class EditorFragment : BaseFragment() {
     companion object {
@@ -48,12 +47,12 @@ class EditorFragment : BaseFragment() {
     }
 
     private fun initEditor() {
-        Log.i(TAG, "viewModel.editorMode = ${viewModel.editorMode}")
+        Log.i(TAG, "viewModel.localScript = ${viewModel.isLocalScript}")
 
         binding.buttons.edRun.visibility = View.GONE
         editorManager = EditorManager(
             requireContext(),
-            editorMode = viewModel.editorMode,
+            editorModeLocal = viewModel.isLocalScript,
             scriptPath = viewModel.scriptPath.value,
             editor = binding.editor,
             lines = binding.lines,
@@ -91,7 +90,7 @@ class EditorFragment : BaseFragment() {
         btns.edDarkMode.setOnClickListener { em.toggleDarkMode() }
         btns.edLines.setOnClickListener { em.toggleLines() }
 
-        if (viewModel.editorMode == EditorMode.LOCAL) {
+        if (viewModel.isLocalScript) {
             binding.scriptSource.text = getString(R.string.this_device)
             binding.device.root.visibility = View.GONE
             btns.edNew.visibility = View.VISIBLE
@@ -138,8 +137,8 @@ class EditorFragment : BaseFragment() {
         } else findNavController().popBackStack()
     }
 
-    private val onRemoteRun: (String) -> Unit = { content ->
-        viewModel.script = content
+    private val onRemoteRun: (String, String) -> Unit = { path, content ->
+        viewModel.initScript(path = path, content = content)
         val action = EditorFragmentDirections.actionEditorFragmentToTerminalFragment()
         navigate(action)
     }

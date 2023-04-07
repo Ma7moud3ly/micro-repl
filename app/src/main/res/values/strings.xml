@@ -11,13 +11,19 @@
     <string name="home_editor">Editor</string>
     <string name="home_scripts">Scripts</string>
     <string name="home_explorer">Explorer</string>
-    <string name="home_settings">Settings</string>
     <string name="home_connect">Connect</string>
-    <string name="home_connection_msg">Please connect your device and click Connect ☝️
-        \nIn the worst case restarting the app is required
-        \nRarely you might need to unplug your board 🥺</string>
+    <string name="home_connection_msg">Please connect your device and click Connect ☝️Or restart the app.
+        </string>
     <string name="home_connected">Connected</string>
     <string name="home_disconnected">Disconnected</string>
+    <string name="home_connecting">Connecting</string>
+    <string name="error_no_devices">No devices connected!</string>
+    <string name="error_not_supported">This device is not supported!
+         Right now we support only MicroPython-based devices..</string>
+    <string name="error_cant_open_port">Can\'t open port!</string>
+    <string name="error_permission_denied">USB permission denied!</string>
+    <string name="error_connection_lost">Connection lost!</string>
+    <string name="error_unknown">Unknown error!</string>
 
 
     <string name="editor_untitled">untitled</string>

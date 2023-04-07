@@ -5,6 +5,4 @@
     <item name="light_blue" type="color">#2196F3</item>
     <item name="title_color" type="color">#16FFEB3B</item>
 
-    <item name="cursor_color" type="color">#15ab0d</item>
-    <item name="insert_btn" type="color">#2A15AB0D</item>
 </resources>

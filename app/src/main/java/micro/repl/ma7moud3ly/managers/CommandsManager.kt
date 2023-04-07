@@ -5,11 +5,31 @@ import micro.repl.ma7moud3ly.utils.MicroFile
 
 object CommandsManager {
 
+    /**
+     * References ->
+     * https://docs.micropython.org/en/latest/esp8266/tutorial/repl.html
+     * https://www.techonthenet.com/unicode/chart.php
+     * https://www.physics.udel.edu/~watson/scen103/ascii.html
+     **/
+
+    const val HIDDEN_MODE = "\u0001" //CTRL + A = Start of heading (SOH)
+    const val REPL_MODE = "\u0002" //CTRL + B = Start of text (STX)
+    const val TERMINATE = "\u0003" //CTRL + C = End of text (ETX)
+    const val SOFT_RESET = "\u0004" //CTRL + D = End of transmission (EOT)
+    const val CR = "\u000D" // \r = Carriage return (CR)
+    const val LF = "\u000A" // \n = Line feed (LF)
+    const val CRLF = "\u000D\u000A" // \n = Line feed (LF)
+
+    //////////////////////////
+
     const val END_OUTPUT = "EXEC DONE"
     const val END_OUTPUT2 = "EXECDONE"
+    const val END_OF_REPL_RESPONSE = "\n>>> "
+    const val END_OF_REPL_RESPONSE2 = "\n>>> \r\n>>> "
     private const val END_STATEMENT = "print('EXEC','DONE')"
     private const val RESULT_BEGIN = "@{"
     private const val RESULT_END = "}@"
+
 
     private fun responseStatement(path: String) =
         "print('$RESULT_BEGIN',list(os.ilistdir('$path')),'$RESULT_END');$END_STATEMENT"
@@ -20,7 +40,7 @@ object CommandsManager {
 
     fun execute(code: String, toJson: Boolean = false): String {
         val data = if (toJson) toJson(code) else code
-        return "exec('''$data''')"
+        return "print();exec('''$data''')"
     }
 
     fun iListDir(path: String): String {

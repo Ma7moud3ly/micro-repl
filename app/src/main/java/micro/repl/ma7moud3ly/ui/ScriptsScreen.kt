@@ -66,7 +66,7 @@ fun ScriptsScreen(
 @Composable
 private fun Header(onUp: () -> Unit) {
     val title =
-        stringResource(id = R.string.home_scripts) + " @ " +
+        stringResource(id = R.string.home_scripts) + " :: " +
                 stringResource(id = R.string.this_device)
     Column(
         Modifier.padding(vertical = 8.dp),
@@ -78,7 +78,7 @@ private fun Header(onUp: () -> Unit) {
         ) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleSmall,
+                style = MaterialTheme.typography.labelLarge,
             )
             Spacer(modifier = Modifier.weight(1f))
             IconHeader(

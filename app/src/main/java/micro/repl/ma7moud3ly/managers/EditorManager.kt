@@ -18,7 +18,6 @@ import android.widget.TextView
 import android.widget.Toast
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.fragments.ScriptsFragment
-import micro.repl.ma7moud3ly.utils.EditorMode
 import micro.repl.ma7moud3ly.utils.ThemeMode
 import java.io.File
 import kotlin.math.pow
@@ -29,11 +28,11 @@ class EditorManager(
     private val editor: EditText,
     private val lines: TextView,
     private val title: TextView,
-    private val editorMode: EditorMode,
+    private val editorModeLocal: Boolean,
     private val scriptPath: String,
     private val onRemoteOpen: ((path: String) -> Unit)? = null,
     private val onRemoteSave: ((path: String, content: String) -> Unit)? = null,
-    private val onRemoteRun: ((path: String) -> Unit)? = null,
+    private val onRemoteRun: ((path: String, content: String) -> Unit)? = null,
     private val afterEdit: (() -> Unit)? = null
 ) {
     private val activity: Activity = context as Activity
@@ -61,7 +60,7 @@ class EditorManager(
     private fun initScript() {
         if (scriptPath.isNotEmpty()) scriptFile = File(scriptPath)
         scriptFile?.let {
-            if (editorMode == EditorMode.LOCAL) {
+            if (editorModeLocal) {
                 title.text = it.name
                 val content = scriptsManager.read(it)
                 editor.setText(content)
@@ -136,7 +135,7 @@ class EditorManager(
         if (zin && fontSize < 100) fontSize += zoomValue
         else if (!zin && fontSize > 8) fontSize -= zoomValue
         editor.setTextSize(TypedValue.COMPLEX_UNIT_DIP, fontSize.toFloat())
-        lines.setTextSize(TypedValue.COMPLEX_UNIT_DIP, fontSize.toFloat())
+        lines.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize.toFloat())
         countLines()
     }
 
@@ -212,12 +211,12 @@ class EditorManager(
 
 
     private fun saveExisting(): Boolean {
-        return editorMode == EditorMode.LOCAL && scriptFile != null &&
+        return editorModeLocal && scriptFile != null &&
                 editor.text.toString() != scriptsManager.read(scriptFile!!)
     }
 
     private fun saveRemotely(): Boolean {
-        return editorMode == EditorMode.REMOTE && scriptFile != null &&
+        return editorModeLocal.not() && scriptFile != null &&
                 editor.text.toString() != remoteContentCached
 
     }
@@ -228,7 +227,7 @@ class EditorManager(
 
 
     private fun save() {
-        if (editorMode == EditorMode.LOCAL && scriptFile?.parentFile?.exists() == true) {
+        if (editorModeLocal && scriptFile?.parentFile?.exists() == true) {
             val saved = scriptsManager.write(scriptFile?.path!!, editor.text.toString())
             if (saved) {
                 val name = scriptFile?.name ?: ""
@@ -283,7 +282,11 @@ class EditorManager(
             NEW -> newScript()
             SAV -> {}
             END -> afterEdit?.invoke()
-            RUN -> onRemoteRun?.invoke(editor.text.toString().trim())
+            RUN -> {
+                val path = if (editorModeLocal.not()) scriptPath else scriptFile?.path ?: ""
+                val content = editor.text.toString().trim()
+                onRemoteRun?.invoke(path, content)
+            }
         }
     }
 
@@ -317,10 +320,8 @@ class EditorManager(
         val sharedPrefEditor = activity.getPreferences(Context.MODE_PRIVATE).edit()
         sharedPrefEditor.putInt("font_size", fontSize)
         sharedPrefEditor.putBoolean("show_lines", showLines)
-        if (editorMode == EditorMode.LOCAL) {
-            scriptFile?.let {
-                sharedPrefEditor.putString("script", it.absolutePath)
-            }
+        if (editorModeLocal) scriptFile?.let {
+            sharedPrefEditor.putString("script", it.absolutePath)
         }
         sharedPrefEditor.apply()
     }
@@ -328,19 +329,19 @@ class EditorManager(
     //if (!path.equals("")) scripts = Uri.parse(path);
     private fun getEditorSettings() {
         val sharedPref = activity.getPreferences(Context.MODE_PRIVATE)
-        fontSize = sharedPref.getInt("font_size", 12)
+        fontSize = sharedPref.getInt("font_size", 14)
         showLines = sharedPref.getBoolean("show_lines", true)
         showLines(showLines)
         lines.setTextSize(TypedValue.COMPLEX_UNIT_DIP, fontSize.toFloat())
-        editor.setTextSize(TypedValue.COMPLEX_UNIT_DIP, fontSize.toFloat())
-        if (editorMode == EditorMode.LOCAL) {
+        editor.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize.toFloat())
+        if (editorModeLocal) {
             val path = sharedPref.getString("script", "") ?: ""
             scriptFile = if (path.isNotEmpty()) File(path) else null
             if (scriptFile?.exists() == false) {
                 //when file is renamed or removed
                 scriptFile = null
             }
-        }
+        } else scriptFile = null
     }
 
 

@@ -11,7 +11,7 @@ import androidx.navigation.NavDirections
 import kotlinx.coroutines.launch
 import micro.repl.ma7moud3ly.MainActivity
 import micro.repl.ma7moud3ly.MainViewModel
-import micro.repl.ma7moud3ly.managers.DeviceManager
+import micro.repl.ma7moud3ly.managers.BoardManager
 import micro.repl.ma7moud3ly.managers.FilesManager
 import micro.repl.ma7moud3ly.managers.TerminalManager
 import micro.repl.ma7moud3ly.utils.ConnectionStatus
@@ -56,7 +56,7 @@ open class BaseFragment : Fragment() {
 
     private val mainActivity: MainActivity? get() = activity as? MainActivity
 
-    val deviceManager: DeviceManager? get() = mainActivity?.deviceManager
+    val boardManager: BoardManager? get() = mainActivity?.boardManager
     val terminalManager: TerminalManager? get() = mainActivity?.terminalManager
     val filesManager: FilesManager? get() = mainActivity?.filesManager
 

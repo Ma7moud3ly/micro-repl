@@ -46,8 +46,7 @@ class ScriptsFragment : BaseFragment(), ScriptsUiEvents {
 
     override fun onOpen(script: MicroScript) {
         Log.i(TAG, "openScript - $script")
-        viewModel.scriptPath.value = script.path
-        viewModel.editorMode = EditorMode.LOCAL
+        viewModel.initScript(path = script.path, source = EditorMode.LOCAL)
         val action = ScriptsFragmentDirections.actionScriptsFragmentToEditorFragment()
         navigate(action)
     }

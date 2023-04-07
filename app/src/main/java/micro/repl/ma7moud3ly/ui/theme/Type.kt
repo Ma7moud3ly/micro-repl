@@ -13,6 +13,11 @@ val fontConsolas = FontFamily(
     Font(R.font.consolas_bold, FontWeight.Bold)
 )
 
+val font04b03 = FontFamily(
+    Font(R.font.f04b03, FontWeight.Normal),
+)
+
+
 private val fontRoboto = FontFamily(
     Font(R.font.roboto, FontWeight.Normal),
     Font(R.font.roboto_medium, FontWeight.Medium),

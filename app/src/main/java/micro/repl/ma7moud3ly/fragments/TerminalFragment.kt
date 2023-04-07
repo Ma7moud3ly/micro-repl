@@ -41,15 +41,17 @@ class TerminalFragment : BaseFragment(), TerminalUiEvents {
         viewModel.terminalOutput.value = ""
         viewModel.terminalInput.value = ""
 
-        if (viewModel.script.isNotEmpty()) {
-            terminalManager?.execute(viewModel.script, terminateFirst = true)
+        if (viewModel.scriptContent.isNotEmpty()) {
+            terminalManager?.executeScript(viewModel.scriptContent, terminateFirst = true)
+        } else {
+            terminalManager?.softResetDevice()
         }
 
     }
 
     override fun onRun(code: String) {
         viewModel.history.push(code)
-        terminalManager?.run(code)
+        terminalManager?.eval(code)
     }
 
     override fun onTerminate() {
@@ -63,14 +65,12 @@ class TerminalFragment : BaseFragment(), TerminalUiEvents {
     }
 
     override fun onSoftReset() {
-        viewModel.microDevice?.let {
-            terminalManager?.softResetDevice(it) {
-                Toast.makeText(
-                    requireContext(),
-                    getString(R.string.terminal_soft_reset_msg),
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
+        terminalManager?.softResetDevice {
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.terminal_soft_reset_msg),
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
@@ -94,4 +94,5 @@ class TerminalFragment : BaseFragment(), TerminalUiEvents {
         onTerminate()
         super.onDestroy()
     }
+
 }

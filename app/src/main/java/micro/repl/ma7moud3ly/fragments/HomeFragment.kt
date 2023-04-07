@@ -32,7 +32,7 @@ class HomeFragment : BaseFragment(), HomeUiEvents {
 
     override fun onOpenEditor() {
         Log.i(TAG, "onOpenEditor")
-        viewModel.editorMode = EditorMode.LOCAL
+        viewModel.initScript(path = "", source = EditorMode.LOCAL)
         val action = HomeFragmentDirections.actionHomeFragmentToEditorFragment()
         navigate(action)
     }
@@ -51,15 +51,14 @@ class HomeFragment : BaseFragment(), HomeUiEvents {
 
     override fun onOpenTerminal() {
         Log.i(TAG, "onOpenTerminal")
-        viewModel.script = ""
-        viewModel.scriptPath.value = ""
+        viewModel.initScript(path = "", source = EditorMode.LOCAL)
         val action = HomeFragmentDirections.actionHomeFragmentToTerminalFragment()
         navigate(action)
     }
 
     override fun onFindDevices() {
         Log.i(TAG, "onFindDevices")
-        deviceManager?.detectUsbDevices()
+        boardManager?.detectUsbDevices()
     }
 
     override fun onReset() {
@@ -76,7 +75,7 @@ class HomeFragment : BaseFragment(), HomeUiEvents {
 
     override fun onSoftReset() {
         viewModel.microDevice?.let {
-            terminalManager?.softResetDevice(it) {
+            terminalManager?.softResetDevice {
                 Toast.makeText(
                     requireContext(),
                     getString(R.string.terminal_soft_reset_msg),
