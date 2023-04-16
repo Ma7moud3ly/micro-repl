@@ -1,8 +1,7 @@
-# Micro REPL
-
+# [Micro REPL](https://play.google.com/store/apps/details?id=micro.repl.ma7moud3ly)
 #### MicroPython & <del>CircuitPython</del> IDE for Android. 
-
-> **Note** Currently MicroPython REPL is only supported.
+#### Download from [Google Play](https://play.google.com/store/apps/details?id=micro.repl.ma7moud3ly)
+> **Note** Currently MicroPython is only supported.
 
 
 ## Micro REPL has the following features:
