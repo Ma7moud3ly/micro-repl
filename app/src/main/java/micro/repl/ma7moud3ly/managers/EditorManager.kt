@@ -103,12 +103,7 @@ class EditorManager(
             val format = if (n > 99) "%03d" else "%02d"
             for (i in 1..n) {
                 val num = String.format(format, i)
-                lines.append(
-                    """
-                        $num
-                        
-                        """.trimIndent()
-                )
+                lines.append("$num\n")
             }
         }, 200)
     }

@@ -23,6 +23,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import micro.repl.ma7moud3ly.R
+import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.dividerColor
 import micro.repl.ma7moud3ly.ui.theme.editorIconSize
 import micro.repl.ma7moud3ly.utils.MicroScript
@@ -37,7 +38,9 @@ fun ScriptsScreenPreview() {
         MicroScript("Main.py", ""),
         MicroScript("Main.M", "")
     )
-    ScriptsScreen(scripts)
+    AppTheme(darkTheme = true) {
+        ScriptsScreen(scripts)
+    }
 }
 
 @Composable
@@ -86,6 +89,7 @@ private fun Header(onUp: () -> Unit) {
             Text(
                 text = title,
                 style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.weight(1f))
             IconHeader(
@@ -117,7 +121,7 @@ private fun ItemScript(
         modifier = Modifier
             .padding(horizontal = 16.dp) //margin
             .background(
-                color = MaterialTheme.colorScheme.secondary,
+                color = Color.Black.copy(alpha = 0.2f),
                 shape = RoundedCornerShape(8.dp)
             )
             .fillMaxWidth()
@@ -129,7 +133,7 @@ private fun ItemScript(
     ) {
         Text(
             text = script.name,
-            color = Color.Black,
+            color = MaterialTheme.colorScheme.primary,
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.weight(1f),
             maxLines = 1,

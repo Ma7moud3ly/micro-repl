@@ -71,11 +71,9 @@ class BoardManager(
     //only micropython is supported right now
     private val supportedManufacturers = listOf(
         "MicroPython" // for micro python
-        //"Raspberry Pi", //for circuit python
     )
     private val supportedVendors = listOf(
         11914 //Raspberry Pi (Trading) Limited
-        // 9114, //Adafruit Industries LLC
     )
 
 
@@ -179,7 +177,7 @@ class BoardManager(
         val deviceList = usbManager.deviceList
 
         val supportedDevice: UsbDevice? = deviceList.values.filter {
-            supportedVendors.contains(it.vendorId)
+            supportedManufacturers.contains(it.manufacturerName)
         }.getOrNull(0)
 
         Log.i(TAG, "detectUsbDevices - deviceList =  ${deviceList.size}")
@@ -267,7 +265,7 @@ class BoardManager(
             val microDevice = MicroDevice(
                 port = usbDevice.deviceName,
                 board = usbDevice.manufacturerName + " - " + usbDevice.productName,
-                isMicroPython = usbDevice.vendorId == supportedVendors[0]
+                isMicroPython = usbDevice.manufacturerName == supportedManufacturers[0]
             )
             onStatusChanges?.invoke(
                 ConnectionStatus.OnConnected(microDevice)

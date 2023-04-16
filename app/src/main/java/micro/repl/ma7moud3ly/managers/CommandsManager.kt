@@ -24,10 +24,10 @@ object CommandsManager {
      * https://www.physics.udel.edu/~watson/scen103/ascii.html
      **/
 
-    const val HIDDEN_MODE = "\u0001" //CTRL + A = Start of heading (SOH)
+    const val SILENT_MODE = "\u0001" //CTRL + A = Start of heading (SOH)
     const val REPL_MODE = "\u0002" //CTRL + B = Start of text (STX)
     const val TERMINATE = "\u0003" //CTRL + C = End of text (ETX)
-    const val SOFT_RESET = "\u0004" //CTRL + D = End of transmission (EOT)
+    const val RESET = "\u0004" //CTRL + D = End of transmission (EOT)
 
 
     //////////////////////////

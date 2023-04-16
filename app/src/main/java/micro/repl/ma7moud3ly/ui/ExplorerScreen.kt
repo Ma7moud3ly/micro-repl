@@ -244,7 +244,7 @@ fun IconHeader(
         contentDescription = stringResource(
             id = title
         ), modifier = Modifier
-            .size(28.dp)
+            .size(25.dp)
             .clickable { onClick() },
         tint = tint
     )

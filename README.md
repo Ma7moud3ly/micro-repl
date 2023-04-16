@@ -10,7 +10,7 @@
 - An **Explorer** (Files Manager) for MicroPython storage.
 - A basic **Code Editor**
 
-## Requirments
+## Requirements
 - Smartphone with Android 7+ and supports [USB_On-The-Go](https://en.wikipedia.org/wiki/USB_On-The-Go).
 - Microcontroller flashed with [MicroPython](https://micropython.org/download/) firmware 
 > **Note** This version tested with Raspberry Pi Pico & MicroPython v1.19.1  [p2-pico-20220618-v1.19.1.uf2](https://micropython.org/download/rp2-pico/)

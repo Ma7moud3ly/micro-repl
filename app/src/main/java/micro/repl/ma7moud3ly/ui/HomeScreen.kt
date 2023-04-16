@@ -13,12 +13,30 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
@@ -85,12 +103,15 @@ private fun HomeScreenContent(
                             isConnected = false,
                             uiEvents = uiEvents
                         )
+                        Footer(onHelp = { uiEvents?.onHelp() })
                     }
+
                     is ConnectionStatus.OnConnecting -> {
                         Log.w(TAG, "OnConnecting....")
                         Spacer(modifier = Modifier.height(32.dp))
                         ProgressView()
                     }
+
                     is ConnectionStatus.OnConnected -> {
                         Log.w(TAG, "OnConnected")
                         DeviceConnected(device = status.microDevice)
@@ -103,9 +124,9 @@ private fun HomeScreenContent(
                             isConnected = true,
                             uiEvents = uiEvents
                         )
+                        Footer(onHelp = { uiEvents?.onHelp() })
                     }
                 }
-                Footer(onHelp = { uiEvents?.onHelp() })
             }
         }
     }
@@ -390,7 +411,7 @@ private fun HomeButton(
 
 @Composable
 private fun Footer(onHelp: () -> Unit) {
-    val version = stringResource(id = R.string.app_name) + " V " + BuildConfig.VERSION_NAME
+    val version = stringResource(id = R.string.app_name) + " V" + BuildConfig.VERSION_NAME
     Row(
         Modifier
             .fillMaxWidth()
@@ -400,16 +421,18 @@ private fun Footer(onHelp: () -> Unit) {
     ) {
         Text(
             text = version,
-            style = MaterialTheme.typography.labelSmall.copy(
-                fontWeight = FontWeight.Bold
-            )
+            style = MaterialTheme.typography.labelSmall
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = stringResource(id = R.string.home_help),
             style = MaterialTheme.typography.labelSmall.copy(
+                fontWeight = FontWeight.Normal,
                 textDecoration = TextDecoration.Underline
-            ), modifier = Modifier.clickable { onHelp() }
+            ),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.clickable { onHelp() }
         )
     }
 }

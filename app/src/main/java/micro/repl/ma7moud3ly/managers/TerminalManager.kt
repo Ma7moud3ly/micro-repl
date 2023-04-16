@@ -32,8 +32,7 @@ class TerminalManager(
     }
 
     fun softResetDevice(onReset: (() -> Unit)? = null) {
-        val cmd = CommandsManager.SOFT_RESET
-        boardManager.writeCommand(cmd)
+        boardManager.writeCommand(CommandsManager.RESET)
         onReset?.invoke()
     }
 
@@ -47,9 +46,9 @@ class TerminalManager(
         onExecute: (() -> Unit)? = null
     ) {
         val cmd = CommandsManager.execute(code, toJson = true)
-        boardManager.writeCommand(CommandsManager.HIDDEN_MODE)
+        boardManager.writeCommand(CommandsManager.SILENT_MODE)
         boardManager.writeCommand(cmd)
-        boardManager.writeCommand(CommandsManager.SOFT_RESET)
+        boardManager.writeCommand(CommandsManager.RESET) //exit silent mode
         boardManager.writeCommand(CommandsManager.REPL_MODE)
         onExecute?.invoke()
     }
