@@ -7,6 +7,7 @@
 
 package micro.repl.ma7moud3ly.ui
 
+import android.hardware.usb.UsbDevice
 import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
@@ -33,12 +34,18 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,6 +53,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -59,6 +67,7 @@ import micro.repl.ma7moud3ly.ui.theme.grey100
 import micro.repl.ma7moud3ly.utils.ConnectionStatus
 import micro.repl.ma7moud3ly.utils.HomeUiEvents
 import micro.repl.ma7moud3ly.utils.MicroDevice
+import micro.repl.ma7moud3ly.utils.toMicroDevice
 
 private const val TAG = "HomeScreen"
 
@@ -70,7 +79,9 @@ fun HomeScreenPreview() {
         "Raspberry Pai Peco",
         isMicroPython = true
     )
-    val status = ConnectionStatus.OnConnected(microDevice)
+    //val status = ConnectionStatus.OnConnected(microDevice)
+    //val status = ConnectionStatus.Error(error = ConnectionError.NOT_SUPPORTED)
+    val status = ConnectionStatus.Approve(null)
     HomeScreenContent(status)
 }
 
@@ -85,7 +96,7 @@ fun HomeScreen(
 
 @Composable
 private fun HomeScreenContent(
-    status: ConnectionStatus = ConnectionStatus.OnConnecting,
+    status: ConnectionStatus = ConnectionStatus.Connecting,
     uiEvents: HomeUiEvents? = null
 ) {
     Scaffold {
@@ -93,12 +104,12 @@ private fun HomeScreenContent(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 HomeHeader()
                 when (status) {
-                    is ConnectionStatus.OnFailure -> {
+                    is ConnectionStatus.Error -> {
                         Log.e(TAG, "OnFailure")
-
                         DeviceNotConnected(onClick = {
                             uiEvents?.onFindDevices()
                         })
+
                         HomeButtons(
                             isConnected = false,
                             uiEvents = uiEvents
@@ -106,15 +117,46 @@ private fun HomeScreenContent(
                         Footer(onHelp = { uiEvents?.onHelp() })
                     }
 
-                    is ConnectionStatus.OnConnecting -> {
+                    is ConnectionStatus.Approve -> {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        DeviceDetails(
+                            usbDevice = status.usbDevice,
+                            onApprove = {
+                                uiEvents?.onApproveDevice(status.usbDevice!!)
+                            },
+                            onCancel = { uiEvents?.onDenyDevice() },
+                            visible = { true }
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        Footer(onHelp = { uiEvents?.onHelp() })
+                    }
+
+                    is ConnectionStatus.Connecting -> {
                         Log.w(TAG, "OnConnecting....")
                         Spacer(modifier = Modifier.height(32.dp))
                         ProgressView()
                     }
 
-                    is ConnectionStatus.OnConnected -> {
+                    is ConnectionStatus.Connected -> {
+                        var showDeviceDetails by remember {
+                            mutableStateOf(false)
+                        }
                         Log.w(TAG, "OnConnected")
-                        DeviceConnected(device = status.microDevice)
+                        DeviceConnected(
+                            device = status.usbDevice.toMicroDevice(),
+                            onClick = { showDeviceDetails = showDeviceDetails.not() }
+                        )
+
+                        DeviceDetails(
+                            visible = { showDeviceDetails },
+                            usbDevice = status.usbDevice,
+                            onApprove = {
+                                uiEvents?.onApproveDevice(status.usbDevice)
+                            },
+                            onCancel = { uiEvents?.onDenyDevice() },
+                            askToApprove = false
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
                         SectionHomeCommands(
                             onReset = { uiEvents?.onReset() },
                             onSoftReset = { uiEvents?.onSoftReset() },
@@ -158,16 +200,20 @@ private fun HomeHeader() {
 }
 
 @Composable
-private fun DeviceConnected(device: MicroDevice) {
+private fun DeviceConnected(
+    device: MicroDevice,
+    onClick: () -> Unit
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         modifier = Modifier
-            .padding(vertical = 16.dp, horizontal = 16.dp)
+            .padding(vertical = 8.dp, horizontal = 16.dp)
             .fillMaxWidth()
             .wrapContentHeight()
             .clip(shape = RoundedCornerShape(8.dp))
             .background(color = Color.Blue.copy(alpha = 0.2f))
+            .clickable { onClick() }
             .padding(horizontal = 6.dp, vertical = 4.dp)
 
     ) {
@@ -258,7 +304,9 @@ private fun DeviceNotConnected(onClick: () -> Unit) {
         )
         Text(
             text = stringResource(id = R.string.home_connection_msg),
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodyMedium.copy(
+                textAlign = TextAlign.Justify
+            ),
             modifier = Modifier.padding(horizontal = 16.dp)
         )
     }
@@ -409,6 +457,124 @@ private fun HomeButton(
     }
 }
 
+/**
+ * Device Details
+ */
+
+
+@Composable
+private fun DeviceDetails(
+    visible: () -> Boolean,
+    askToApprove: Boolean = true,
+    usbDevice: UsbDevice? = null,
+    onApprove: () -> Unit,
+    onCancel: () -> Unit,
+) {
+    if (visible())
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .clip(shape = RoundedCornerShape(8.dp))
+                .background(color = grey100)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+
+        ) {
+            if (askToApprove) Text(
+                text = stringResource(id = R.string.home_device_is_flashed),
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Bold
+            )
+
+            usbDevice?.let {
+                DetailsItem(
+                    stringResource(id = R.string.home_device_product_name),
+                    it.productName.orEmpty()
+                )
+                Divider(Modifier.fillMaxWidth(), color = Color.White)
+                DetailsItem(
+                    stringResource(id = R.string.home_device_manufacturer),
+                    it.manufacturerName.orEmpty()
+                )
+                Divider(Modifier.fillMaxWidth(), color = Color.White)
+                DetailsItem(
+                    stringResource(id = R.string.home_device_vendor_id),
+                    it.vendorId.toString()
+                )
+                Divider(Modifier.fillMaxWidth(), color = Color.White)
+                DetailsItem(
+                    stringResource(id = R.string.home_device_product_id),
+                    it.productId.toString()
+                )
+            }
+
+            if (askToApprove) Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(
+                    onClick = onApprove,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ),
+                    modifier = Modifier.weight(0.5f)
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.dialog_approve),
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                }
+
+                Button(
+                    onClick = onCancel,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                    ),
+                    modifier = Modifier.weight(0.5f)
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.dialog_cancel),
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                }
+            }
+        }
+}
+
+@Composable
+private fun DetailsItem(key: String, value: String) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 2.dp)
+    ) {
+        Text(
+            text = key,
+            modifier = Modifier.weight(0.5f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center,
+            color = Color.Black,
+            style = MaterialTheme.typography.bodySmall,
+        )
+        Text(
+            text = value,
+            modifier = Modifier.weight(0.5f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center,
+            color = Color.Black,
+            style = MaterialTheme.typography.bodySmall
+        )
+    }
+}
+
+
+/**
+ * Footer
+ */
 @Composable
 private fun Footer(onHelp: () -> Unit) {
     val version = stringResource(id = R.string.app_name) + " V" + BuildConfig.VERSION_NAME

@@ -51,7 +51,7 @@ open class BaseFragment : Fragment() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.status.collect { status ->
                     when (status) {
-                        is ConnectionStatus.OnConnected -> onConnectionChanges?.invoke(true)
+                        is ConnectionStatus.Connected -> onConnectionChanges?.invoke(true)
                         else -> onConnectionChanges?.invoke(false)
                     }
                 }

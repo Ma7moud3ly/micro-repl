@@ -8,6 +8,7 @@
 package micro.repl.ma7moud3ly.fragments
 
 import android.content.Intent
+import android.hardware.usb.UsbDevice
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -80,6 +81,16 @@ class HomeFragment : BaseFragment(), HomeUiEvents {
     override fun onFindDevices() {
         Log.i(TAG, "onFindDevices")
         boardManager?.detectUsbDevices()
+    }
+
+    override fun onApproveDevice(usbDevice: UsbDevice) {
+        Log.i(TAG, "onApproveDevice")
+        boardManager?.approveDevice(usbDevice)
+    }
+
+    override fun onDenyDevice() {
+        Log.i(TAG, "onDenyDevice")
+        boardManager?.onDenyDevice()
     }
 
     override fun onReset() {

@@ -22,13 +22,15 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.hoho.android.usbserial.driver.UsbSerialPort
 import com.hoho.android.usbserial.driver.UsbSerialProber
 import com.hoho.android.usbserial.util.SerialInputOutputManager
 import micro.repl.ma7moud3ly.managers.CommandsManager.END_OF_REPL_RESPONSE
 import micro.repl.ma7moud3ly.managers.CommandsManager.END_OF_REPL_RESPONSE2
+import micro.repl.ma7moud3ly.utils.ConnectionError
 import micro.repl.ma7moud3ly.utils.ConnectionStatus
-import micro.repl.ma7moud3ly.utils.MicroDevice
 
 
 /**
@@ -45,13 +47,6 @@ class BoardManager(
     companion object {
         private const val TAG = "BoardManager"
         private const val ACTION_USB_PERMISSION = "USB_PERMISSION"
-        const val NO_DEVICES = 0
-        const val CANT_OPEN_PORT = 1
-        const val CONNECTION_LOST = 2
-        const val PERMISSION_DENIED = 3
-        const val NOT_SUPPORTED = 4
-
-        private const val READING_TIMEOUT = 5000
         private const val WRITTING_TIMEOUT = 2000
     }
 
@@ -72,9 +67,7 @@ class BoardManager(
     private val supportedManufacturers = listOf(
         "MicroPython" // for micro python
     )
-    private val supportedVendors = listOf(
-        11914 //Raspberry Pi (Trading) Limited
-    )
+    private var supportedProducts = mutableSetOf<Int>()
 
 
     /**
@@ -87,7 +80,8 @@ class BoardManager(
 
     init {
         activity.lifecycle.addObserver(this)
-        onStatusChanges?.invoke(ConnectionStatus.OnConnecting)
+        getProducts()
+        onStatusChanges?.invoke(ConnectionStatus.Connecting)
     }
 
     override fun onCreate(owner: LifecycleOwner) {
@@ -177,19 +171,26 @@ class BoardManager(
         val deviceList = usbManager.deviceList
 
         val supportedDevice: UsbDevice? = deviceList.values.filter {
-            supportedManufacturers.contains(it.manufacturerName)
+            supportedManufacturers.contains(it.manufacturerName) || supportedProducts.contains(it.productId)
         }.getOrNull(0)
 
         Log.i(TAG, "detectUsbDevices - deviceList =  ${deviceList.size}")
 
-        if (supportedDevice != null) {
-            Log.w(TAG, "detectUsbDevices - supported =  ${supportedDevice.manufacturerName}")
-            if (usbManager.hasPermission(supportedDevice)) connectToSerial(supportedDevice)
-            else requestUsbPermission(supportedDevice)
-        } else if (deviceList.isNotEmpty()) throwError(NOT_SUPPORTED)
-        else throwError(NO_DEVICES)
+        if (supportedDevice != null) approveDevice(supportedDevice)
+        else if (deviceList.isNotEmpty()) onStatusChanges?.invoke(
+            ConnectionStatus.Approve(usbDevice = deviceList.values.first())
+        ) else throwError(ConnectionError.NO_DEVICES)
     }
 
+    fun approveDevice(usbDevice: UsbDevice) {
+        Log.i(TAG, "supportedDevice - $usbDevice")
+        if (usbManager.hasPermission(usbDevice)) connectToSerial(usbDevice)
+        else requestUsbPermission(usbDevice)
+    }
+
+    fun onDenyDevice() {
+        throwError(error = ConnectionError.NOT_SUPPORTED)
+    }
 
     @SuppressLint("UnspecifiedImmutableFlag")
     private fun requestUsbPermission(usbDevice: UsbDevice) {
@@ -219,7 +220,7 @@ class BoardManager(
                         permissionGranted = true
                         connectToSerial(device)
                     } else {
-                        throwError(PERMISSION_DENIED)
+                        throwError(ConnectionError.PERMISSION_DENIED)
                     }
                 }
             }
@@ -231,15 +232,14 @@ class BoardManager(
      */
     private fun connectToSerial(usbDevice: UsbDevice) {
         val allDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(usbManager)
-        if (allDrivers.isNullOrEmpty()) return
-        Log.i(TAG, "allDrivers - $allDrivers")
+        if (allDrivers.isNullOrEmpty()) {
+            throwError(error = ConnectionError.CANT_OPEN_PORT)
+            return
+        }
         val ports = allDrivers[0].ports
         if (ports.isEmpty()) return
-        Log.i(TAG, "ports - $ports")
         val connection = usbManager.openDevice(usbDevice) ?: return
         Log.i(TAG, "connection - $connection")
-
-
         port = ports[0]
         Log.i(TAG, "port - $port")
 
@@ -251,7 +251,7 @@ class BoardManager(
             port?.dtr = true
         } catch (e: Exception) {
             e.printStackTrace()
-            throwError(CANT_OPEN_PORT)
+            throwError(ConnectionError.CANT_OPEN_PORT)
             return
         }
         //set serial connection parameters
@@ -261,16 +261,10 @@ class BoardManager(
         serialInputOutputManager?.start()
 
         if (isPortOpen) {
-            Log.i(TAG, "device ----> $usbDevice")
-            val microDevice = MicroDevice(
-                port = usbDevice.deviceName,
-                board = usbDevice.manufacturerName + " - " + usbDevice.productName,
-                isMicroPython = usbDevice.manufacturerName == supportedManufacturers[0]
-            )
-            onStatusChanges?.invoke(
-                ConnectionStatus.OnConnected(microDevice)
-            )
-        } else throwError(CANT_OPEN_PORT)
+            onStatusChanges?.invoke(ConnectionStatus.Connected(usbDevice))
+            storeProductId(usbDevice.productId)
+        } else
+            throwError(ConnectionError.CANT_OPEN_PORT)
 
         Log.i(TAG, "is open ${port?.isOpen}")
     }
@@ -328,22 +322,55 @@ class BoardManager(
     override fun onRunError(e: Exception?) {
         val errorMessage = e?.message ?: ""
         Log.e(TAG, "onRunError - ${e?.message}")
-        onStatusChanges?.invoke(ConnectionStatus.OnConnecting)
+        onStatusChanges?.invoke(ConnectionStatus.Connecting)
         Handler(activity.mainLooper).postDelayed({
-            if (usbManager.deviceList.isEmpty()) throwError(CONNECTION_LOST, errorMessage)
-            else throwError(CANT_OPEN_PORT, errorMessage)
+            if (usbManager.deviceList.isEmpty()) throwError(
+                ConnectionError.CONNECTION_LOST,
+                errorMessage
+            )
+            else throwError(ConnectionError.CANT_OPEN_PORT, errorMessage)
         }, 2000)
     }
 
-    private fun throwError(code: Int, msg: String = "") {
+    private fun throwError(error: ConnectionError, msg: String = "") {
         if (port?.isOpen == true) port?.close()
         serialInputOutputManager?.stop()
-        onStatusChanges?.invoke(ConnectionStatus.OnFailure(msg = msg, code = code))
+        onStatusChanges?.invoke(
+            ConnectionStatus.Error(error = error, msg = msg)
+        )
     }
 
     private inline fun <reified T : Parcelable> Intent.parcelable(key: String): T? = when {
         SDK_INT >= 33 -> getParcelableExtra(key, T::class.java)
         else -> @Suppress("DEPRECATION") getParcelableExtra(key) as? T
     }
-}
 
+    /**
+     * Store or Fetch supported product ids in shared-preferences
+     */
+
+    private fun storeProductId(productId: Int) {
+        supportedProducts.add(productId)
+        val json = Gson().toJson(supportedProducts).orEmpty()
+        val sharedPref = activity.getPreferences(Context.MODE_PRIVATE) ?: return
+        with(sharedPref.edit()) {
+            putString("products", json)
+            apply()
+        }
+        Log.i(TAG, "store ProductId ---> $json")
+    }
+
+    private fun getProducts() {
+        val sharedPref = activity.getPreferences(Context.MODE_PRIVATE) ?: return
+        val json = sharedPref.getString("products", "").orEmpty()
+        if (json.isEmpty()) return
+        try {
+            val set = object : TypeToken<MutableSet<Int?>?>() {}.type
+            supportedProducts = Gson().fromJson(json, set)
+            Log.w(TAG, "stored products - $json")
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+}

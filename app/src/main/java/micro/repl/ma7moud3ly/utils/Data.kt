@@ -7,6 +7,7 @@
 
 package micro.repl.ma7moud3ly.utils
 
+import android.hardware.usb.UsbDevice
 import java.io.File
 
 
@@ -22,9 +23,23 @@ enum class EditorMode {
  * For DeviceManager
  */
 sealed class ConnectionStatus {
-    data class OnFailure(val msg: String = "", val code: Int) : ConnectionStatus()
-    object OnConnecting : ConnectionStatus()
-    data class OnConnected(val microDevice: MicroDevice) : ConnectionStatus()
+    data class Error(
+        val error: ConnectionError,
+        val msg: String = "",
+    ) : ConnectionStatus()
+
+    object Connecting : ConnectionStatus()
+
+    data class Connected(val usbDevice: UsbDevice) : ConnectionStatus()
+    data class Approve(val usbDevice: UsbDevice?) : ConnectionStatus()
+}
+
+enum class ConnectionError {
+    NO_DEVICES,
+    CANT_OPEN_PORT,
+    CONNECTION_LOST,
+    PERMISSION_DENIED,
+    NOT_SUPPORTED,
 }
 
 data class MicroDevice(
@@ -32,6 +47,15 @@ data class MicroDevice(
     val board: String,
     val isMicroPython: Boolean
 )
+
+fun UsbDevice.toMicroDevice(): MicroDevice {
+    return MicroDevice(
+        port = deviceName,
+        board = "$manufacturerName - $productName",
+        isMicroPython = true
+    )
+}
+
 
 
 /**

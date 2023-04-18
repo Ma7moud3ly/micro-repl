@@ -77,6 +77,7 @@ private val bodySmall = bodyLarge.copy(
 val Typography = Typography(
     bodyLarge = bodyLarge.copy(fontFamily = fontRoboto),
     bodyMedium = bodyMedium.copy(fontFamily = fontRoboto),
+    bodySmall = bodySmall.copy(fontFamily = fontRoboto),
     titleLarge = titleLarge.copy(fontFamily = fontRoboto),
     titleMedium = titleMedium.copy(fontFamily = fontRoboto),
     titleSmall = titleSmall.copy(fontFamily = fontRoboto),

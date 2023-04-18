@@ -7,16 +7,19 @@
 
 package micro.repl.ma7moud3ly.utils
 
+import android.hardware.usb.UsbDevice
+
 interface HomeUiEvents {
     fun onOpenEditor()
     fun onOpenScripts()
     fun onOpenExplorer()
     fun onOpenTerminal()
-    fun onFindDevices()
     fun onReset()
     fun onSoftReset()
     fun onTerminate()
-
+    fun onFindDevices()
+    fun onApproveDevice(usbDevice: UsbDevice)
+    fun onDenyDevice()
     fun onHelp()
 
 }

@@ -2,6 +2,7 @@
     <string name="app_name">Micro REPL</string>
     <string name="dialog_ok">OK</string>
     <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_approve">Yes Approve</string>
 
     <string name="this_device">My Phone</string>
     <string name="micro_python">MicroPython</string>
@@ -12,18 +13,22 @@
     <string name="home_scripts">Scripts</string>
     <string name="home_explorer">Explorer</string>
     <string name="home_connect">Connect</string>
-    <string name="home_connection_msg">Please connect your device and click Connect ☝️Or restart the app.
+    <string name="home_connection_msg">Please connect your device and click Connect. Or restart the app.
         </string>
     <string name="home_connected">Connected</string>
     <string name="home_disconnected">Disconnected</string>
     <string name="home_connecting">Connecting</string>
-    <string name="home_help">for support or bugs reporting  🧐🐞</string>
+    <string name="home_help">for support or bugs reporting 🐞</string>
     <string name="home_help_link">https://github.com/Ma7moud3ly/micro-repl</string>
+    <string name="home_device_is_flashed">Are you sure that the connected device is a supported port flashed with MicroPython firmware?</string>
+    <string name="home_device_product_name">Product Name</string>
+    <string name="home_device_manufacturer">Manufacturer</string>
+    <string name="home_device_vendor_id">Vendor Id</string>
+    <string name="home_device_product_id">Product Id</string>
 
     <string name="error_no_devices">No devices connected!</string>
-    <string name="error_not_supported">This device is not supported!
-         Right now we support only MicroPython-based devices..</string>
-    <string name="error_cant_open_port">Can\'t open port!</string>
+    <string name="error_not_supported">This device is not supported!</string>
+    <string name="error_cant_open_port">Can\'t open serial port!</string>
     <string name="error_permission_denied">USB permission denied!</string>
     <string name="error_connection_lost">Connection lost!</string>
     <string name="error_unknown">Unknown error!</string>

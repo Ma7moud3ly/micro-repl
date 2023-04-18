@@ -15,8 +15,8 @@ android {
         applicationId "micro.repl.ma7moud3ly"
         minSdk 24
         targetSdk 33
-        versionCode 6
-        versionName "1.1"
+        versionCode 7
+        versionName "1.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

@@ -15,6 +15,7 @@ import androidx.navigation.fragment.NavHostFragment
 import micro.repl.ma7moud3ly.managers.BoardManager
 import micro.repl.ma7moud3ly.managers.FilesManager
 import micro.repl.ma7moud3ly.managers.TerminalManager
+import micro.repl.ma7moud3ly.utils.ConnectionError
 import micro.repl.ma7moud3ly.utils.ConnectionStatus
 import micro.repl.ma7moud3ly.utils.ThemeMode
 
@@ -58,27 +59,24 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleResponseMessage(status: ConnectionStatus) {
-        var duration = Toast.LENGTH_SHORT
         val msg = when (status) {
-            is ConnectionStatus.OnConnecting -> R.string.home_connecting
-            is ConnectionStatus.OnConnected -> R.string.home_connected
-            is ConnectionStatus.OnFailure -> {
-                when (status.code) {
-                    BoardManager.NO_DEVICES -> R.string.error_no_devices
-                    BoardManager.NOT_SUPPORTED -> {
-                        duration = Toast.LENGTH_LONG
-                        R.string.error_not_supported
-                    }
-                    BoardManager.CONNECTION_LOST -> R.string.error_connection_lost
-                    BoardManager.CANT_OPEN_PORT -> R.string.error_cant_open_port
-                    BoardManager.PERMISSION_DENIED -> R.string.error_permission_denied
-                    else -> R.string.error_unknown
+            is ConnectionStatus.Connecting -> R.string.home_connecting
+            is ConnectionStatus.Connected -> R.string.home_connected
+            is ConnectionStatus.Approve -> return
+            is ConnectionStatus.Error -> {
+                when (status.error) {
+                    ConnectionError.NO_DEVICES -> R.string.error_no_devices
+                    ConnectionError.CONNECTION_LOST -> R.string.error_connection_lost
+                    ConnectionError.CANT_OPEN_PORT -> R.string.error_cant_open_port
+                    ConnectionError.PERMISSION_DENIED -> R.string.error_permission_denied
+                    ConnectionError.NOT_SUPPORTED -> R.string.error_not_supported
                 }
             }
         }
 
-        Toast.makeText(this, msg, duration).show()
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
     }
+
 }
 
 

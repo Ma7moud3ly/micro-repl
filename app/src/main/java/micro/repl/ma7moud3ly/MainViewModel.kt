@@ -10,17 +10,24 @@ package micro.repl.ma7moud3ly
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import micro.repl.ma7moud3ly.utils.*
+import micro.repl.ma7moud3ly.utils.ConnectionStatus
+import micro.repl.ma7moud3ly.utils.EditorMode
+import micro.repl.ma7moud3ly.utils.MicroDevice
+import micro.repl.ma7moud3ly.utils.MicroFile
+import micro.repl.ma7moud3ly.utils.TerminalHistory
+import micro.repl.ma7moud3ly.utils.toMicroDevice
 
 class MainViewModel : ViewModel() {
     //the device connectivity status OnConnected or OnConnecting or OnFailure
-    val status = MutableStateFlow<ConnectionStatus>(ConnectionStatus.OnConnecting)
-    val isConnected: Boolean get() = status.value is ConnectionStatus.OnConnected
+    val status = MutableStateFlow<ConnectionStatus>(ConnectionStatus.Connecting)
+    val isConnected: Boolean get() = status.value is ConnectionStatus.Connected
+
     //the connected device
-    val microDevice: MicroDevice? get() = (status.value as? ConnectionStatus.OnConnected)?.microDevice
+    val microDevice: MicroDevice? get() = (status.value as? ConnectionStatus.Connected)?.usbDevice?.toMicroDevice()
 
     // the current path in files explorer
     val root = mutableStateOf("")
+
     // files list in files explorer
     val files = MutableStateFlow<List<MicroFile>>(listOf())
 
@@ -35,6 +42,7 @@ class MainViewModel : ViewModel() {
     //the script path
     var scriptPath = mutableStateOf("")
         private set
+
     //python code in script
     var scriptContent = ""
         private set
@@ -64,6 +72,7 @@ class MainViewModel : ViewModel() {
 
     val terminalInput = mutableStateOf("")
     val terminalOutput = mutableStateOf("")
+
     //commands history
     val history = TerminalHistory()
 }
