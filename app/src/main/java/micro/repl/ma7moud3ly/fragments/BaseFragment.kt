@@ -62,7 +62,7 @@ open class BaseFragment : Fragment() {
     fun navigate(action: NavDirections) {
         try {
             mainActivity?.navHost?.navController?.navigate(action)
-        } catch (e: java.lang.Exception) {
+        } catch (e: Exception) {
             requireActivity().recreate()
             e.printStackTrace()
         }

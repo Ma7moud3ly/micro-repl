@@ -29,10 +29,7 @@ class FilesManager(
     var path = ""
     fun listDir() {
         val code = CommandsManager.iListDir(path)
-        boardManager.writeSync(code, onResponse = { response ->
-            val result = CommandsManager.extractResult(response, default = "[]")
-            Log.i(TAG, "response $response")
-            Log.i(TAG, "result $result")
+        boardManager.writeInSilentMode(code, onResponse = { result ->
             decodeFiles(result)
         })
     }
@@ -40,10 +37,7 @@ class FilesManager(
     fun remove(file: MicroFile) {
         val code = if (file.isFile) CommandsManager.removeFile(file)
         else CommandsManager.removeDirectory(file)
-        boardManager.writeSync(code, onResponse = { response ->
-            val result = CommandsManager.extractResult(response, default = "[]")
-            Log.i(TAG, "response $response")
-            Log.i(TAG, "result $result")
+        boardManager.writeInSilentMode(code, onResponse = { result ->
             decodeFiles(result)
         })
     }
@@ -51,47 +45,34 @@ class FilesManager(
     fun new(file: MicroFile) {
         val code = if (file.isFile) CommandsManager.makeFile(file)
         else CommandsManager.makeDirectory(file)
-        boardManager.writeSync(code, onResponse = { response ->
-            val result = CommandsManager.extractResult(response, default = "[]")
-            Log.i(TAG, "response $response")
-            Log.i(TAG, "result $result")
+        boardManager.writeInSilentMode(code, onResponse = { result ->
             decodeFiles(result)
         })
     }
 
     fun rename(src: MicroFile, dst: MicroFile) {
         val code = CommandsManager.rename(src, dst)
-        boardManager.writeSync(code, onResponse = { response ->
-            val result = CommandsManager.extractResult(response, default = "[]")
-            Log.i(TAG, "response $response")
-            Log.i(TAG, "result $result")
+        boardManager.writeInSilentMode(code, onResponse = { result ->
             decodeFiles(result)
         })
     }
 
     fun read(path: String, onRead: (content: String) -> Unit) {
         val code = CommandsManager.readFile(path)
-        boardManager.writeSync(code, onResponse = { response ->
-            val result = CommandsManager.extractResult(
-                response, default = ""
-            ).replace("\\n", "\n")
-
-            Log.i(TAG, "response $response")
-            Log.i(TAG, "result $result")
+        boardManager.writeInSilentMode(code, onResponse = { result ->
             onRead.invoke(result)
         })
     }
 
+
     fun write(path: String, content: String, onSave: () -> Unit) {
-        val code = CommandsManager.writeFile(path, content, parseJson = true)
-        Log.i(TAG, "code $code")
-        boardManager.writeSync(code, onResponse = { response ->
-            val result = CommandsManager.extractResult(response, default = "[]")
-            Log.i(TAG, "response $response")
+        val code = CommandsManager.writeFile(path, content)
+        boardManager.writeInSilentMode(code, onResponse = { result ->
             Log.i(TAG, "result $result")
             onSave.invoke()
         })
     }
+
 
     private fun decodeFiles(json: String) {
         val list = mutableListOf<MicroFile>()

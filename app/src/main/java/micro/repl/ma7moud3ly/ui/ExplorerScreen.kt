@@ -10,8 +10,10 @@ package micro.repl.ma7moud3ly.ui
 import android.annotation.SuppressLint
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -120,6 +122,10 @@ private fun ColumnScope.FilesList(
                     microFile = file,
                     onClick = {
                         selectedFile = file
+                        if (file.isFile) showFileOptions = true
+                        else uiEvents?.onOpenFolder(file)
+                    }, onLongClick = {
+                        selectedFile = file
                         showFileOptions = true
                     }
                 )
@@ -150,7 +156,7 @@ private fun Header(
         Row(
             Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp),
+                .padding(horizontal = 8.dp, vertical = 2.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -159,9 +165,7 @@ private fun Header(
                     id = if (isMicroPython) R.string.micro_python
                     else R.string.circuit_python
                 ),
-                style = MaterialTheme.typography.labelLarge.copy(
-                    fontWeight = FontWeight.Bold
-                ),
+                style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.primary,
             )
             Text(
@@ -250,16 +254,21 @@ fun IconHeader(
     )
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ItemFile(
     microFile: MicroFile,
-    onClick: (microFile: MicroFile) -> Unit
+    onClick: (microFile: MicroFile) -> Unit,
+    onLongClick: (microFile: MicroFile) -> Unit
 ) {
     val isFile = microFile.isFile
     Column(
         verticalArrangement = Arrangement.spacedBy(0.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.clickable { onClick.invoke(microFile) }
+        modifier = Modifier.combinedClickable(
+            onClick = { onClick.invoke(microFile) },
+            onLongClick = { onLongClick.invoke(microFile) },
+        )
     ) {
         Icon(
             painter = painterResource(
@@ -350,23 +359,25 @@ private fun FileOptionsList(
     onRename: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        if (file.canRun) ItemFileOption(
+        FileOptionHeader(microFile = file)
+        Spacer(modifier = Modifier.height(8.dp))
+        if (file.canRun) FileOptionItem(
             title = R.string.explorer_run,
             onClick = onRun
         )
-        if (file.isFile) ItemFileOption(
+        if (file.isFile) FileOptionItem(
             title = R.string.explorer_edit,
             onClick = onEdit
         )
-        if (file.isFile.not()) ItemFileOption(
+        if (file.isFile.not()) FileOptionItem(
             title = R.string.explorer_open,
             onClick = onOpenFolder
         )
-        ItemFileOption(
+        FileOptionItem(
             title = R.string.explorer_rename,
             onClick = onRename
         )
-        ItemFileOption(
+        FileOptionItem(
             title = R.string.explorer_delete,
             onClick = onRemove,
             showDivider = false
@@ -374,9 +385,42 @@ private fun FileOptionsList(
     }
 }
 
+@Composable
+private fun FileOptionHeader(microFile: MicroFile) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp, top = 4.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            painter = painterResource(
+                id = if (microFile.isFile) R.drawable.file
+                else R.drawable.folder
+            ),
+            tint = if (microFile.isFile) fileColor else folderColor,
+            contentDescription = "",
+            modifier = Modifier.size(32.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = microFile.name,
+            style = MaterialTheme.typography.bodyMedium.copy(
+                fontWeight = FontWeight.Medium
+            ),
+            modifier = Modifier.wrapContentWidth(),
+            color = Color.Black,
+            textAlign = TextAlign.Center,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+    }
+}
 
 @Composable
-private fun ItemFileOption(
+private fun FileOptionItem(
     @StringRes title: Int,
     onClick: () -> Unit,
     showDivider: Boolean = true,
@@ -390,8 +434,8 @@ private fun ItemFileOption(
     ) {
         Text(
             stringResource(id = title),
-            style = MaterialTheme.typography.labelLarge.copy(
-                color = Color.Black
+            style = MaterialTheme.typography.bodySmall.copy(
+                color = Color.Black.copy(alpha = 0.5f)
             ),
             modifier = Modifier.padding(
                 horizontal = 16.dp,
@@ -401,8 +445,8 @@ private fun ItemFileOption(
         if (showDivider) Divider(
             Modifier
                 .fillMaxWidth()
-                .height(1.dp)
-                .background(colorResource(id = R.color.light_blue))
+                .height(1.dp),
+            color = Color.Black
         )
     }
 }

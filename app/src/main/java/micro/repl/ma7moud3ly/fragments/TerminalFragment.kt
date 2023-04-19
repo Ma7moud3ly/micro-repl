@@ -15,6 +15,7 @@ import android.widget.Toast
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.fragment.findNavController
 import micro.repl.ma7moud3ly.R
+import micro.repl.ma7moud3ly.managers.CommandsManager
 import micro.repl.ma7moud3ly.ui.TerminalScreen
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.utils.TerminalUiEvents
@@ -51,7 +52,9 @@ class TerminalFragment : BaseFragment(), TerminalUiEvents {
         if (viewModel.scriptContent.isNotEmpty()) {
             terminalManager?.executeScript(viewModel.scriptContent)
         } else {
-            terminalManager?.softResetDevice()
+            viewModel.terminalOutput.value = ""
+            //boardManager?.writeCommand(CommandsManager.RESET)
+            boardManager?.writeCommand(CommandsManager.REPL_MODE)
         }
 
     }

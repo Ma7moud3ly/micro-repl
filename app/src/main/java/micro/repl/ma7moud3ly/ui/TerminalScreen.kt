@@ -167,7 +167,6 @@ private fun ColumnScope.Terminal(
     val fSize = fontSize()
     val keyboardController = LocalSoftwareKeyboardController.current
     val inp = input()
-
     Column(
         Modifier
             .fillMaxWidth()
@@ -219,7 +218,8 @@ private fun ColumnScope.Terminal(
                     MaterialTheme.colorScheme.primary
                 ),
                 keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Send
+                    imeAction = if (inp.contains("\n")) ImeAction.Default
+                    else ImeAction.Send
                 ),
                 keyboardActions = KeyboardActions(
                     onSend = {
@@ -229,12 +229,20 @@ private fun ColumnScope.Terminal(
                 )
             )
             Icon(
-                painter = painterResource(id = R.drawable.line_break),
+                painter = painterResource(
+                    id = if (inp.contains("\n")) R.drawable.run
+                    else R.drawable.line_break
+                ),
                 contentDescription = stringResource(
                     id = R.string.terminal_new_line
                 ), modifier = Modifier
                     .size(20.dp)
-                    .clickable { onInputChanges(inp + "\r\n") },
+                    .clickable {
+                        if (inp.contains("\n")) {
+                            onKeyboardSend.invoke()
+                            keyboardController?.hide()
+                        } else onInputChanges(inp + "\r\n")
+                    },
                 tint = MaterialTheme.colorScheme.primary
             )
         }

@@ -29,6 +29,8 @@ import com.hoho.android.usbserial.driver.UsbSerialProber
 import com.hoho.android.usbserial.util.SerialInputOutputManager
 import micro.repl.ma7moud3ly.managers.CommandsManager.END_OF_REPL_RESPONSE
 import micro.repl.ma7moud3ly.managers.CommandsManager.END_OF_REPL_RESPONSE2
+import micro.repl.ma7moud3ly.managers.CommandsManager.isSilentExecutionDone
+import micro.repl.ma7moud3ly.managers.CommandsManager.trimSilentResult
 import micro.repl.ma7moud3ly.utils.ConnectionError
 import micro.repl.ma7moud3ly.utils.ConnectionStatus
 
@@ -57,7 +59,7 @@ class BoardManager(
     private var port: UsbSerialPort? = null
     private val isPortOpen: Boolean get() = port?.isOpen == true
 
-    private var onReadSync: (() -> Unit)? = null
+    private var onReadSync: ((data: String) -> Unit)? = null
     private var syncData = StringBuilder("")
     private var isReadSync = false
     private var permissionGranted = false
@@ -111,16 +113,17 @@ class BoardManager(
     /**
      * Write python code to serial port and return response in the callback
      */
-    fun writeSync(
+    private fun writeSync(
         code: String,
         onResponse: ((data: String) -> Unit)? = null
     ) {
         isReadSync = true
         syncData.clear()
-        onReadSync = {
-            Log.i(TAG, "syncData - $syncData")
+        onReadSync = { result ->
+            Log.v(TAG, "syncInput - $code")
+            Log.i(TAG, "syncResult - $result")
+            onResponse?.invoke(result)
             isReadSync = false
-            onResponse?.invoke(syncData.toString())
             syncData.clear()
             onReadSync = null
         }
@@ -132,6 +135,15 @@ class BoardManager(
         }
     }
 
+    fun writeInSilentMode(
+        code: String,
+        onResponse: ((data: String) -> Unit)? = null
+    ) {
+        writeCommand(CommandsManager.SILENT_MODE)
+        writeSync(code, onResponse = onResponse)
+        writeCommand(CommandsManager.RESET)
+    }
+
     /**
      * Write python statement to the serial REPL
      * don't wait to response it will be echoed to SerialInputOutputManager listener
@@ -139,7 +151,7 @@ class BoardManager(
     fun write(code: String, onWrite: (() -> Unit)? = null) {
         try {
             /*\u000D == \r
-             MicroPython requires \r after code to echo response
+             REPL requires \r after code to echo response
              also \r is required before code to print >>>
             */
             val cmd = "\u000D" + code + "\u000D"
@@ -277,17 +289,18 @@ class BoardManager(
         //finally with isDone = true, response is called-back to writeSync method
         if (isReadSync) {
             syncData.append(data)
-            val isDone = isExecutionDone(data) || isExecutionDone(syncData.toString())
-            Log.w(TAG, "syncData - $syncData")
-            Log.i(TAG, "isDone = $isDone")
-            if (isDone) onReadSync?.invoke()
+            val isDone = isSilentExecutionDone(data) || isSilentExecutionDone(syncData.toString())
+            //Log.w(TAG, "syncData - $syncData")
+            //Log.i(TAG, "isDone = $isDone")
+            if (isDone) {
+                val result = trimSilentResult(syncData.toString())
+                onReadSync?.invoke(result)
+            }
         } else {
             // in normal write mode, when micropython responses to commands
             //the output is echoed directly to onReceiveData callback
 
             Log.i(TAG, "onNewData - $data")
-            //Log.w(TAG, "onNewData - ${Gson().toJson(data)}")
-
             //some preprocessing to responses to remove extra >>>
             if (data.isEmpty()) return
             else if (data.endsWith(END_OF_REPL_RESPONSE2))
@@ -306,17 +319,6 @@ class BoardManager(
                 )
             else onReceiveData?.invoke(data)
         }
-    }
-
-    /**
-     * we use this to detect the end of execution in sync writing mode
-     * this logic might be changed :3
-     */
-    private fun isExecutionDone(data: String): Boolean {
-        return data.contains(CommandsManager.END_OUTPUT)
-                || data.contains(CommandsManager.END_OUTPUT2)
-                //|| data.contains("OSError:")
-                || data.contains("ENOENT")
     }
 
     override fun onRunError(e: Exception?) {

@@ -24,7 +24,6 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import micro.repl.ma7moud3ly.R
-import micro.repl.ma7moud3ly.fragments.ScriptsFragment
 import micro.repl.ma7moud3ly.utils.ThemeMode
 import java.io.File
 import kotlin.math.pow
@@ -266,12 +265,6 @@ class EditorManager(
             })
     }
 
-    private fun scriptList() {
-        val intent = Intent(context, ScriptsFragment::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-        context.startActivity(intent)
-        afterEdit?.invoke()
-    }
 
     private fun newScript() {
         editor.setText("")
@@ -288,7 +281,7 @@ class EditorManager(
             LIS -> if (saveNew()) saveFileAs()
             NEW -> newScript()
             SAV -> {}
-            END -> afterEdit?.invoke()
+            END -> activity.runOnUiThread { afterEdit?.invoke() }
             RUN -> {
                 val path = if (editorModeLocal.not()) scriptPath else scriptFile?.path ?: ""
                 val content = editor.text.toString().trim()

@@ -7,6 +7,7 @@
 
 package micro.repl.ma7moud3ly.managers
 
+import android.util.Log
 import micro.repl.ma7moud3ly.utils.MicroDevice
 
 /**
@@ -37,7 +38,8 @@ class TerminalManager(
     }
 
     fun eval(code: String, onEval: (() -> Unit)? = null) {
-        boardManager.write(code)
+        Log.i(TAG, "eval - $code")
+        boardManager.write(code.replace("\n", "\r\n").trimEnd())
         onEval?.invoke()
     }
 
@@ -45,11 +47,18 @@ class TerminalManager(
         code: String,
         onExecute: (() -> Unit)? = null
     ) {
-        val cmd = CommandsManager.execute(code, toJson = true)
+        //start silent mode
         boardManager.writeCommand(CommandsManager.SILENT_MODE)
-        boardManager.writeCommand(cmd)
-        boardManager.writeCommand(CommandsManager.RESET) //exit silent mode
+        //print new line to separate silent mode message from output
+        boardManager.writeCommand("print()\r\n$code")
+        //exit silent mode
+        boardManager.writeCommand(CommandsManager.RESET)
+        //back to repl mode
         boardManager.writeCommand(CommandsManager.REPL_MODE)
         onExecute?.invoke()
+    }
+
+    companion object {
+        private const val TAG = "TerminalManager"
     }
 }
