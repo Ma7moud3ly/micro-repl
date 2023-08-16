@@ -30,6 +30,6 @@ object ThemeMode {
 
     fun isDark(activity: Activity): Boolean {
         val sharedPref = activity.getPreferences(Context.MODE_PRIVATE)
-        return sharedPref.getBoolean("dark_mode", false)
+        return sharedPref.getBoolean("dark_mode", true)
     }
 }

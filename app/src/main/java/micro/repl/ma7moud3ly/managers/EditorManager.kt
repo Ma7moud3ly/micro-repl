@@ -7,40 +7,48 @@
 
 package micro.repl.ma7moud3ly.managers
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Rect
 import android.net.Uri
-import android.text.Editable
-import android.text.TextWatcher
-import android.text.method.ScrollingMovementMethod
-import android.util.TypedValue
-import android.view.MotionEvent
+import android.view.KeyEvent
 import android.view.View
-import android.view.View.OnTouchListener
-import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.res.ResourcesCompat
+import io.github.rosemoe.sora.event.ContentChangeEvent
+import io.github.rosemoe.sora.event.EditorKeyEvent
+import io.github.rosemoe.sora.event.KeyBindingEvent
+import io.github.rosemoe.sora.event.SelectionChangeEvent
+import io.github.rosemoe.sora.event.SideIconClickEvent
+import io.github.rosemoe.sora.langs.textmate.TextMateColorScheme
+import io.github.rosemoe.sora.langs.textmate.TextMateLanguage
+import io.github.rosemoe.sora.widget.CodeEditor
+import io.github.rosemoe.sora.widget.style.builtin.ScaleCursorAnimator
+import io.github.rosemoe.sora.widget.subscribeEvent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.utils.ThemeMode
+import org.eclipse.tm4e.core.registry.IGrammarSource
+import org.eclipse.tm4e.core.registry.IThemeSource
 import java.io.File
-import kotlin.math.pow
-import kotlin.math.sqrt
+import java.io.InputStreamReader
 
 /**
- * This class manages our micro text editor
- * to handle saving/retrieving scripts locally
- *  or in micro device storages..
+ * This class manages the code editor
+ * to handle saving/retrieving scripts locally or in microcontroller storages.
+ * The code editor is based on (sora-editor) https://github.com/Rosemoe/sora-editor
  */
 class EditorManager(
     private val context: Context,
-    private val editor: EditText,
-    private val lines: TextView,
+    private val editor: CodeEditor,
     private val title: TextView,
     private val editorModeLocal: Boolean,
     private val scriptPath: String,
+    private val onTextChange: (() -> Unit)? = null,
     private val onRemoteOpen: ((path: String) -> Unit)? = null,
     private val onRemoteSave: ((path: String, content: String) -> Unit)? = null,
     private val onRemoteRun: ((path: String, content: String) -> Unit)? = null,
@@ -48,25 +56,20 @@ class EditorManager(
 ) {
     private val activity: Activity = context as Activity
     private val scriptsManager: ScriptsManager = ScriptsManager(context)
-    private var showLines = false
-    private var fontSize = 0
 
-    //on touch scale
-    private var mBaseDist = 0
-    private var mBaseRatio = 0f
 
     private var actionAfterSave = -1
-    var remoteContentCached = ""
 
-    var scriptFile: File? = null
+    private var scriptFile: File? = null
     var onKeyboardVisibilityChanges: ((visible: Boolean) -> Unit)? = null
 
     init {
         getEditorSettings()
-        initLineCounter()
-        initEditorGestureScale()
         initScript()
+        initCodeEditor()
     }
+
+    val canRun: Boolean get() = scriptFile?.name?.endsWith(".py") == true
 
     private fun initScript() {
         if (scriptPath.isNotEmpty()) scriptFile = File(scriptPath)
@@ -83,102 +86,107 @@ class EditorManager(
     }
 
     /**
-     * Editor Lines
+     *  Editor Initialization
      */
 
-    val canRun: Boolean get() = scriptFile?.name?.endsWith(".py") == true
 
-    fun toggleLines() {
-        showLines = !showLines
-        if (showLines) lines.visibility = View.VISIBLE else lines.visibility = View.GONE
-        countLines()
-    }
+    private fun initCodeEditor() {
+        editor.apply {
+            typefaceText = ResourcesCompat.getFont(context, R.font.jetbrains_mono_regular);
+            setLineSpacing(2f, 1.1f)
+            cursorAnimator = ScaleCursorAnimator(this)
+            nonPrintablePaintingFlags =
+                CodeEditor.FLAG_DRAW_WHITESPACE_LEADING or
+                        CodeEditor.FLAG_DRAW_LINE_SEPARATOR or
+                        CodeEditor.FLAG_DRAW_WHITESPACE_IN_SELECTION
 
-    fun countLines() {
-        if (!showLines) return
-        lines.postDelayed({
-            lines.text = ""
-            val n = editor.lineCount
-            val format = if (n > 99) "%03d" else "%02d"
-            for (i in 1..n) {
-                val num = String.format(format, i)
-                lines.append("$num\n")
+            // Update display dynamically
+            subscribeEvent<SelectionChangeEvent> { _, _ ->/* updatePositionText() */ }
+            subscribeEvent<ContentChangeEvent> { _, _ ->
+                postDelayed({ onTextChange?.invoke() }, 50)
             }
-        }, 200)
-    }
-
-    private fun showLines(b: Boolean) {
-        showLines = b
-        if (showLines) lines.visibility = View.VISIBLE else lines.visibility = View.GONE
-        countLines()
-    }
-
-    private fun initLineCounter() {
-        lines.setOnScrollChangeListener { _: View?, _: Int, i1: Int, _: Int, _: Int ->
-            editor.scrollY = i1
-        }
-        editor.setOnScrollChangeListener { _: View?, _: Int, i1: Int, _: Int, _: Int ->
-            lines.scrollY = i1
-        }
-        editor.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {}
-            override fun onTextChanged(charSequence: CharSequence, j: Int, i1: Int, i2: Int) {}
-            override fun afterTextChanged(editable: Editable) {
-                countLines()
+            subscribeEvent<SideIconClickEvent> { _, _ ->
+                Toast.makeText(context, "Side icon clicked", Toast.LENGTH_SHORT).show()
             }
-        })
 
-        lines.isVerticalScrollBarEnabled = true
-        lines.movementMethod = ScrollingMovementMethod()
-
-    }
-
-    /**
-     * Zoom  & Scale
-     */
-    fun zoomIn(zin: Boolean) {
-        val zoomValue = 2
-        if (zin && fontSize < 100) fontSize += zoomValue
-        else if (!zin && fontSize > 8) fontSize -= zoomValue
-        editor.setTextSize(TypedValue.COMPLEX_UNIT_DIP, fontSize.toFloat())
-        lines.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize.toFloat())
-        countLines()
-    }
-
-    @SuppressLint("ClickableViewAccessibility")
-    private fun initEditorGestureScale() {
-        val onTouchListener = OnTouchListener { view: View, event: MotionEvent ->
-            view.performClick()
-            if (event.pointerCount == 2) {
-                val action = event.action
-                val pureAction = action and MotionEvent.ACTION_MASK
-                if (pureAction == MotionEvent.ACTION_POINTER_DOWN) {
-                    mBaseDist = getDistance(event)
-                    mBaseRatio = fontSize.toFloat()
-                } else {
-                    val delta = (getDistance(event) - mBaseDist) / 200
-                    val multi = 2.0.pow(delta.toDouble()).toFloat()
-                    fontSize =
-                        100f.coerceAtMost(5f.coerceAtLeast(mBaseRatio * multi))
-                            .toInt()
-                    editor.setTextSize(TypedValue.COMPLEX_UNIT_DIP, fontSize.toFloat())
-                    lines.setTextSize(TypedValue.COMPLEX_UNIT_DIP, fontSize.toFloat())
-                    countLines()
+            subscribeEvent<KeyBindingEvent> { event, _ ->
+                if (event.eventType != EditorKeyEvent.Type.DOWN) {
+                    return@subscribeEvent
                 }
+                Toast.makeText(
+                    context,
+                    "Keybinding event: " + generateKeybindingString(event),
+                    Toast.LENGTH_LONG
+                ).show()
             }
-            false
         }
-        editor.setOnTouchListener(onTouchListener)
 
         editor.viewTreeObserver.addOnGlobalLayoutListener {
             onKeyboardVisibilityChanges?.invoke(isKeyboardVisible(editor.rootView))
         }
+
+        //init theme
+        CoroutineScope(Dispatchers.Default).launch { setEditorLanguage() }
+
+        onTextChange?.invoke()
     }
 
-    private fun getDistance(event: MotionEvent): Int {
-        val dx = (event.getX(0) - event.getX(1)).toInt()
-        val dy = (event.getY(0) - event.getY(1)).toInt()
-        return sqrt((dx * dx + dy * dy).toDouble()).toInt()
+    /**
+     * Configure the Theme & Programming Language of thr code editor
+     */
+    private fun setEditorLanguage() {
+        try {
+            val isDark = ThemeMode.isDark(activity)
+            val theme = if (isDark) "darcula.json" else "QuietLight.tmTheme"
+
+            //load a specific theme file from assets/themes
+            val themeSource = IThemeSource.fromInputStream(
+                context.assets.open("themes/$theme"),
+                theme,
+                null
+            )
+            val colorScheme = TextMateColorScheme.create(themeSource)
+            editor.colorScheme = colorScheme
+
+            // don't initialize python syntax for non python files
+            if (canRun.not()) return
+
+            //load python language configuration from assets/python
+            val language = TextMateLanguage.create(
+                IGrammarSource.fromInputStream(
+                    //https://github.com/microsoft/vscode/blob/main/extensions/python/syntaxes/MagicPython.tmLanguage.json
+                    context.assets.open("python/python.tmLanguage.json"),
+                    "Python.tmLanguage.json",
+                    null
+                ),
+                //https://github.com/microsoft/vscode/blob/main/extensions/python/language-configuration.json
+                InputStreamReader(context.assets.open("python/language-configuration.json")),
+                (colorScheme as TextMateColorScheme).themeSource
+            )
+            editor.setEditorLanguage(language)
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+
+    private fun generateKeybindingString(event: KeyBindingEvent): String {
+        val sb = StringBuilder()
+        if (event.isCtrlPressed) {
+            sb.append("Ctrl + ")
+        }
+
+        if (event.isAltPressed) {
+            sb.append("Alt + ")
+        }
+
+        if (event.isShiftPressed) {
+            sb.append("Shift + ")
+        }
+
+        sb.append(KeyEvent.keyCodeToString(event.keyCode))
+        return sb.toString()
     }
 
     private fun isKeyboardVisible(rootView: View): Boolean {
@@ -190,13 +198,12 @@ class EditorManager(
         return heightDiff > softKeyboardHeight * dm.density
     }
 
-
     /**
      * Script Edit & Save
      */
 
     fun clear() {
-        editor.text.clear()
+        editor.setText("")
     }
 
     fun checkSave(action: Int) {
@@ -222,8 +229,7 @@ class EditorManager(
     }
 
     private fun saveRemotely(): Boolean {
-        return editorModeLocal.not() && scriptFile != null &&
-                editor.text.toString() != remoteContentCached
+        return editorModeLocal.not() && scriptFile != null && editor.canUndo()
 
     }
 
@@ -243,7 +249,6 @@ class EditorManager(
             afterSave()
         } else {
             val content = editor.text.toString()
-            remoteContentCached = content
             onRemoteSave?.invoke(scriptPath, content)
             if (actionAfterSave == RUN) afterSave()
         }
@@ -318,8 +323,7 @@ class EditorManager(
 
     private fun setEditorSettings() {
         val sharedPrefEditor = activity.getPreferences(Context.MODE_PRIVATE).edit()
-        sharedPrefEditor.putInt("font_size", fontSize)
-        sharedPrefEditor.putBoolean("show_lines", showLines)
+        sharedPrefEditor.putBoolean("show_lines", editor.isLineNumberEnabled)
         if (editorModeLocal) scriptFile?.let {
             sharedPrefEditor.putString("script", it.absolutePath)
         }
@@ -329,11 +333,7 @@ class EditorManager(
     //if (!path.equals("")) scripts = Uri.parse(path);
     private fun getEditorSettings() {
         val sharedPref = activity.getPreferences(Context.MODE_PRIVATE)
-        fontSize = sharedPref.getInt("font_size", 14)
-        showLines = sharedPref.getBoolean("show_lines", true)
-        showLines(showLines)
-        lines.setTextSize(TypedValue.COMPLEX_UNIT_DIP, fontSize.toFloat())
-        editor.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize.toFloat())
+        editor.isLineNumberEnabled = sharedPref.getBoolean("show_lines", true)
         if (editorModeLocal) {
             val path = sharedPref.getString("script", "") ?: ""
             scriptFile = if (path.isNotEmpty()) File(path) else null

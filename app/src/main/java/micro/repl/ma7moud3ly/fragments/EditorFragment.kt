@@ -62,8 +62,8 @@ class EditorFragment : BaseFragment() {
             editorModeLocal = viewModel.isLocalScript,
             scriptPath = viewModel.scriptPath.value,
             editor = binding.editor,
-            lines = binding.lines,
             title = binding.scriptTitle,
+            onTextChange = onTextChange,
             onRemoteOpen = onRemoteOpen,
             onRemoteSave = onRemoteSave,
             onRemoteRun = onRemoteRun,
@@ -88,18 +88,19 @@ class EditorFragment : BaseFragment() {
 
     private fun editorButtons(em: EditorManager) {
         val btns = binding.buttons
+        val editor = binding.editor
         btns.edNew.setOnClickListener { em.checkSave(action = EditorManager.NEW) }
         btns.edSave.setOnClickListener { em.checkSave(action = EditorManager.SAV) }
         btns.edShare.visibility = View.GONE
         btns.edClear.setOnClickListener { em.clear() }
-        btns.edZoomIn.setOnClickListener { em.zoomIn(true) }
-        btns.edZoomOut.setOnClickListener { em.zoomIn(false) }
+        btns.edUndo.setOnClickListener { editor.undo() }
+        btns.edRedo.setOnClickListener { editor.redo() }
         btns.edDarkMode.setOnClickListener { em.toggleDarkMode() }
-        btns.edLines.setOnClickListener { em.toggleLines() }
-
+        btns.edLines.setOnClickListener {
+            editor.isLineNumberEnabled = !editor.isLineNumberEnabled
+        }
         if (viewModel.isLocalScript) {
             binding.scriptSource.text = getString(R.string.this_device)
-            binding.device.root.visibility = View.GONE
             btns.edNew.visibility = View.VISIBLE
             btns.edDarkMode.visibility = View.VISIBLE
             binding.scriptTitle.setOnClickListener { em.checkSave(action = EditorManager.LIS) }
@@ -108,12 +109,6 @@ class EditorFragment : BaseFragment() {
                 if (viewModel.microDevice?.isMicroPython == true) R.string.micro_python
                 else R.string.circuit_python
             )
-            binding.device.root.visibility = View.VISIBLE
-            binding.device.image.setImageResource(
-                if (viewModel.microDevice?.isMicroPython == true)
-                    R.drawable.micro_python
-                else R.drawable.circuit_python
-            )
             binding.scriptTitle.setOnClickListener {}
             btns.edNew.visibility = View.GONE
             btns.edDarkMode.visibility = View.GONE
@@ -121,12 +116,16 @@ class EditorFragment : BaseFragment() {
 
     }
 
+    private val onTextChange: () -> Unit = {
+        binding.buttons.edUndo.isEnabled = binding.editor.canUndo()
+        binding.buttons.edRedo.isEnabled = binding.editor.canRedo()
+    }
+
     private val onRemoteOpen: (String) -> Unit = { path ->
         Log.v(TAG, "isConnected = ${viewModel.isConnected}")
         Log.i(TAG, "onRemoteOpen  = $path")
         if (viewModel.isConnected) {
             filesManager?.read(path, onRead = { content ->
-                editorManager?.remoteContentCached = content
                 requireActivity().runOnUiThread {
                     binding.editor.setText(content)
                 }
@@ -148,5 +147,10 @@ class EditorFragment : BaseFragment() {
         viewModel.initScript(path = path, content = content)
         val action = EditorFragmentDirections.actionEditorFragmentToTerminalFragment()
         navigate(action)
+    }
+
+    override fun onDestroy() {
+        binding.editor.release()
+        super.onDestroy()
     }
 }
