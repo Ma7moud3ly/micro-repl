@@ -3,13 +3,20 @@
 #### Download from [Google Play](https://play.google.com/store/apps/details?id=micro.repl.ma7moud3ly)
 > **Note** Currently MicroPython is only supported.
 
-
 ## Micro REPL has the following features:
 - A **Terminal** to access MicroPython interactive interpreter.
 - Files **Explorer** (Files Manager) for MicroPython storage.
-- A basic **Code Editor**
+- A Smart **Code Editor** with python syntax support and code completion.
 
-## Requirments
+## Release Notes :
+The latest version **(1.3)** comes with a new code editor based on [Sora Editor](https://github.com/Rosemoe/sora-editor) which supports the following features:
+- Syntax highlighting
+- Auto indent
+- Auto-completion
+
+And many more, please refer to [Sora Editor](https://github.com/Rosemoe/sora-editor).
+
+## Requirements
 - Smartphone with Android 7+ and supports [USB_On-The-Go](https://en.wikipedia.org/wiki/USB_On-The-Go).
 - Microcontroller flashed with [MicroPython](https://micropython.org/download/) firmware 
 > **Note** This version tested with Raspberry Pi Pico & MicroPython v1.19.1  [p2-pico-20220618-v1.19.1.uf2](https://micropython.org/download/rp2-pico/)
@@ -54,3 +61,5 @@
 - https://github.com/thonny/thonny
 - https://github.com/dhylands/rshell
 - https://github.com/mik3y/usb-serial-for-android
+- https://github.com/Rosemoe/sora-editor
+- https://github.com/PsiCodes/KtxPy/tree/master
