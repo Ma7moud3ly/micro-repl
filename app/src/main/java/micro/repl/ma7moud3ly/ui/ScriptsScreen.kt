@@ -100,10 +100,8 @@ private fun Header(onUp: () -> Unit) {
             )
         }
 
-        Divider(
-            Modifier
-                .fillMaxWidth()
-                .height(1.dp),
+        HorizontalDivider(
+            thickness = 1.dp,
             color = dividerColor
         )
     }

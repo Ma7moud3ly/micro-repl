@@ -361,10 +361,8 @@ private fun RowScope.ToolbarIcon(
 
 @Composable
 private fun Hr() {
-    Divider(
-        Modifier
-            .fillMaxWidth()
-            .height(1.dp),
+    HorizontalDivider(
+        thickness = 1.dp,
         color = colorResource(id = R.color.light_blue)
     )
 }

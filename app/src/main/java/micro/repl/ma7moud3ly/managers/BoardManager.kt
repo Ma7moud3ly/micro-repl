@@ -15,6 +15,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
+import android.os.Build
 import android.os.Build.VERSION.SDK_INT
 import android.os.Handler
 import android.os.Parcelable
@@ -204,18 +205,24 @@ class BoardManager(
         throwError(error = ConnectionError.NOT_SUPPORTED)
     }
 
-    @SuppressLint("UnspecifiedImmutableFlag")
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     private fun requestUsbPermission(usbDevice: UsbDevice) {
         Log.i(TAG, "requestUsbPermission")
 
         val permissionIntent = PendingIntent.getBroadcast(
             context,
-            0, Intent(ACTION_USB_PERMISSION),
-            if (SDK_INT >= 31) (PendingIntent.FLAG_MUTABLE or 0) else 0
+            0,
+            Intent(ACTION_USB_PERMISSION),
+            if (SDK_INT >= 34) PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_NO_CREATE
+            else if (SDK_INT >= 31) PendingIntent.FLAG_MUTABLE
+            else 0
         )
-
         val filter = IntentFilter(ACTION_USB_PERMISSION)
-        context.registerReceiver(usbReceiver, filter)
+
+        if (SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            context.registerReceiver(usbReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        } else context.registerReceiver(usbReceiver, filter)
+
         permissionGranted = false
         usbManager.requestPermission(usbDevice, permissionIntent)
     }
