@@ -9,6 +9,8 @@ package micro.repl.ma7moud3ly.managers
 
 import android.annotation.SuppressLint
 import android.app.PendingIntent
+import android.app.PendingIntent.FLAG_MUTABLE
+import android.app.PendingIntent.FLAG_UPDATE_CURRENT
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -212,9 +214,8 @@ class BoardManager(
         val permissionIntent = PendingIntent.getBroadcast(
             context,
             0,
-            Intent(ACTION_USB_PERMISSION),
-            if (SDK_INT >= 34) PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_NO_CREATE
-            else if (SDK_INT >= 31) PendingIntent.FLAG_MUTABLE
+            Intent(ACTION_USB_PERMISSION).apply { `package` = context.packageName },
+            if (SDK_INT >= 31) FLAG_MUTABLE or FLAG_UPDATE_CURRENT
             else 0
         )
         val filter = IntentFilter(ACTION_USB_PERMISSION)
