@@ -40,6 +40,7 @@ class TerminalManager(
     fun eval(code: String, onEval: (() -> Unit)? = null) {
         Log.i(TAG, "eval - $code")
         boardManager.write(code.replace("\n", "\r\n").trimEnd())
+        boardManager.write("\r\n")
         onEval?.invoke()
     }
 

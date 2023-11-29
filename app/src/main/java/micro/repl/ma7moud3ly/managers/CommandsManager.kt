@@ -35,8 +35,6 @@ object CommandsManager {
      * Extra commands to detect the end of code execution
      * this logic might be changed :3
      */
-    const val END_OF_REPL_RESPONSE = "\n>>> "
-    const val END_OF_REPL_RESPONSE2 = "\n>>> \r\n>>> "
     private const val SILENT_EXECUTION_START = "OK"
     private const val SILENT_EXECUTION_END = "\u0004" //
 

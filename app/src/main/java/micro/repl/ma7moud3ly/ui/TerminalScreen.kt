@@ -11,21 +11,43 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -35,6 +57,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
 import micro.repl.ma7moud3ly.MainViewModel
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
@@ -67,6 +90,7 @@ fun TerminalScreen(
     viewModel: MainViewModel,
     uiEvents: TerminalUiEvents? = null
 ) {
+    val coroutineScope = rememberCoroutineScope()
     var terminalInput by remember { viewModel.terminalInput }
     var terminalOutput by remember { viewModel.terminalOutput }
     val scriptPath by remember { viewModel.scriptPath }
@@ -81,9 +105,11 @@ fun TerminalScreen(
         scriptPath = { scriptPath },
         scriptLocal = { viewModel.isLocalScript },
         onRun = {
-            uiEvents?.onRun(terminalInput)
-            terminalInput = ""
-            terminalOutput += "\n"
+            coroutineScope.launch {
+                uiEvents?.onRun(terminalInput)
+                terminalInput = ""
+                terminalOutput += "\n"
+            }
         },
         onClear = {
             terminalInput = ""
@@ -155,7 +181,6 @@ private fun zoom(fontSize: TextUnit, zoomIn: Boolean): TextUnit {
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun ColumnScope.Terminal(
     output: () -> String,
@@ -165,8 +190,11 @@ private fun ColumnScope.Terminal(
     fontSize: () -> TextUnit
 ) {
     val fSize = fontSize()
-    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+    val focusRequester = remember { FocusRequester() }
     val inp = input()
+    fun multiLine() = inp.contains("\n")
+
     Column(
         Modifier
             .fillMaxWidth()
@@ -194,7 +222,10 @@ private fun ColumnScope.Terminal(
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontFamily = fontConsolas,
                     fontSize = fSize
-                )
+                ),
+                modifier = Modifier.clickable {
+                    focusRequester.requestFocus()
+                }
             )
             BasicTextField(
                 value = inp,
@@ -203,13 +234,12 @@ private fun ColumnScope.Terminal(
                     .weight(1f)
                     .wrapContentHeight()
                     .background(
-                        color = if (inp.contains("\n"))
-                            MaterialTheme.colorScheme.primary.copy(
-                                alpha = 0.1f
-                            )
+                        color = if (multiLine()) MaterialTheme.colorScheme
+                            .primary.copy(alpha = 0.1f)
                         else Color.Transparent
                     )
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                    .focusRequester(focusRequester),
                 textStyle = TextStyle(
                     fontFamily = fontConsolas,
                     fontSize = fSize,
@@ -224,13 +254,13 @@ private fun ColumnScope.Terminal(
                 keyboardActions = KeyboardActions(
                     onSend = {
                         onKeyboardSend.invoke()
-                        keyboardController?.hide()
+                        focusManager.clearFocus()
                     }
                 )
             )
             Icon(
                 painter = painterResource(
-                    id = if (inp.contains("\n")) R.drawable.run
+                    id = if (multiLine()) R.drawable.run
                     else R.drawable.line_break
                 ),
                 contentDescription = stringResource(
@@ -238,9 +268,9 @@ private fun ColumnScope.Terminal(
                 ), modifier = Modifier
                     .size(20.dp)
                     .clickable {
-                        if (inp.contains("\n")) {
-                            onKeyboardSend.invoke()
-                            keyboardController?.hide()
+                        if (multiLine()) {
+                            onKeyboardSend()
+                            focusManager.clearFocus()
                         } else onInputChanges(inp + "\r\n")
                     },
                 tint = MaterialTheme.colorScheme.primary

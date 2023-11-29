@@ -30,8 +30,7 @@ import com.google.gson.reflect.TypeToken
 import com.hoho.android.usbserial.driver.UsbSerialPort
 import com.hoho.android.usbserial.driver.UsbSerialProber
 import com.hoho.android.usbserial.util.SerialInputOutputManager
-import micro.repl.ma7moud3ly.managers.CommandsManager.END_OF_REPL_RESPONSE
-import micro.repl.ma7moud3ly.managers.CommandsManager.END_OF_REPL_RESPONSE2
+import micro.repl.ma7moud3ly.BuildConfig
 import micro.repl.ma7moud3ly.managers.CommandsManager.isSilentExecutionDone
 import micro.repl.ma7moud3ly.managers.CommandsManager.trimSilentResult
 import micro.repl.ma7moud3ly.utils.ConnectionError
@@ -307,25 +306,12 @@ class BoardManager(
         } else {
             // in normal write mode, when micropython responses to commands
             //the output is echoed directly to onReceiveData callback
-
-            Log.i(TAG, "onNewData - $data")
-            //some preprocessing to responses to remove extra >>>
-            if (data.isEmpty()) return
-            else if (data.endsWith(END_OF_REPL_RESPONSE2))
-                onReceiveData?.invoke(
-                    data.substring(
-                        startIndex = 0,
-                        endIndex = data.length - END_OF_REPL_RESPONSE2.length
-                    )
-                )
-            else if (data.endsWith(END_OF_REPL_RESPONSE))
-                onReceiveData?.invoke(
-                    data.substring(
-                        startIndex = 0,
-                        endIndex = data.length - END_OF_REPL_RESPONSE.length
-                    )
-                )
-            else onReceiveData?.invoke(data)
+            val response = removeEnding(data)
+            if (BuildConfig.DEBUG) {
+                Log.i(TAG, "onNewData - before ${Gson().toJson(data)}")
+                Log.i(TAG, "onNewData - after ${Gson().toJson(response)}")
+            }
+            if (response.isNotEmpty() && response.trim() != ">>>") onReceiveData?.invoke(response)
         }
     }
 
@@ -349,6 +335,13 @@ class BoardManager(
             ConnectionStatus.Error(error = error, msg = msg)
         )
     }
+
+    private fun removeEnding(input: String): String {
+        val regexPattern = Regex("\\n>>>\\s*(?:\\r\\n>>>\\s*)*$")
+        //val regexPattern = Regex("\\n>>>\\s*$")
+        return regexPattern.replace(input, "")
+    }
+
 
     private inline fun <reified T : Parcelable> Intent.parcelable(key: String): T? = when {
         SDK_INT >= 33 -> getParcelableExtra(key, T::class.java)
