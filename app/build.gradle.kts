@@ -3,8 +3,12 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("kotlin-kapt")
     id("androidx.navigation.safeargs.kotlin")
-    id("com.google.gms.google-services")
-    id("com.google.firebase.crashlytics")
+}
+
+// apply gms & firebase plugin only for gms build flavour
+if (gradle.startParameter.taskRequests.toString().contains("gms", ignoreCase = true)) {
+    apply(plugin = "com.google.gms.google-services")
+    apply(plugin = "com.google.firebase.crashlytics")
 }
 
 android {
@@ -17,7 +21,6 @@ android {
         targetSdk = 34
         versionCode = 9
         versionName = "1.4"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -37,6 +40,19 @@ android {
         }
     }
 
+    flavorDimensions += "services"
+    productFlavors {
+        //a build flavor with google analytics & crashlytics dependencies
+        create("gms") {
+            isDefault = true
+            dimension = "services"
+        }
+        //a build flavor free of analytics dependencies
+        create("default") {
+            dimension = "services"
+        }
+    }
+
     kotlin {
         jvmToolchain(18)
     }
@@ -47,7 +63,7 @@ android {
         dataBinding = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.4"
+        kotlinCompilerExtensionVersion = "1.5.5"
     }
 
     packaging {
@@ -78,9 +94,9 @@ dependencies {
      * Firebase
      */
 
-    implementation(platform("com.google.firebase:firebase-bom:32.1.1"))
-    implementation("com.google.firebase:firebase-crashlytics-ktx")
-    implementation("com.google.firebase:firebase-analytics-ktx")
+    "gmsImplementation"(platform("com.google.firebase:firebase-bom:32.1.1"))
+    "gmsImplementation"("com.google.firebase:firebase-crashlytics-ktx")
+    "gmsImplementation"("com.google.firebase:firebase-analytics-ktx")
 
     /**
      * Serial communication
@@ -102,13 +118,10 @@ dependencies {
     androidTestImplementation(platform("androidx.compose:compose-bom:2023.10.01"))
 
     implementation("androidx.activity:activity-compose:1.8.1")
-    implementation("androidx.compose.ui:ui:1.6.0-beta01")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.6.0-beta01")
-    debugImplementation("androidx.compose.ui:ui-tooling:1.6.0-beta01")
-    implementation("androidx.compose.material3:material3:1.2.0-alpha11")
-
-    debugImplementation("androidx.customview:customview:1.2.0-alpha02")
-    debugImplementation("androidx.customview:customview-poolingcontainer:1.0.0")
+    implementation("androidx.compose.ui:ui:1.6.0-beta02")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.6.0-beta02")
+    debugImplementation("androidx.compose.ui:ui-tooling:1.6.0-beta02")
+    implementation("androidx.compose.material3:material3:1.2.0-alpha12")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
