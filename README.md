@@ -8,14 +8,6 @@
 - Files **Explorer** (Files Manager) for MicroPython storage.
 - A Smart **Code Editor** with python syntax support and code completion.
 
-## Release Notes :
-The latest version **(1.3)** comes with a new code editor based on [Sora Editor](https://github.com/Rosemoe/sora-editor) which supports the following features:
-- Syntax highlighting
-- Auto indent
-- Auto-completion
-
-And many more, please refer to [Sora Editor](https://github.com/Rosemoe/sora-editor).
-
 ## Requirements
 - Smartphone with Android 7+ and supports [USB_On-The-Go](https://en.wikipedia.org/wiki/USB_On-The-Go).
 - Microcontroller flashed with [MicroPython](https://micropython.org/download/) firmware 
