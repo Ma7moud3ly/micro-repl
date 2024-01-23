@@ -1,0 +1,6 @@
+Micro REPL has the following features:
+<ul>
+<li>A <strong>Terminal</strong> to access MicroPython interactive interpreter.</li>
+<li>Files <strong>Explorer</strong> (Files Manager) for MicroPython storage.</li>
+<li>A Smart <strong>Code Editor</strong> with python syntax support and code completion.</li>
+</ul>
