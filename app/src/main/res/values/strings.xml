@@ -13,8 +13,7 @@
     <string name="home_scripts">Scripts</string>
     <string name="home_explorer">Explorer</string>
     <string name="home_connect">Connect</string>
-    <string name="home_connection_msg">Please connect your device and click Connect. Or restart the app.
-        </string>
+    <string name="home_connection_msg">Please connect your device and click Connect. Or restart the app.</string>
     <string name="home_connected">Connected</string>
     <string name="home_disconnected">Disconnected</string>
     <string name="home_connecting">Connecting</string>
@@ -32,7 +31,6 @@
     <string name="error_permission_denied">USB permission denied!</string>
     <string name="error_connection_lost">Connection lost!</string>
     <string name="error_unknown">Unknown error!</string>
-
 
     <string name="editor_untitled">untitled</string>
     <string name="editor_wait">Wait !</string>
@@ -67,5 +65,4 @@
     <string name="terminal_zoom_in">Zoom in</string>
     <string name="terminal_zoom_out">Zoom out</string>
     <string name="terminal_dark_mode">Dark mode</string>
-
 </resources>

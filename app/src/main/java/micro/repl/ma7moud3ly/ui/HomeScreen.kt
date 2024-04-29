@@ -35,10 +35,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -61,6 +62,7 @@ import androidx.compose.ui.unit.dp
 import micro.repl.ma7moud3ly.BuildConfig
 import micro.repl.ma7moud3ly.MainViewModel
 import micro.repl.ma7moud3ly.R
+import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.ProgressView
 import micro.repl.ma7moud3ly.ui.theme.font04b03
 import micro.repl.ma7moud3ly.ui.theme.grey100
@@ -73,16 +75,12 @@ private const val TAG = "HomeScreen"
 
 @Preview(showSystemUi = true, showBackground = true)
 @Composable
-fun HomeScreenPreview() {
-    val microDevice = MicroDevice(
-        "MicroPython",
-        "Raspberry Pai Peco",
-        isMicroPython = true
-    )
-    //val status = ConnectionStatus.OnConnected(microDevice)
+private fun HomeScreenPreview() {
     //val status = ConnectionStatus.Error(error = ConnectionError.NOT_SUPPORTED)
     val status = ConnectionStatus.Approve(null)
-    HomeScreenContent(status)
+    AppTheme {
+        HomeScreenContent(status)
+    }
 }
 
 @Composable
@@ -194,6 +192,24 @@ private fun HomeHeader() {
                 modifier = Modifier.fillMaxWidth(),
                 painter = painterResource(id = R.drawable.cover),
                 contentDescription = ""
+            )
+        }
+    }
+}
+
+
+@Preview
+@Composable
+private fun DeviceConnectedPreview() {
+    AppTheme {
+        Surface(color = Color.White) {
+            DeviceConnected(
+                device = MicroDevice(
+                    port = "com3",
+                    board = "Pico",
+                    isMicroPython = true
+                ),
+                onClick = {}
             )
         }
     }
@@ -317,6 +333,18 @@ private fun DeviceNotConnected(onClick: () -> Unit) {
  * reset / restart / terminate
  */
 
+@Preview
+@Composable
+private fun SectionHomeCommandsPreview() {
+    AppTheme {
+        SectionHomeCommands(
+            onReset = {},
+            onSoftReset = {},
+            onTerminate = {}
+        )
+    }
+}
+
 @Composable
 private fun SectionHomeCommands(
     onReset: () -> Unit,
@@ -383,6 +411,16 @@ private fun CommandButton(
  * Home Buttons
  * Terminal / Script / Explorer / Editor
  */
+
+@Preview
+@Composable
+private fun HomeButtonsPreview() {
+    AppTheme {
+        Column {
+            HomeButtons(isConnected = true)
+        }
+    }
+}
 
 @Composable
 private fun ColumnScope.HomeButtons(
@@ -495,17 +533,17 @@ private fun DeviceDetails(
                     stringResource(id = R.string.home_device_product_name),
                     it.productName.orEmpty()
                 )
-                Divider(Modifier.fillMaxWidth(), color = Color.White)
+                HorizontalDivider(Modifier.fillMaxWidth(), color = Color.White)
                 DetailsItem(
                     stringResource(id = R.string.home_device_manufacturer),
                     it.manufacturerName.orEmpty()
                 )
-                Divider(Modifier.fillMaxWidth(), color = Color.White)
+                HorizontalDivider(Modifier.fillMaxWidth(), color = Color.White)
                 DetailsItem(
                     stringResource(id = R.string.home_device_vendor_id),
                     it.vendorId.toString()
                 )
-                Divider(Modifier.fillMaxWidth(), color = Color.White)
+                HorizontalDivider(Modifier.fillMaxWidth(), color = Color.White)
                 DetailsItem(
                     stringResource(id = R.string.home_device_product_id),
                     it.productId.toString()

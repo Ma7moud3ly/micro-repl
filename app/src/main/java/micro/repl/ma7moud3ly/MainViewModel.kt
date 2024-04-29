@@ -18,7 +18,7 @@ import micro.repl.ma7moud3ly.utils.TerminalHistory
 import micro.repl.ma7moud3ly.utils.toMicroDevice
 
 class MainViewModel : ViewModel() {
-    //the device connectivity status OnConnected or OnConnecting or OnFailure
+    //the device connectivity status Connected,Connecting or OnFailure
     val status = MutableStateFlow<ConnectionStatus>(ConnectionStatus.Connecting)
     val isConnected: Boolean get() = status.value is ConnectionStatus.Connected
 

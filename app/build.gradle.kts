@@ -1,14 +1,14 @@
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("kotlin-kapt")
-    id("androidx.navigation.safeargs.kotlin")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.navigation.safeargs)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.kapt)
 }
 
 // apply gms & firebase plugin only for gms build flavour
 if (gradle.startParameter.taskRequests.toString().contains("gms", ignoreCase = true)) {
-    apply(plugin = "com.google.gms.google-services")
-    apply(plugin = "com.google.firebase.crashlytics")
+    apply(plugin = libs.plugins.google.services.get().pluginId)
+    apply(plugin = libs.plugins.firebase.crashlytics.get().pluginId)
 }
 
 android {
@@ -61,9 +61,10 @@ android {
         compose = true
         viewBinding = true
         dataBinding = true
+        buildConfig = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.6"
+        kotlinCompilerExtensionVersion = libs.composeCompiler.get().version
     }
 
     packaging {
@@ -75,55 +76,54 @@ android {
 
 dependencies {
 
-    implementation("androidx.core:core-ktx:1.12.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
-    implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("androidx.fragment:fragment-ktx:1.6.2")
-
-    implementation("com.google.android.material:material:1.11.0")
-    implementation("com.google.code.gson:gson:2.10.1")
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.fragment.ktx)
+    implementation(libs.material)
+    implementation(libs.gson)
 
     /**
      * Navigation Components
      */
-    implementation("androidx.navigation:navigation-fragment-ktx:2.7.5")
-    implementation("androidx.navigation:navigation-ui-ktx:2.7.5")
+    implementation(libs.androidx.navigation.fragment.ktx)
+    implementation(libs.androidx.navigation.ui.ktx)
 
     /**
      * Firebase
      */
 
-    "gmsImplementation"(platform("com.google.firebase:firebase-bom:32.1.1"))
-    "gmsImplementation"("com.google.firebase:firebase-crashlytics-ktx")
-    "gmsImplementation"("com.google.firebase:firebase-analytics-ktx")
+    "gmsImplementation"(platform(libs.firebase.bom))
+    "gmsImplementation"(libs.firebase.crashlytics.ktx)
+    "gmsImplementation"(libs.firebase.analytics.ktx)
 
     /**
      * Serial communication
      */
-    implementation("com.github.mik3y:usb-serial-for-android:3.5.1")
+    implementation(libs.usb.serial.forandroid)
 
     /**
      * Sora Code Editor - https://github.com/Rosemoe/sora-editor
      */
 
-    implementation(platform("io.github.Rosemoe.sora-editor:bom:0.22.0"))
-    implementation("io.github.Rosemoe.sora-editor:editor")
-    implementation("io.github.Rosemoe.sora-editor:language-textmate")
+    implementation(platform(libs.soraEditorBom))
+    implementation(libs.soreEditor)
+    implementation(libs.language.textmate)
 
     /**
      * Compose Dependencies
      */
-    implementation(platform("androidx.compose:compose-bom:2023.10.01"))
-    androidTestImplementation(platform("androidx.compose:compose-bom:2023.10.01"))
+    implementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(platform(libs.androidx.compose.bom))
 
-    implementation("androidx.activity:activity-compose:1.8.1")
-    implementation("androidx.compose.ui:ui:1.6.0-beta03")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.6.0-beta03")
-    debugImplementation("androidx.compose.ui:ui-tooling:1.6.0-beta03")
-    implementation("androidx.compose.material3:material3:1.2.0-alpha12")
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.ui.tooling.preview)
+    debugImplementation(libs.androidx.ui.tooling)
+    implementation(libs.androidx.material3)
 
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    debugImplementation(libs.androidx.ui.test.manifest)
 }

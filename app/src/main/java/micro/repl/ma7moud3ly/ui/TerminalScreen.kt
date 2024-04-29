@@ -73,7 +73,7 @@ private const val TAG = "TerminalScreen"
 @Preview
 @Composable
 fun TerminalScreenPreview() {
-    AppTheme(darkTheme = false) {
+    AppTheme(darkTheme = true) {
         ScreenContent(
             terminalOutput = { "" },
             terminalInput = { "" },
@@ -81,7 +81,8 @@ fun TerminalScreenPreview() {
             onRun = {},
             onInputChanges = {},
             scriptPath = { "" },
-            scriptLocal = { true })
+            scriptLocal = { true }
+        )
     }
 }
 

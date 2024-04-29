@@ -28,8 +28,7 @@ sealed class ConnectionStatus {
         val msg: String = "",
     ) : ConnectionStatus()
 
-    object Connecting : ConnectionStatus()
-
+    data object Connecting : ConnectionStatus()
     data class Connected(val usbDevice: UsbDevice) : ConnectionStatus()
     data class Approve(val usbDevice: UsbDevice?) : ConnectionStatus()
 }
@@ -55,7 +54,6 @@ fun UsbDevice.toMicroDevice(): MicroDevice {
         isMicroPython = true
     )
 }
-
 
 
 /**

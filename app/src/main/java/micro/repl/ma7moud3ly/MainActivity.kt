@@ -53,6 +53,7 @@ class MainActivity : AppCompatActivity() {
         filesManager = FilesManager(boardManager, onUpdateFiles = {
             viewModel.files.value = it
         })
+
         navHost =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment?
 
