@@ -118,7 +118,7 @@ private fun HomeScreenContent(
 
                     is ConnectionStatus.Approve -> {
                         Spacer(modifier = Modifier.height(16.dp))
-                        DeviceDetailsList(
+                        UsbDeviceApproveList(
                             modifier = Modifier.weight(1f),
                             usbDevices = status.usbDevices,
                             onApprove = { device -> uiEvents?.onApproveDevice(device) },
@@ -143,14 +143,15 @@ private fun HomeScreenContent(
                             onClick = { showDeviceDetails = showDeviceDetails.not() }
                         )
 
-                        DeviceDetails(
+                        UsbDeviceDetails(
                             visible = { showDeviceDetails },
                             usbDevice = status.usbDevice,
-                            onApprove = {
-                                uiEvents?.onApproveDevice(status.usbDevice)
+                            onForgetDevice = {
+                                uiEvents?.onForgetDevice(status.usbDevice)
                             },
-                            onCancel = { uiEvents?.onDenyDevice() },
-                            askToApprove = false
+                            onDisconnect = {
+                                uiEvents?.onDisconnectDevice()
+                            },
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         SectionHomeCommands(
@@ -498,7 +499,7 @@ private fun HomeButton(
  */
 
 @Composable
-private fun DeviceDetailsList(
+private fun UsbDeviceApproveList(
     usbDevices: List<UsbDevice?>,
     onApprove: (UsbDevice) -> Unit,
     onCancel: () -> Unit,
@@ -522,7 +523,7 @@ private fun DeviceDetailsList(
         }
         items(usbDevices.size) { index ->
             val device = usbDevices[index]
-            DeviceDetails(
+            UsbDeviceApprove(
                 usbDevice = device,
                 onApprove = { onApprove(device!!) },
                 onCancel = onCancel,
@@ -532,14 +533,12 @@ private fun DeviceDetailsList(
     }
 }
 
-
 @Composable
-private fun DeviceDetails(
+private fun UsbDeviceApprove(
     visible: () -> Boolean,
-    askToApprove: Boolean = true,
     usbDevice: UsbDevice? = null,
     onApprove: () -> Unit,
-    onCancel: () -> Unit,
+    onCancel: () -> Unit
 ) {
     if (visible())
         Column(
@@ -555,28 +554,10 @@ private fun DeviceDetails(
 
         ) {
             usbDevice?.let {
-                DetailsItem(
-                    stringResource(id = R.string.home_device_product_name),
-                    it.productName.orEmpty()
-                )
-                HorizontalDivider(Modifier.fillMaxWidth(), color = Color.White)
-                DetailsItem(
-                    stringResource(id = R.string.home_device_manufacturer),
-                    it.manufacturerName.orEmpty()
-                )
-                HorizontalDivider(Modifier.fillMaxWidth(), color = Color.White)
-                DetailsItem(
-                    stringResource(id = R.string.home_device_vendor_id),
-                    it.vendorId.toString()
-                )
-                HorizontalDivider(Modifier.fillMaxWidth(), color = Color.White)
-                DetailsItem(
-                    stringResource(id = R.string.home_device_product_id),
-                    it.productId.toString()
-                )
+                DetailsItemsList(device = it)
             }
 
-            if (askToApprove) Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
                     onClick = onApprove,
                     colors = ButtonDefaults.buttonColors(
@@ -604,6 +585,72 @@ private fun DeviceDetails(
                 }
             }
         }
+}
+
+@Composable
+private fun UsbDeviceDetails(
+    visible: () -> Boolean,
+    usbDevice: UsbDevice? = null,
+    onDisconnect: () -> Unit,
+    onForgetDevice: () -> Unit
+) {
+    if (visible())
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .clip(shape = RoundedCornerShape(8.dp))
+                .background(color = grey100)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+
+        ) {
+            usbDevice?.let {
+                DetailsItemsList(device = it)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(
+                        16.dp,
+                        alignment = Alignment.CenterHorizontally
+                    )
+                ) {
+                    CommandButton(
+                        title = R.string.home_disconnect,
+                        icon = R.drawable.disconnect,
+                        onClick = onDisconnect
+                    )
+                    CommandButton(
+                        title = R.string.home_change_device,
+                        icon = R.drawable.change_device,
+                        onClick = onForgetDevice
+                    )
+                }
+            }
+        }
+}
+
+@Composable
+private fun DetailsItemsList(device: UsbDevice) {
+    DetailsItem(
+        stringResource(id = R.string.home_device_product_name),
+        device.productName.orEmpty()
+    )
+    HorizontalDivider(Modifier.fillMaxWidth(), color = Color.White)
+    DetailsItem(
+        stringResource(id = R.string.home_device_manufacturer),
+        device.manufacturerName.orEmpty()
+    )
+    HorizontalDivider(Modifier.fillMaxWidth(), color = Color.White)
+    DetailsItem(
+        stringResource(id = R.string.home_device_vendor_id),
+        device.vendorId.toString()
+    )
+    HorizontalDivider(Modifier.fillMaxWidth(), color = Color.White)
+    DetailsItem(
+        stringResource(id = R.string.home_device_product_id),
+        device.productId.toString()
+    )
 }
 
 @Composable

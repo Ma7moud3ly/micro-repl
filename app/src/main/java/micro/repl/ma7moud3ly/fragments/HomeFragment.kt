@@ -89,6 +89,16 @@ class HomeFragment : BaseFragment(), HomeUiEvents {
         boardManager?.approveDevice(usbDevice)
     }
 
+    override fun onForgetDevice(usbDevice: UsbDevice) {
+        Log.i(TAG, "onForgetDevice")
+        boardManager?.onForgetDevice(usbDevice)
+    }
+
+    override fun onDisconnectDevice() {
+        Log.i(TAG, "onDisconnectDevice")
+        boardManager?.onDisconnectDevice()
+    }
+
     override fun onDenyDevice() {
         Log.i(TAG, "onDenyDevice")
         boardManager?.onDenyDevice()

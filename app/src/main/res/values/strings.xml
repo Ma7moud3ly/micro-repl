@@ -13,6 +13,8 @@
     <string name="home_scripts">Scripts</string>
     <string name="home_explorer">Explorer</string>
     <string name="home_connect">Connect</string>
+    <string name="home_disconnect">Disconnect</string>
+    <string name="home_change_device">Change device</string>
     <string name="home_connection_msg">Please connect your device and click Connect. Or restart the app.</string>
     <string name="home_connected">Connected</string>
     <string name="home_disconnected">Disconnected</string>

@@ -19,6 +19,8 @@ interface HomeUiEvents {
     fun onTerminate()
     fun onFindDevices()
     fun onApproveDevice(usbDevice: UsbDevice)
+    fun onForgetDevice(usbDevice: UsbDevice)
+    fun onDisconnectDevice()
     fun onDenyDevice()
     fun onHelp()
 }

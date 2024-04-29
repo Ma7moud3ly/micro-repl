@@ -51,7 +51,7 @@ class BoardManager(
     companion object {
         private const val TAG = "BoardManager"
         private const val ACTION_USB_PERMISSION = "USB_PERMISSION"
-        private const val WRITTING_TIMEOUT = 2000
+        private const val WRITING_TIMEOUT = 2000
     }
 
     private val activity = context as AppCompatActivity
@@ -68,7 +68,7 @@ class BoardManager(
 
     //devices to connect with
     //only micropython is supported right now
-    private val supportedManufacturers = listOf(
+    private val supportedManufacturers = mutableListOf(
         "MicroPython" // for micro python
     )
     private var supportedProducts = mutableSetOf<Int>()
@@ -131,7 +131,7 @@ class BoardManager(
         }
         val cmd = "\u000D" + code + "\u000D"
         try {
-            port?.write(cmd.toByteArray(Charsets.UTF_8), WRITTING_TIMEOUT)
+            port?.write(cmd.toByteArray(Charsets.UTF_8), WRITING_TIMEOUT)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -157,7 +157,7 @@ class BoardManager(
              also \r is required before code to print >>>
             */
             val cmd = "\u000D" + code + "\u000D"
-            port?.write(cmd.toByteArray(Charsets.UTF_8), WRITTING_TIMEOUT)
+            port?.write(cmd.toByteArray(Charsets.UTF_8), WRITING_TIMEOUT)
             onWrite?.invoke()
         } catch (e: Exception) {
             e.printStackTrace()
@@ -169,7 +169,7 @@ class BoardManager(
      */
     fun writeCommand(code: String, onWrite: (() -> Unit)? = null) {
         try {
-            port?.write(code.toByteArray(Charsets.UTF_8), WRITTING_TIMEOUT)
+            port?.write(code.toByteArray(Charsets.UTF_8), WRITING_TIMEOUT)
             onWrite?.invoke()
         } catch (e: Exception) {
             e.printStackTrace()
@@ -204,6 +204,16 @@ class BoardManager(
 
     fun onDenyDevice() {
         throwError(error = ConnectionError.NOT_SUPPORTED)
+    }
+
+    fun onDisconnectDevice() {
+        throwError(error = ConnectionError.CONNECTION_LOST)
+    }
+
+    fun onForgetDevice(device: UsbDevice) {
+        onDisconnectDevice()
+        removeProduct(device.productId)
+        detectUsbDevices()
     }
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
@@ -352,6 +362,18 @@ class BoardManager(
      * Store or Fetch supported product ids in shared-preferences
      */
 
+    private fun removeProduct(productId: Int) {
+        supportedProducts.remove(productId)
+        supportedManufacturers.clear()
+        val json = Gson().toJson(supportedProducts).orEmpty()
+        val sharedPref = activity.getPreferences(Context.MODE_PRIVATE) ?: return
+        with(sharedPref.edit()) {
+            putString("products", json)
+            apply()
+        }
+        Log.i(TAG, "remove ProductId ---> $productId")
+    }
+
     private fun storeProductId(productId: Int) {
         supportedProducts.add(productId)
         val json = Gson().toJson(supportedProducts).orEmpty()
@@ -360,7 +382,7 @@ class BoardManager(
             putString("products", json)
             apply()
         }
-        Log.i(TAG, "store ProductId ---> $json")
+        Log.i(TAG, "store ProductId ---> $productId")
     }
 
     private fun getProducts() {
