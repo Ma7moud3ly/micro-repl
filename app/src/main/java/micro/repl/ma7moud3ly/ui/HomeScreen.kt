@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
@@ -77,7 +78,7 @@ private const val TAG = "HomeScreen"
 @Composable
 private fun HomeScreenPreview() {
     //val status = ConnectionStatus.Error(error = ConnectionError.NOT_SUPPORTED)
-    val status = ConnectionStatus.Approve(null)
+    val status = ConnectionStatus.Approve(listOf(null, null, null))
     AppTheme {
         HomeScreenContent(status)
     }
@@ -117,15 +118,12 @@ private fun HomeScreenContent(
 
                     is ConnectionStatus.Approve -> {
                         Spacer(modifier = Modifier.height(16.dp))
-                        DeviceDetails(
-                            usbDevice = status.usbDevice,
-                            onApprove = {
-                                uiEvents?.onApproveDevice(status.usbDevice!!)
-                            },
-                            onCancel = { uiEvents?.onDenyDevice() },
-                            visible = { true }
+                        DeviceDetailsList(
+                            modifier = Modifier.weight(1f),
+                            usbDevices = status.usbDevices,
+                            onApprove = { device -> uiEvents?.onApproveDevice(device) },
+                            onCancel = { uiEvents?.onDenyDevice() }
                         )
-                        Spacer(modifier = Modifier.weight(1f))
                         Footer(onHelp = { uiEvents?.onHelp() })
                     }
 
@@ -499,6 +497,41 @@ private fun HomeButton(
  * Device Details
  */
 
+@Composable
+private fun DeviceDetailsList(
+    usbDevices: List<UsbDevice?>,
+    onApprove: (UsbDevice) -> Unit,
+    onCancel: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyColumn(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        item {
+            Text(
+                text = stringResource(id = R.string.home_device_is_flashed),
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Justify,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            )
+
+        }
+        items(usbDevices.size) { index ->
+            val device = usbDevices[index]
+            DeviceDetails(
+                usbDevice = device,
+                onApprove = { onApprove(device!!) },
+                onCancel = onCancel,
+                visible = { true }
+            )
+        }
+    }
+}
+
 
 @Composable
 private fun DeviceDetails(
@@ -521,13 +554,6 @@ private fun DeviceDetails(
                 .padding(horizontal = 16.dp, vertical = 8.dp)
 
         ) {
-            if (askToApprove) Text(
-                text = stringResource(id = R.string.home_device_is_flashed),
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center,
-                fontWeight = FontWeight.Bold
-            )
-
             usbDevice?.let {
                 DetailsItem(
                     stringResource(id = R.string.home_device_product_name),

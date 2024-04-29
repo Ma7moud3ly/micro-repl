@@ -19,7 +19,7 @@
     <string name="home_connecting">Connecting</string>
     <string name="home_help">for support or bugs reporting 🐞</string>
     <string name="home_help_link">https://github.com/Ma7moud3ly/micro-repl</string>
-    <string name="home_device_is_flashed">Are you sure that the connected device is a supported port flashed with MicroPython firmware?</string>
+    <string name="home_device_is_flashed">Are you sure that one of the connected devices is a supported port flashed with MicroPython firmware?</string>
     <string name="home_device_product_name">Product Name</string>
     <string name="home_device_manufacturer">Manufacturer</string>
     <string name="home_device_vendor_id">Vendor Id</string>

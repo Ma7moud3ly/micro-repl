@@ -30,7 +30,7 @@ sealed class ConnectionStatus {
 
     data object Connecting : ConnectionStatus()
     data class Connected(val usbDevice: UsbDevice) : ConnectionStatus()
-    data class Approve(val usbDevice: UsbDevice?) : ConnectionStatus()
+    data class Approve(val usbDevices: List<UsbDevice?>) : ConnectionStatus()
 }
 
 enum class ConnectionError {

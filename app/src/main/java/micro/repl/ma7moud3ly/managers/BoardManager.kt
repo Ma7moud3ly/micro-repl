@@ -192,7 +192,7 @@ class BoardManager(
 
         if (supportedDevice != null) approveDevice(supportedDevice)
         else if (deviceList.isNotEmpty()) onStatusChanges?.invoke(
-            ConnectionStatus.Approve(usbDevice = deviceList.values.first())
+            ConnectionStatus.Approve(usbDevices = deviceList.values.toList())
         ) else throwError(ConnectionError.NO_DEVICES)
     }
 
@@ -305,7 +305,7 @@ class BoardManager(
             }
         } else {
             // in normal write mode, when micropython responses to commands
-            //the output is echoed directly to onReceiveData callback
+            // the output is echoed directly to onReceiveData callback
             val response = removeEnding(data)
             if (BuildConfig.DEBUG) {
                 Log.i(TAG, "onNewData - before ${Gson().toJson(data)}")
