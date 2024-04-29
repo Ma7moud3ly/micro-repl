@@ -7,6 +7,8 @@
 
 package micro.repl.ma7moud3ly
 
+import android.annotation.SuppressLint
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -35,6 +37,7 @@ class MainActivity : AppCompatActivity() {
             else R.style.AppTheme
         )
         setContentView(R.layout.activity_main)
+        setPortraitOrientation()
 
         boardManager = BoardManager(
             context = this,
@@ -76,6 +79,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+    }
+
+    @SuppressLint("SourceLockedOrientationActivity")
+    private fun setPortraitOrientation() {
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
     }
 
 }
