@@ -26,7 +26,14 @@ class FilesManager(
         private const val TAG = "FileManager"
     }
 
+    /**
+     * The current path being displayed.
+     */
     var path = ""
+
+    /**
+     * Lists the files and directories in the current path.
+     */
     fun listDir() {
         val code = CommandsManager.iListDir(path)
         boardManager.writeInSilentMode(code, onResponse = { result ->
@@ -34,6 +41,11 @@ class FilesManager(
         })
     }
 
+    /**
+     * Removes the specified file or directory.
+     *
+     * @param file The file or directory to remove.
+     */
     fun remove(file: MicroFile) {
         val code = if (file.isFile) CommandsManager.removeFile(file)
         else CommandsManager.removeDirectory(file)
@@ -42,6 +54,11 @@ class FilesManager(
         })
     }
 
+    /**
+     * Creates a new file or directory.
+     *
+     * @param file The file or directory to create.
+     */
     fun new(file: MicroFile) {
         val code = if (file.isFile) CommandsManager.makeFile(file)
         else CommandsManager.makeDirectory(file)
@@ -50,6 +67,12 @@ class FilesManager(
         })
     }
 
+    /**
+     * Renames the specified file or directory.
+     *
+     * @param src The original file or directory.
+     * @param dst The new name for the file or directory.
+     */
     fun rename(src: MicroFile, dst: MicroFile) {
         val code = CommandsManager.rename(src, dst)
         boardManager.writeInSilentMode(code, onResponse = { result ->
@@ -57,6 +80,12 @@ class FilesManager(
         })
     }
 
+    /**
+     * Reads the contents of the specified file.
+     *
+     * @param path The path to the file.
+     * @param onRead A callback function that will be invoked with the contents of the file.
+     */
     fun read(path: String, onRead: (content: String) -> Unit) {
         val code = CommandsManager.readFile(path)
         boardManager.writeInSilentMode(code, onResponse = { result ->
@@ -64,7 +93,13 @@ class FilesManager(
         })
     }
 
-
+    /**
+     * Writes the specified content to the specified file.
+     *
+     * @param path The path to the file.
+     * @param content The content to write to the file.
+     * @param onSave A callback function that will be invoked when the file has been saved.
+     */
     fun write(path: String, content: String, onSave: () -> Unit) {
         val code = CommandsManager.writeFile(path, content)
         boardManager.writeInSilentMode(code, onResponse = { result ->
@@ -73,7 +108,11 @@ class FilesManager(
         })
     }
 
-
+    /**
+     * Decodes the JSON response from the board manager into a list of MicroFile objects.
+     *
+     * @param json The JSON response from the board manager.
+     */
     private fun decodeFiles(json: String) {
         val list = mutableListOf<MicroFile>()
         val jsonFormated = json.replace("(", "[").replace(")", "]")
@@ -97,4 +136,3 @@ class FilesManager(
         onUpdateFiles?.invoke(list)
     }
 }
-

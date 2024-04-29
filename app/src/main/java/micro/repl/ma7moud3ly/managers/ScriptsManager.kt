@@ -10,7 +10,6 @@ package micro.repl.ma7moud3ly.managers
 import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
-import android.net.Uri
 import android.text.Html
 import android.text.InputType
 import android.view.View
@@ -18,7 +17,12 @@ import android.widget.EditText
 import androidx.compose.runtime.mutableStateListOf
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.utils.MicroScript
-import java.io.*
+import java.io.DataInputStream
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.OutputStreamWriter
 
 
 /**
@@ -177,20 +181,6 @@ class ScriptsManager(private val context: Context) {
      * File Methods
      */
 
-    fun read(path: String): String {
-        val file = File(path)
-        return if (!file.exists()) "" else try {
-            val dis = DataInputStream(FileInputStream(file))
-            val byt = ByteArray(dis.available())
-            dis.readFully(byt)
-            dis.close()
-            String(byt, 0, byt.size)
-        } catch (e: IOException) {
-            e.printStackTrace()
-            e.stackTrace.toString()
-        }
-    }
-
     fun read(file: File): String {
         return if (!file.exists()) "" else try {
             val dis = DataInputStream(FileInputStream(file))
@@ -217,40 +207,6 @@ class ScriptsManager(private val context: Context) {
             true
         } catch (e: Exception) {
             file.delete()
-            e.printStackTrace()
-            false
-        }
-    }
-
-    private fun read(context: Context, uri: Uri): String {
-        val stringBuilder = StringBuilder()
-        return try {
-            val inputStream = context.contentResolver.openInputStream(uri)
-            val reader = BufferedReader(InputStreamReader(inputStream))
-            var line: String?
-            while (reader.readLine().also { line = it } != null) {
-                stringBuilder.append(line).append("\n")
-            }
-            stringBuilder.toString().trim { it <= ' ' }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            ""
-        }
-    }
-
-    private fun write(context: Context, uri: Uri, data: String): Boolean {
-        return try {
-            val len = read(context, uri).length
-            val diff = len - data.length
-            val outputStream = context.contentResolver.openOutputStream(uri)
-            val writer = OutputStreamWriter(outputStream)
-            writer.write(data)
-            if (diff > 0) for (i in 0 until diff) writer.write(" ")
-            writer.flush()
-            writer.close()
-            outputStream!!.close()
-            true
-        } catch (e: Exception) {
             e.printStackTrace()
             false
         }

@@ -63,7 +63,8 @@ class HomeFragment : BaseFragment(), HomeUiEvents {
     override fun onHelp() {
         try {
             val browserIntent = Intent(
-                Intent.ACTION_VIEW, Uri.parse(getString(R.string.home_help_link))
+                Intent.ACTION_VIEW,
+                Uri.parse(getString(R.string.home_help_link))
             )
             startActivity(browserIntent)
         } catch (e: Exception) {

@@ -21,7 +21,6 @@ interface HomeUiEvents {
     fun onApproveDevice(usbDevice: UsbDevice)
     fun onDenyDevice()
     fun onHelp()
-
 }
 
 interface ExplorerUiEvents {
@@ -50,5 +49,4 @@ interface ScriptsUiEvents {
     fun onDelete(script: MicroScript)
     fun onRename(script: MicroScript)
     fun onUp()
-
 }
