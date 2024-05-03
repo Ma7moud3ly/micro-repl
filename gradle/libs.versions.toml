@@ -1,29 +1,30 @@
 [versions]
 
-androidGradlePlugin = "8.3.2"
+androidGradlePlugin = "8.4.0"
+desugarJdk = "2.0.4"
 kotlinAndroid = "1.9.23"
-kotlinCompilerExtensionVersion = "1.5.12"
+kotlinCompilerExtensionVersion = "1.5.13"
 navigationSafeargs = "2.7.7"
 firebaseCrashlytics = "2.9.9"
 
 navigationFragmentKtx = "2.7.7"
 lifecycleRuntimeKtx = "2.7.0"
 navigationUiKtx = "2.7.7"
-fragmentKtx = "1.6.2"
-coreKtx = "1.13.0"
+fragmentKtx = "1.7.0"
+coreKtx = "1.13.1"
 material = "1.11.0"
 appcompat = "1.6.1"
 
-composeBom = "2024.04.01"
+composeBom = "2024.05.00"
 activityCompose = "1.9.0"
 material3 = "1.2.1"
-composeUi = "1.6.6"
+composeUi = "1.6.7"
 
 firebaseBom = "32.8.1"
 googleServices = "4.4.1"
 
 usbSerialForAndroid = "3.5.1"
-soraEditorBom = "0.22.0"
+soraEditorBom = "0.23.4"
 gson = "2.10.1"
 
 espressoCore = "3.5.1"
@@ -67,6 +68,7 @@ soraEditorBom = { module = "io.github.Rosemoe.sora-editor:bom", version.ref = "s
 soreEditor = { module = "io.github.Rosemoe.sora-editor:editor" }
 language-textmate = { module = "io.github.Rosemoe.sora-editor:language-textmate" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugarJdk" }
 
 androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espressoCore" }
 androidx-junit = { module = "androidx.test.ext:junit", version.ref = "junitVersion" }

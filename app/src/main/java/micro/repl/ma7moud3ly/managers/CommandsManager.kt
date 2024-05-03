@@ -47,12 +47,23 @@ object CommandsManager {
 
 
     fun readFile(path: String): String {
-        return "f = open('$path',encoding='utf-8');content = f.read();" +
-                "f.close();print(content)"
+        return """
+        with open('$path', encoding='utf-8') as f:
+            lines = f.readlines()
+            content = []
+            for line in lines:
+                if line.endswith("\r\n"):
+                    line=line[:-2]+'\n'
+                    content.append(line)
+                else:
+                    content.append(line)        
+            content = "".join(content)        
+            print(content)
+    """.trimIndent()
     }
 
     fun writeFile(path: String, content: String): String {
-        return "content = '''$content'''\r\nf = open('$path','w',encoding='utf-8');" +
+        return "content = r'''$content'''\r\nf = open('$path','w',encoding='utf-8');" +
                 "a = f.write(content);f.close();print(a)"
     }
 

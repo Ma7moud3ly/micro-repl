@@ -11,6 +11,7 @@ if (gradle.startParameter.taskRequests.toString().contains("gms", ignoreCase = t
     apply(plugin = libs.plugins.firebase.crashlytics.get().pluginId)
 }
 
+
 android {
     namespace = "micro.repl.ma7moud3ly"
     compileSdk = 34
@@ -21,6 +22,7 @@ android {
         targetSdk = 34
         versionCode = 10
         versionName = "1.5"
+        multiDexEnabled = true
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -53,6 +55,12 @@ android {
         }
     }
 
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+        isCoreLibraryDesugaringEnabled = true
+    }
+
     kotlin {
         jvmToolchain(17)
     }
@@ -82,6 +90,7 @@ dependencies {
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.material)
     implementation(libs.gson)
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
 
     /**
      * Navigation Components

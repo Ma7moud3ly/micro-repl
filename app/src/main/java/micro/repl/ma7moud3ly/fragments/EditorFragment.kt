@@ -126,6 +126,7 @@ class EditorFragment : BaseFragment() {
         Log.i(TAG, "onRemoteOpen  = $path")
         if (viewModel.isConnected) {
             filesManager?.read(path, onRead = { content ->
+                Log.i(TAG, content)
                 requireActivity().runOnUiThread {
                     binding.editor.setText(content)
                 }

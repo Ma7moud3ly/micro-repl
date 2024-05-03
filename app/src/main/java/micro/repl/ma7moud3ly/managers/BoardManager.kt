@@ -51,7 +51,7 @@ class BoardManager(
     companion object {
         private const val TAG = "BoardManager"
         private const val ACTION_USB_PERMISSION = "USB_PERMISSION"
-        private const val WRITING_TIMEOUT = 2000
+        private const val WRITING_TIMEOUT = 5000
     }
 
     private val activity = context as AppCompatActivity
