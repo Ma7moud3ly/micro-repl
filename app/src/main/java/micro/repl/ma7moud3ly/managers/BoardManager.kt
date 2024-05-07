@@ -30,7 +30,6 @@ import com.google.gson.reflect.TypeToken
 import com.hoho.android.usbserial.driver.UsbSerialPort
 import com.hoho.android.usbserial.driver.UsbSerialProber
 import com.hoho.android.usbserial.util.SerialInputOutputManager
-import micro.repl.ma7moud3ly.BuildConfig
 import micro.repl.ma7moud3ly.managers.CommandsManager.isSilentExecutionDone
 import micro.repl.ma7moud3ly.managers.CommandsManager.trimSilentResult
 import micro.repl.ma7moud3ly.utils.ConnectionError
@@ -122,8 +121,8 @@ class BoardManager(
         isReadSync = true
         syncData.clear()
         onReadSync = { result ->
-            Log.v(TAG, "syncInput - $code")
-            Log.i(TAG, "syncResult - $result")
+            //Log.v(TAG, "syncInput - $code")
+            Log.v(TAG, "syncResult - $result")
             onResponse?.invoke(result)
             isReadSync = false
             syncData.clear()
@@ -306,10 +305,12 @@ class BoardManager(
         //finally with isDone = true, response is called-back to writeSync method
         if (isReadSync) {
             syncData.append(data)
+            Log.v(TAG, "$ $data")
             val isDone = isSilentExecutionDone(data) || isSilentExecutionDone(syncData.toString())
-            //Log.w(TAG, "syncData - $syncData")
+            //Log.v(TAG, "syncData - $syncData")
             //Log.i(TAG, "isDone = $isDone")
             if (isDone) {
+                Log.i(TAG, "syncData -\n$syncData")
                 val result = trimSilentResult(syncData.toString())
                 onReadSync?.invoke(result)
             }
@@ -317,10 +318,10 @@ class BoardManager(
             // in normal write mode, when micropython responses to commands
             // the output is echoed directly to onReceiveData callback
             val response = removeEnding(data)
-            if (BuildConfig.DEBUG) {
+            /*if (BuildConfig.DEBUG) {
                 Log.i(TAG, "onNewData - before ${Gson().toJson(data)}")
                 Log.i(TAG, "onNewData - after ${Gson().toJson(response)}")
-            }
+            }*/
             if (response.isNotEmpty() && response.trim() != ">>>") onReceiveData?.invoke(response)
         }
     }

@@ -35,7 +35,7 @@ object CommandsManager {
      * Extra commands to detect the end of code execution
      * this logic might be changed :3
      */
-    private const val SILENT_EXECUTION_START = "OK"
+    private const val SILENT_EXECUTION_START = ">OK"
     private const val SILENT_EXECUTION_END = "\u0004" //
 
 
@@ -105,19 +105,20 @@ object CommandsManager {
      * we use this to extract the result of silent execution
      * ex:
      *      raw REPL; CTRL-B to exit
-     *      >OK RESULT
+     *      >OK
+     *      RESULT
+     *      RESULT
+     *      RESULT
      *      
      *
      *      We need to extract RESULT
      */
     fun trimSilentResult(data: String): String {
-        val i1 = data.lastIndexOf(SILENT_EXECUTION_START)
+        val i1 = data.indexOf(SILENT_EXECUTION_START)
         val i2 = data.indexOf(SILENT_EXECUTION_END)
-        return if (i1 > -1 && i2 > -1 && i2 > i1) data.substring(
-            i1 + SILENT_EXECUTION_START.length,
-            i2
-        ).trim()
-        else data
+        return if (i1 > -1 && i2 > -1 && i2 > i1) {
+            data.substring(i1 + SILENT_EXECUTION_START.length, i2).trim()
+        } else data
     }
 
 }
