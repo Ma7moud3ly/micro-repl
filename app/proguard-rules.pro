@@ -16,4 +16,4 @@
 
 # For the code editor (TextMateLanguage)
 -keep class org.eclipse.tm4e.**{*;}
-
+-keep class org.joni.**{*;}
