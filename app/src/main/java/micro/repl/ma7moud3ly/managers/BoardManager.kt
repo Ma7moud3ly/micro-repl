@@ -34,6 +34,7 @@ import micro.repl.ma7moud3ly.managers.CommandsManager.isSilentExecutionDone
 import micro.repl.ma7moud3ly.managers.CommandsManager.trimSilentResult
 import micro.repl.ma7moud3ly.utils.ConnectionError
 import micro.repl.ma7moud3ly.utils.ConnectionStatus
+import micro.repl.ma7moud3ly.utils.ExecutionMode
 
 
 /**
@@ -62,7 +63,7 @@ class BoardManager(
 
     private var onReadSync: ((data: String) -> Unit)? = null
     private var syncData = StringBuilder("")
-    private var isReadSync = false
+    private var executionMode = ExecutionMode.INTERACTIVE
     private var permissionGranted = false
 
     //devices to connect with
@@ -118,13 +119,13 @@ class BoardManager(
         code: String,
         onResponse: ((data: String) -> Unit)? = null
     ) {
-        isReadSync = true
+        executionMode = ExecutionMode.SCRIPT
         syncData.clear()
         onReadSync = { result ->
             //Log.v(TAG, "syncInput - $code")
             Log.v(TAG, "syncResult - $result")
             onResponse?.invoke(result)
-            isReadSync = false
+            executionMode = ExecutionMode.INTERACTIVE
             syncData.clear()
             onReadSync = null
         }
@@ -136,6 +137,14 @@ class BoardManager(
         }
     }
 
+    /**
+     * Writes the given code in silent mode.
+     *
+     * In silent mode, the output of the code is not displayed in the REPL.
+     *
+     * @param code The code to write.
+     * @param onResponse A callback that will be invoked with the output of the code, if any.
+     */
     fun writeInSilentMode(
         code: String,
         onResponse: ((data: String) -> Unit)? = null
@@ -151,10 +160,12 @@ class BoardManager(
      */
     fun write(code: String, onWrite: (() -> Unit)? = null) {
         try {
-            /*\u000D == \r
-             REPL requires \r after code to echo response
-             also \r is required before code to print >>>
-            */
+            /**
+             *  - \u000D == \r
+             *  - \r is required before code to print >>>
+             *  - \r requires \r after code to echo response
+             */
+            Log.v(TAG, "write: $code")
             val cmd = "\u000D" + code + "\u000D"
             port?.write(cmd.toByteArray(Charsets.UTF_8), WRITING_TIMEOUT)
             onWrite?.invoke()
@@ -299,30 +310,33 @@ class BoardManager(
 
 
     override fun onNewData(bytes: ByteArray?) {
-        val data = (bytes?.toString(Charsets.UTF_8) ?: "")
-        // when writeSync is called, we need to collect all responses
-        // comes to onNewData and append them to a string builder
-        //finally with isDone = true, response is called-back to writeSync method
-        if (isReadSync) {
-            syncData.append(data)
-            Log.v(TAG, "$ $data")
-            val isDone = isSilentExecutionDone(data) || isSilentExecutionDone(syncData.toString())
-            //Log.v(TAG, "syncData - $syncData")
-            //Log.i(TAG, "isDone = $isDone")
-            if (isDone) {
-                Log.i(TAG, "syncData -\n$syncData")
-                val result = trimSilentResult(syncData.toString())
-                onReadSync?.invoke(result)
+        val data = bytes?.toString(Charsets.UTF_8).orEmpty()
+        // when writeSync is called, we need to collect all outputs
+        // of onNewData and append them to a string builder
+        // finally with isDone = true, response is returned to writeSync method
+        when (executionMode) {
+            ExecutionMode.SCRIPT -> {
+                syncData.append(data)
+                Log.v(TAG, "$ $data")
+                val isDone =
+                    isSilentExecutionDone(data) || isSilentExecutionDone(syncData.toString())
+                //Log.v(TAG, "syncData - $syncData")
+                //Log.i(TAG, "isDone = $isDone")
+                if (isDone) {
+                    Log.i(TAG, "syncData -\n$syncData")
+                    val result = trimSilentResult(syncData.toString())
+                    onReadSync?.invoke(result)
+                }
             }
-        } else {
             // in normal write mode, when micropython responses to commands
             // the output is echoed directly to onReceiveData callback
-            val response = removeEnding(data)
-            /*if (BuildConfig.DEBUG) {
-                Log.i(TAG, "onNewData - before ${Gson().toJson(data)}")
-                Log.i(TAG, "onNewData - after ${Gson().toJson(response)}")
-            }*/
-            if (response.isNotEmpty() && response.trim() != ">>>") onReceiveData?.invoke(response)
+            ExecutionMode.INTERACTIVE -> {
+                val response = removeEnding(data)
+                Log.v(TAG, "onNewData - response ${Gson().toJson(response)}")
+                if (response.isNotEmpty() && response.trim() != ">>>") onReceiveData?.invoke(
+                    response
+                )
+            }
         }
     }
 
@@ -349,7 +363,6 @@ class BoardManager(
 
     private fun removeEnding(input: String): String {
         val regexPattern = Regex("\\n>>>\\s*(?:\\r\\n>>>\\s*)*$")
-        //val regexPattern = Regex("\\n>>>\\s*$")
         return regexPattern.replace(input, "")
     }
 
