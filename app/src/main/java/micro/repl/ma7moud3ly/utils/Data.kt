@@ -10,6 +10,14 @@ package micro.repl.ma7moud3ly.utils
 import android.hardware.usb.UsbDevice
 import java.io.File
 
+/**
+ * For BoardManager
+ */
+
+enum class ExecutionMode {
+    INTERACTIVE,
+    SCRIPT
+}
 
 /**
  * For EditorManager

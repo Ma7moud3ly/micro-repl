@@ -8,6 +8,7 @@
 package micro.repl.ma7moud3ly.managers
 
 import android.util.Log
+import com.google.gson.Gson
 import micro.repl.ma7moud3ly.utils.MicroDevice
 
 /**
@@ -64,10 +65,17 @@ class TerminalManager(
      */
     fun eval(code: String, onEval: (() -> Unit)? = null) {
         Log.i(TAG, "eval - $code")
-        boardManager.write(code.replace("\n", "\r\n").trimEnd())
-        boardManager.write("\r\n")
+        boardManager.write(code.trim())
         onEval?.invoke()
     }
+
+    fun evalMultiLine(code: String, onEval: (() -> Unit)? = null) {
+        Log.i(TAG, "evalMultiLine - ${Gson().toJson(code)}")
+        boardManager.write(code.replace("\n", "\r").trim())
+        boardManager.write("\r")
+        onEval?.invoke()
+    }
+
 
     /**
      * Executes the given script on the board.

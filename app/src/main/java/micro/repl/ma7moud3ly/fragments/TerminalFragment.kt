@@ -53,7 +53,6 @@ class TerminalFragment : BaseFragment(), TerminalUiEvents {
             terminalManager?.executeScript(viewModel.scriptContent)
         } else {
             viewModel.terminalOutput.value = ""
-            //boardManager?.writeCommand(CommandsManager.RESET)
             boardManager?.writeCommand(CommandsManager.REPL_MODE)
         }
 
@@ -61,7 +60,10 @@ class TerminalFragment : BaseFragment(), TerminalUiEvents {
 
     override fun onRun(code: String) {
         viewModel.history.push(code)
-        terminalManager?.eval(code)
+        // for one statement, execute it instantly with
+        if (code.contains("\n").not()) terminalManager?.eval(code)
+        // for multiline code, consider it as a script
+        else terminalManager?.evalMultiLine(code)
     }
 
     override fun onTerminate() {
