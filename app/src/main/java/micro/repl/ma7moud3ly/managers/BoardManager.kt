@@ -8,6 +8,7 @@
 package micro.repl.ma7moud3ly.managers
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.PendingIntent
 import android.app.PendingIntent.FLAG_MUTABLE
 import android.app.PendingIntent.FLAG_UPDATE_CURRENT
@@ -22,7 +23,7 @@ import android.os.Build.VERSION.SDK_INT
 import android.os.Handler
 import android.os.Parcelable
 import android.util.Log
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.google.gson.Gson
@@ -32,9 +33,9 @@ import com.hoho.android.usbserial.driver.UsbSerialProber
 import com.hoho.android.usbserial.util.SerialInputOutputManager
 import micro.repl.ma7moud3ly.managers.CommandsManager.isSilentExecutionDone
 import micro.repl.ma7moud3ly.managers.CommandsManager.trimSilentResult
-import micro.repl.ma7moud3ly.utils.ConnectionError
-import micro.repl.ma7moud3ly.utils.ConnectionStatus
-import micro.repl.ma7moud3ly.utils.ExecutionMode
+import micro.repl.ma7moud3ly.model.ConnectionError
+import micro.repl.ma7moud3ly.model.ConnectionStatus
+import micro.repl.ma7moud3ly.model.toMicroDevice
 
 
 /**
@@ -54,7 +55,7 @@ class BoardManager(
         private const val WRITING_TIMEOUT = 5000
     }
 
-    private val activity = context as AppCompatActivity
+    private val activity = context as Activity
 
     private lateinit var usbManager: UsbManager
     private var serialInputOutputManager: SerialInputOutputManager? = null
@@ -83,7 +84,7 @@ class BoardManager(
 
 
     init {
-        activity.lifecycle.addObserver(this)
+        (activity as ComponentActivity).lifecycle.addObserver(this)
         getProducts()
         onStatusChanges?.invoke(ConnectionStatus.Connecting)
     }
@@ -201,9 +202,10 @@ class BoardManager(
         Log.i(TAG, "detectUsbDevices - deviceList =  ${deviceList.size}")
 
         if (supportedDevice != null) approveDevice(supportedDevice)
-        else if (deviceList.isNotEmpty()) onStatusChanges?.invoke(
-            ConnectionStatus.Approve(usbDevices = deviceList.values.toList())
-        ) else throwError(ConnectionError.NO_DEVICES)
+        else if (deviceList.isNotEmpty()) {
+            val devices = deviceList.values.map { it.toMicroDevice() }.toList()
+            onStatusChanges?.invoke(ConnectionStatus.Approve(devices = devices))
+        } else throwError(ConnectionError.NO_DEVICES)
     }
 
     fun approveDevice(usbDevice: UsbDevice) {
@@ -300,7 +302,7 @@ class BoardManager(
         serialInputOutputManager?.start()
 
         if (isPortOpen) {
-            onStatusChanges?.invoke(ConnectionStatus.Connected(usbDevice))
+            onStatusChanges?.invoke(ConnectionStatus.Connected(usbDevice.toMicroDevice()))
             storeProductId(usbDevice.productId)
         } else
             throwError(ConnectionError.CANT_OPEN_PORT)
@@ -411,4 +413,9 @@ class BoardManager(
             e.printStackTrace()
         }
     }
+}
+
+enum class ExecutionMode {
+    INTERACTIVE,
+    SCRIPT
 }

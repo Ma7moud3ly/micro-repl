@@ -2,6 +2,8 @@
     <string name="app_name">Micro REPL</string>
     <string name="dialog_ok">OK</string>
     <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_yes">Yes</string>
+    <string name="dialog_no">No</string>
     <string name="dialog_approve">Yes Approve</string>
 
     <string name="this_device">My Phone</string>
@@ -67,4 +69,8 @@
     <string name="terminal_zoom_in">Zoom in</string>
     <string name="terminal_zoom_out">Zoom out</string>
     <string name="terminal_dark_mode">Dark mode</string>
+
+    <string name="scripts_empty">"No scripts saved yet!"</string>
+    <string name="scripts_local">Local Scripts</string>
+
 </resources>

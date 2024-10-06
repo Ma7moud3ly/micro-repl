@@ -1,56 +1,45 @@
 [versions]
 
-androidGradlePlugin = "8.4.0"
-desugarJdk = "2.0.4"
-kotlinAndroid = "1.9.23"
-kotlinCompilerExtensionVersion = "1.5.13"
-navigationSafeargs = "2.7.7"
-firebaseCrashlytics = "2.9.9"
+androidGradlePlugin = "8.7.0"
+desugarJdk = "2.1.2"
+kotlin = "2.0.10"
+firebaseCrashlytics = "3.0.2"
+kotlinSerialization = "2.0.0"
 
-navigationFragmentKtx = "2.7.7"
-lifecycleRuntimeKtx = "2.7.0"
-navigationUiKtx = "2.7.7"
-fragmentKtx = "1.7.0"
+lifecycleRuntimeKtx = "2.8.6"
+navigationCompos = "2.8.2"
 coreKtx = "1.13.1"
-material = "1.12.0"
-appcompat = "1.6.1"
+composeBom = "2024.09.03"
+activityCompose = "1.9.2"
+material3 = "1.3.0"
+composeUi = "1.7.3"
 
-composeBom = "2024.05.00"
-activityCompose = "1.9.0"
-material3 = "1.2.1"
-composeUi = "1.6.7"
-
-firebaseBom = "32.8.1"
-googleServices = "4.4.1"
+firebaseBom = "33.4.0"
+googleServices = "4.4.2"
 
 usbSerialForAndroid = "3.5.1"
 soraEditorBom = "0.23.4"
+serialization = "1.7.1"
 gson = "2.10.1"
 
-espressoCore = "3.5.1"
+espressoCore = "3.6.1"
 junit = "4.13.2"
-junitVersion = "1.1.5"
+junitVersion = "1.2.1"
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
-android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlinAndroid" }
-kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlinAndroid" }
-navigation-safeargs = { id = "androidx.navigation.safeargs", version.ref = "navigationSafeargs" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
 google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
 firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashlytics" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinSerialization" }
 
 [libraries]
 
-androidx-navigation-fragment-ktx = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "navigationFragmentKtx" }
-androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
-androidx-navigation-ui-ktx = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "navigationUiKtx" }
-androidx-fragment-ktx = { module = "androidx.fragment:fragment-ktx", version.ref = "fragmentKtx" }
+androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
-material = { module = "com.google.android.material:material", version.ref = "material" }
-androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 
-composeCompiler = { module = "androidx.compose.compiler:compiler", version.ref = "kotlinCompilerExtensionVersion" }
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
 androidx-material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
@@ -58,11 +47,13 @@ androidx-ui = { module = "androidx.compose.ui:ui", version.ref = "composeUi" }
 androidx-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 androidx-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "composeUi" }
 androidx-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "composeUi" }
+androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompos" }
 
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx" }
 firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx" }
 
+kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
 usb-serial-forandroid = { module = "com.github.mik3y:usb-serial-for-android", version.ref = "usbSerialForAndroid" }
 soraEditorBom = { module = "io.github.Rosemoe.sora-editor:bom", version.ref = "soraEditorBom" }
 soreEditor = { module = "io.github.Rosemoe.sora-editor:editor" }

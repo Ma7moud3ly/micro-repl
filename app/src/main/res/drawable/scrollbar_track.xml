@@ -22,10 +22,8 @@
   ~     additional information or have any questions
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 
-<shape
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="rectangle"
-    android:tint="?colorControlNormal">
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
 
     <size android:width="8dp" />
 

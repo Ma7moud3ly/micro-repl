@@ -22,23 +22,26 @@ import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
     primary = Color.White,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    onPrimary = Color.Black,
+    secondary = secondaryColorDark,
+    onSecondary = Color.White,
+    tertiary = blue,
+    onTertiary = Color.Black,
+    outlineVariant = dividerColor,
+    surface = surfaceColorDark,
+    background = Color.Black
 )
 
 private val LightColorScheme = lightColorScheme(
     primary = Color.Black,
-    secondary = PurpleGrey80,
-    tertiary = Pink40
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
     onPrimary = Color.White,
-    onSecondary = Color.White,
+    secondary = secondaryColor,
+    onSecondary = Color.Black,
+    tertiary = blue,
     onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    outlineVariant = dividerColor,
+    surface = surfaceColor,
+    background = Color.White
 )
 
 @Composable

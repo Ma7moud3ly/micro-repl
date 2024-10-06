@@ -7,7 +7,7 @@
 
 package micro.repl.ma7moud3ly.managers
 
-import micro.repl.ma7moud3ly.utils.MicroFile
+import micro.repl.ma7moud3ly.model.MicroFile
 
 /**
  * This class manages building commands to send to the python REPL

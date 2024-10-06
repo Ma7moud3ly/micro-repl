@@ -9,7 +9,7 @@ package micro.repl.ma7moud3ly.managers
 
 import android.util.Log
 import com.google.gson.Gson
-import micro.repl.ma7moud3ly.utils.MicroDevice
+import micro.repl.ma7moud3ly.model.MicroDevice
 
 /**
  * This class manages the terminal commands

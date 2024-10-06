@@ -14,7 +14,6 @@ import android.graphics.Rect
 import android.net.Uri
 import android.view.KeyEvent
 import android.view.View
-import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.res.ResourcesCompat
 import io.github.rosemoe.sora.event.ContentChangeEvent
@@ -31,59 +30,33 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import micro.repl.ma7moud3ly.R
-import micro.repl.ma7moud3ly.utils.ThemeMode
+import micro.repl.ma7moud3ly.model.MicroScript
 import org.eclipse.tm4e.core.registry.IGrammarSource
 import org.eclipse.tm4e.core.registry.IThemeSource
 import java.io.File
 import java.io.InputStreamReader
 
-/**
- * This class manages the code editor
- * to handle saving/retrieving scripts locally or in microcontroller storages.
- * The code editor is based on (sora-editor) https://github.com/Rosemoe/sora-editor
- */
+
 class EditorManager(
     private val context: Context,
     private val editor: CodeEditor,
-    private val title: TextView,
-    private val editorModeLocal: Boolean,
-    private val scriptPath: String,
-    private val onTextChange: (() -> Unit)? = null,
-    private val onRemoteOpen: ((path: String) -> Unit)? = null,
-    private val onRemoteSave: ((path: String, content: String) -> Unit)? = null,
-    private val onRemoteRun: ((path: String, content: String) -> Unit)? = null,
+    private val microScript: MicroScript,
+    private val scriptsManager: ScriptsManager = ScriptsManager(context),
+    private val filesManager: FilesManager? = null,
+    private val onRun: ((MicroScript) -> Unit)? = null,
     private val afterEdit: (() -> Unit)? = null
 ) {
     private val activity: Activity = context as Activity
-    private val scriptsManager: ScriptsManager = ScriptsManager(context)
-
-
-    private var actionAfterSave = -1
-
-    private var scriptFile: File? = null
-    var onKeyboardVisibilityChanges: ((visible: Boolean) -> Unit)? = null
+    var actionAfterSave: EditorAction? = null
 
     init {
         getEditorSettings()
-        initScript()
+        editor.setText(microScript.content)
         initCodeEditor()
     }
 
-    val canRun: Boolean get() = scriptFile?.name?.endsWith(".py") == true
+    val canRun: Boolean get() = microScript.isPython
 
-    private fun initScript() {
-        if (scriptPath.isNotEmpty()) scriptFile = File(scriptPath)
-        scriptFile?.let {
-            if (editorModeLocal) {
-                title.text = it.name
-                val content = scriptsManager.read(it)
-                editor.setText(content)
-            } else {
-                title.text = it.path
-                onRemoteOpen?.invoke(scriptPath)
-            }
-        }
-    }
 
     /**
      *  Editor Initialization
@@ -103,7 +76,8 @@ class EditorManager(
             // Update display dynamically
             subscribeEvent<SelectionChangeEvent> { _, _ ->/* updatePositionText() */ }
             subscribeEvent<ContentChangeEvent> { _, _ ->
-                postDelayed({ onTextChange?.invoke() }, 50)
+                microScript.canUndo.value = editor.canUndo()
+                microScript.canRedo.value = editor.canRedo()
             }
             subscribeEvent<SideIconClickEvent> { _, _ ->
                 Toast.makeText(context, "Side icon clicked", Toast.LENGTH_SHORT).show()
@@ -122,13 +96,12 @@ class EditorManager(
         }
 
         editor.viewTreeObserver.addOnGlobalLayoutListener {
-            onKeyboardVisibilityChanges?.invoke(isKeyboardVisible(editor.rootView))
+            val isVisible = isKeyboardVisible(editor.rootView)
+            microScript.showTitle.value = isVisible.not()
         }
 
         //init theme
         CoroutineScope(Dispatchers.Default).launch { setEditorLanguage() }
-
-        onTextChange?.invoke()
     }
 
     /**
@@ -136,7 +109,7 @@ class EditorManager(
      */
     private fun setEditorLanguage() {
         try {
-            val isDark = ThemeMode.isDark(activity)
+            val isDark = ThemeModeManager.isDark(activity)
             val theme = if (isDark) "darcula.json" else "QuietLight.tmTheme"
 
             //load a specific theme file from assets/themes
@@ -145,6 +118,8 @@ class EditorManager(
                 theme,
                 null
             )
+
+
             val colorScheme = TextMateColorScheme.create(themeSource)
             editor.colorScheme = colorScheme
 
@@ -169,7 +144,6 @@ class EditorManager(
             e.printStackTrace()
         }
     }
-
 
     private fun generateKeybindingString(event: KeyBindingEvent): String {
         val sb = StringBuilder()
@@ -206,116 +180,91 @@ class EditorManager(
         editor.setText("")
     }
 
-    fun checkSave(action: Int) {
-        this.actionAfterSave = action
-
-        if (saveNew()) scriptsManager.showDoYouWantDialog(
-            msg = context.getString(R.string.editor_msg_save),
-            onYes = { saveFileAs() },
-            onNo = { afterSave() },
-            isDark = ThemeMode.isDark(activity),
-        ) else if (saveRemotely() || saveExisting()) scriptsManager.showDoYouWantDialog(
-            msg = context.getString(R.string.editor_msg_save_changes),
-            onYes = { save() },
-            onNo = { afterSave() },
-            isDark = ThemeMode.isDark(activity),
-        ) else afterSave()
+    fun undo() {
+        editor.undo()
     }
 
-
-    private fun saveExisting(): Boolean {
-        return editorModeLocal && scriptFile != null &&
-                editor.text.toString() != scriptsManager.read(scriptFile!!)
+    fun redo() {
+        editor.redo()
     }
-
-    private fun saveRemotely(): Boolean {
-        return editorModeLocal.not() && scriptFile != null && editor.canUndo()
-
-    }
-
-    private fun saveNew(): Boolean {
-        return scriptFile == null && editor.text.toString().trim().isNotEmpty()
-    }
-
-
-    private fun save() {
-        if (editorModeLocal && scriptFile?.parentFile?.exists() == true) {
-            val saved = scriptsManager.write(scriptFile?.path!!, editor.text.toString())
-            if (saved) {
-                val name = scriptFile?.name ?: ""
-                title.text = name
-                Toast.makeText(context, "$name saved", Toast.LENGTH_SHORT).show()
-            }
-            afterSave()
-        } else {
-            val content = editor.text.toString()
-            onRemoteSave?.invoke(scriptPath, content)
-            if (actionAfterSave == RUN) afterSave()
-        }
-    }
-
-
-    private fun saveFileAs() {
-        scriptsManager.showScriptNameDialog(
-            msg = "Save Script as",
-            placeholder = "main.py",
-            positiveButton = "Save", negativeButton = "Cancel",
-            onOk = { input ->
-                scriptsManager.scriptDirectory()?.let {
-                    scriptFile = File(it, input)
-                    save()
-                }
-            }, onCancel = {
-                afterSave()
-            })
-    }
-
-
-    private fun newScript() {
-        editor.setText("")
-        title.setText(R.string.editor_untitled)
-        scriptFile = null
-    }
-
-    fun afterSave() {
-        setEditorSettings()
-        val action = this.actionAfterSave
-        actionAfterSave = -1
-        when (action) {
-            SHR -> shareScript()
-            LIS -> if (saveNew()) saveFileAs()
-            NEW -> newScript()
-            SAV -> {}
-            END -> activity.runOnUiThread { afterEdit?.invoke() }
-            RUN -> {
-                val path = if (editorModeLocal.not()) scriptPath else scriptFile?.path ?: ""
-                val content = editor.text.toString().trim()
-                onRemoteRun?.invoke(path, content)
-            }
-        }
-    }
-
-
-    private fun shareScript() {
-        if (scriptFile == null) return
-        val shareIntent = Intent()
-        shareIntent.action = Intent.ACTION_SEND
-        val uri = Uri.fromFile(scriptFile)
-        shareIntent.putExtra(Intent.EXTRA_STREAM, uri)
-        shareIntent.type = "text/*"
-        context.startActivity(
-            Intent.createChooser(
-                shareIntent,
-                context.resources.getString(R.string.app_name)
-            )
-        )
-    }
-
 
     fun toggleDarkMode() {
-        ThemeMode.toggleMode(activity)
+        ThemeModeManager.toggleMode(activity)
     }
 
+
+    fun toggleLines() {
+        editor.isLineNumberEnabled = !editor.isLineNumberEnabled
+    }
+
+    fun release() {
+        editor.release()
+    }
+
+
+    fun actionAfterSave() {
+        setEditorSettings()
+        val action = this.actionAfterSave
+        actionAfterSave = null
+        when (action) {
+            EditorAction.NewScript -> {
+                editor.setText("")
+                microScript.name = ""
+                microScript.path = ""
+                microScript.content = ""
+                microScript.title.value = context.getString(R.string.editor_untitled)
+            }
+
+            EditorAction.CLoseScript -> {
+                afterEdit?.invoke()
+            }
+
+            EditorAction.RunScript -> {
+                microScript.content = editor.text.toString().trim()
+                onRun?.invoke(microScript)
+            }
+
+            else -> {}
+        }
+    }
+
+
+    fun saveExisting(): Boolean {
+        return microScript.path.isNotEmpty() && editor.canUndo()
+    }
+
+    fun saveNew(): Boolean {
+        return microScript.path.isEmpty() && editor.text.toString().trim().isNotEmpty()
+    }
+
+
+    fun save(onDone: () -> Unit) {
+        if (microScript.isLocal) {
+            val saved = scriptsManager.write(microScript.path, editor.text.toString())
+            if (saved) {
+                val name = microScript.name
+                microScript.title.value = name
+                Toast.makeText(context, "$name saved", Toast.LENGTH_SHORT).show()
+            }
+            onDone()
+        } else {
+            filesManager?.write(
+                path = microScript.path,
+                content = editor.text.toString(),
+                onSave = onDone
+            )
+        }
+    }
+
+
+    fun saveFileAs(name: String, onDone: () -> Unit) {
+        scriptsManager.scriptDirectory()?.let {
+            microScript.path = it.path
+            microScript.name = name
+            microScript.title.value = name
+            save(onDone)
+        }
+    }
 
     /**
      * SharedPreferences
@@ -324,35 +273,34 @@ class EditorManager(
     private fun setEditorSettings() {
         val sharedPrefEditor = activity.getPreferences(Context.MODE_PRIVATE).edit()
         sharedPrefEditor.putBoolean("show_lines", editor.isLineNumberEnabled)
-        if (editorModeLocal) scriptFile?.let {
-            sharedPrefEditor.putString("script", it.absolutePath)
+        if (microScript.isLocal && microScript.path.isNotEmpty()) {
+            sharedPrefEditor.putString("script", microScript.path)
         }
         sharedPrefEditor.apply()
     }
 
-    //if (!path.equals("")) scripts = Uri.parse(path);
     private fun getEditorSettings() {
         val sharedPref = activity.getPreferences(Context.MODE_PRIVATE)
         editor.isLineNumberEnabled = sharedPref.getBoolean("show_lines", true)
-        if (editorModeLocal) {
-            val path = sharedPref.getString("script", "") ?: ""
-            scriptFile = if (path.isNotEmpty()) File(path) else null
-            if (scriptFile?.exists() == false) {
-                //when file is renamed or removed
-                scriptFile = null
+        if (microScript.isLocal) {
+            val path = sharedPref.getString("script", "").orEmpty()
+            if (path.isNotEmpty()) {
+                microScript.path = path
+                if (microScript.file.exists()) {
+                    val name = microScript.file.name
+                    microScript.name = name
+                    microScript.title.value = name
+                    microScript.content = scriptsManager.read(microScript.file)
+                }
             }
-        } else scriptFile = null
+        }
     }
+}
 
-
-    companion object {
-        private const val TAG = "EditorManager"
-        const val SHR = 0
-        const val LIS = 1
-        const val NEW = 2
-        const val SAV = 3
-        const val END = 4
-        const val RUN = 5
-    }
+sealed interface EditorAction {
+    data object RunScript : EditorAction
+    data object SaveScript : EditorAction
+    data object NewScript : EditorAction
+    data object CLoseScript : EditorAction
 }
 

@@ -7,16 +7,9 @@
 
 package micro.repl.ma7moud3ly.managers
 
-import android.app.AlertDialog
 import android.content.Context
-import android.content.DialogInterface
-import android.text.Html
-import android.text.InputType
-import android.view.View
-import android.widget.EditText
 import androidx.compose.runtime.mutableStateListOf
-import micro.repl.ma7moud3ly.R
-import micro.repl.ma7moud3ly.utils.MicroScript
+import micro.repl.ma7moud3ly.model.MicroScript
 import java.io.DataInputStream
 import java.io.File
 import java.io.FileInputStream
@@ -39,7 +32,6 @@ class ScriptsManager(private val context: Context) {
     init {
         updateScriptsList()
     }
-
 
     fun scriptDirectory(): File? {
         if (context.getExternalFilesDir("scripts")?.exists() == false) {
@@ -64,118 +56,16 @@ class ScriptsManager(private val context: Context) {
     }
 
 
-    /**
-     * Dialogs
-     */
-
-    fun showDoYouWantDialog(
-        msg: String,
-        isDark: Boolean,
-        onYes: (() -> Unit)? = null,
-        onNo: (() -> Unit)? = null
-    ) {
-        val alert = AlertDialog.Builder(context)
-        alert.setTitle(R.string.editor_wait)
-        alert.setIcon(R.drawable.ic_baseline_error_outline_24)
-
-        val message = if (isDark) "<font style='bold' color='#FFFFFF'>$msg</font>"
-        else "<font style='bold' color='#000000'>$msg</font>"
-        alert.setMessage(Html.fromHtml(message, Html.FROM_HTML_MODE_COMPACT))
-        alert.setPositiveButton(
-            "Yes"
-        ) { _: DialogInterface?, _: Int -> onYes?.invoke() }
-        alert.setNegativeButton(
-            "No"
-        ) { _: DialogInterface?, _: Int -> onNo?.invoke() }
-
-        alert.show()
-    }
-
-    fun showScriptNameDialog(
-        msg: String,
-        placeholder: String = "",
-        positiveButton: String? = null,
-        negativeButton: String? = null,
-        onOk: (name: String) -> Unit,
-        onCancel: (() -> Unit)? = null
-    ) {
-        val builder = AlertDialog.Builder(context)
-
-        val input = EditText(context)
-        input.inputType = InputType.TYPE_CLASS_TEXT
-        input.setText(placeholder)
-
-        input.textAlignment = View.TEXT_ALIGNMENT_CENTER
-        builder.setView(input)
-        builder.setMessage(msg)
-
-        positiveButton?.let {
-            builder.setNegativeButton(it) { _: DialogInterface?, _: Int ->
-                val name = input.text.toString().trim()
-                onOk.invoke(name)
-            }
-        }
-        negativeButton?.let {
-            builder.setPositiveButton(it) { dialog: DialogInterface, _: Int ->
-                dialog.cancel()
-                onCancel?.invoke()
-            }
-        }
-        builder.show()
-    }
-
-    /**
-     * Script Actions
-     */
-
-
     fun deleteScript(script: MicroScript) {
-        val msg = context.getString(R.string.editor_msg_delete, script.name)
-        showDoYouWantDialog(
-            msg = msg,
-            isDark = false,
-            onYes = {
-                val b = delete(script)
-                if (b) updateScriptsList()
-            }
-        )
+        val b = delete(script)
+        if (b) updateScriptsList()
     }
 
-    fun renameScript(script: MicroScript) {
-        val msg = context.getString(R.string.editor_msg_rename, script.name)
-        showScriptNameDialog(
-            msg = msg,
-            placeholder = script.name,
-            positiveButton = "Ok",
-            onOk = { newName ->
-                val b = rename(script, newName)
-                if (b) updateScriptsList()
-            }
-        )
+    fun renameScript(script: MicroScript, newName:String) {
+        val b = rename(script, newName)
+        if (b) updateScriptsList()
     }
 
-    private fun delete(script: MicroScript): Boolean {
-        val file = script.file
-        return if (!file.exists()) false
-        else try {
-            return file.delete()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
-        }
-    }
-
-    private fun rename(script: MicroScript, newName: String): Boolean {
-        val newFile = File(script.parentFile, newName)
-        val oldFile = script.file
-        if (!oldFile.exists()) return false
-        return try {
-            oldFile.renameTo(newFile)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
-        }
-    }
 
     /**
      * File Methods
@@ -207,6 +97,29 @@ class ScriptsManager(private val context: Context) {
             true
         } catch (e: Exception) {
             file.delete()
+            e.printStackTrace()
+            false
+        }
+    }
+
+    private fun delete(script: MicroScript): Boolean {
+        val file = script.file
+        return if (!file.exists()) false
+        else try {
+            return file.delete()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    private fun rename(script: MicroScript, newName: String): Boolean {
+        val newFile = File(script.parentFile, newName)
+        val oldFile = script.file
+        if (!oldFile.exists()) return false
+        return try {
+            oldFile.renameTo(newFile)
+        } catch (e: Exception) {
             e.printStackTrace()
             false
         }

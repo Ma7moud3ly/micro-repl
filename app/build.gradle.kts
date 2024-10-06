@@ -1,8 +1,9 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.navigation.safeargs)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.kotlin.kapt)
+    alias(libs.plugins.compose.compiler)
 }
 
 // apply gms & firebase plugin only for gms build flavour
@@ -56,13 +57,13 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_18
+        targetCompatibility = JavaVersion.VERSION_18
         isCoreLibraryDesugaringEnabled = true
     }
 
     kotlin {
-        jvmToolchain(17)
+        jvmToolchain(18)
     }
 
     buildFeatures {
@@ -71,10 +72,6 @@ android {
         dataBinding = true
         buildConfig = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.composeCompiler.get().version
-    }
-
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -86,17 +83,10 @@ dependencies {
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.fragment.ktx)
-    implementation(libs.material)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.kotlinx.serialization)
     implementation(libs.gson)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
-
-    /**
-     * Navigation Components
-     */
-    implementation(libs.androidx.navigation.fragment.ktx)
-    implementation(libs.androidx.navigation.ui.ktx)
 
     /**
      * Firebase

@@ -11,34 +11,28 @@ import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.fragment.NavHostFragment
 import micro.repl.ma7moud3ly.managers.BoardManager
 import micro.repl.ma7moud3ly.managers.FilesManager
 import micro.repl.ma7moud3ly.managers.TerminalManager
-import micro.repl.ma7moud3ly.utils.ConnectionError
-import micro.repl.ma7moud3ly.utils.ConnectionStatus
-import micro.repl.ma7moud3ly.utils.ThemeMode
+import micro.repl.ma7moud3ly.managers.ThemeModeManager
+import micro.repl.ma7moud3ly.model.ConnectionError
+import micro.repl.ma7moud3ly.model.ConnectionStatus
+import micro.repl.ma7moud3ly.screens.RootGraph
+import micro.repl.ma7moud3ly.ui.theme.AppTheme
 
-class MainActivity : AppCompatActivity() {
-
-    private val viewModel by viewModels<MainViewModel>()
-
-    lateinit var boardManager: BoardManager
-    lateinit var terminalManager: TerminalManager
-    lateinit var filesManager: FilesManager
-    var navHost: NavHostFragment? = null
+class MainActivity : ComponentActivity() {
+    private lateinit var boardManager: BoardManager
+    private lateinit var terminalManager: TerminalManager
+    private lateinit var filesManager: FilesManager
+    private val viewModel: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setTheme(
-            if (ThemeMode.isDark(this)) R.style.AppTheme_Dark
-            else R.style.AppTheme
-        )
-        setContentView(R.layout.activity_main)
         setPortraitOrientation()
-
         boardManager = BoardManager(
             context = this,
             onStatusChanges = {
@@ -51,16 +45,27 @@ class MainActivity : AppCompatActivity() {
                 viewModel.terminalOutput.value += data
             }
         )
-
         terminalManager = TerminalManager(boardManager)
-        filesManager = FilesManager(boardManager, onUpdateFiles = {
-            viewModel.files.value = it
-        })
+        filesManager = FilesManager(
+            boardManager = boardManager,
+            onUpdateFiles = { viewModel.files.value = it }
+        )
 
-        navHost =
-            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment?
-
+        setContent {
+            AppTheme(
+                darkTheme = ThemeModeManager.isDark(this),
+                darkStatusBar = true
+            ) {
+                RootGraph(
+                    viewModel = viewModel,
+                    boardManager = boardManager,
+                    terminalManager = terminalManager,
+                    filesManager = filesManager
+                )
+            }
+        }
     }
+
 
     private fun handleResponseMessage(status: ConnectionStatus) {
         val msg = when (status) {
