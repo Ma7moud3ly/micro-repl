@@ -44,6 +44,7 @@ fun FileSaveAsDialog(
     MyDialog(
         show = show,
         onDismiss = onDismiss,
+        dismissOnClickOutside = false
     ) {
         InputDialogContent(
             name = name(),

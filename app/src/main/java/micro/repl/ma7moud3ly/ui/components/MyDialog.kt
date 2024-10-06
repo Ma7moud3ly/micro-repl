@@ -16,12 +16,16 @@ import androidx.compose.ui.window.DialogProperties
 fun MyDialog(
     show: () -> Boolean,
     onDismiss: () -> Unit,
+    dismissOnClickOutside: Boolean = true,
     border: BorderStroke? = null,
     content: @Composable () -> Unit
 ) {
     if (show()) BasicAlertDialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false),
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+            dismissOnClickOutside = dismissOnClickOutside
+        ),
         modifier = Modifier.fillMaxWidth(0.90f)
     ) {
         Surface(

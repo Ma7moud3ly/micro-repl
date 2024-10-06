@@ -32,7 +32,7 @@ fun TerminalScreen(
     val coroutineScope = rememberCoroutineScope()
     var terminalInput by remember { viewModel.terminalInput }
     var terminalOutput by remember { viewModel.terminalOutput }
-    val scriptPath by remember { viewModel.scriptPath }
+    val script by remember { viewModel.script }
 
     fun onRun() {
         coroutineScope.launch {
@@ -68,8 +68,8 @@ fun TerminalScreen(
     }
 
     LaunchedEffect(Unit) {
-        if (viewModel.scriptContent.isNotEmpty()) {
-            terminalManager?.executeScript(viewModel.scriptContent)
+        if (script.hasContent) {
+            terminalManager?.executeScript(script.content)
         } else {
             viewModel.terminalOutput.value = ""
             enterReplModel()
@@ -112,12 +112,11 @@ fun TerminalScreen(
     }
 
     TerminalScreenContent(
+        microScript = { script },
         uiEvents = ::uiEvents,
         terminalInput = { terminalInput },
         onInputChanges = { terminalInput = it },
-        terminalOutput = { terminalOutput },
-        scriptPath = scriptPath,
-        scriptLocal = viewModel.isLocalScript
+        terminalOutput = { terminalOutput }
     )
 }
 

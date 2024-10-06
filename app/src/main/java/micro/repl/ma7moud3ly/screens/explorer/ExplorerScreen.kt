@@ -12,6 +12,7 @@ import micro.repl.ma7moud3ly.managers.FilesManager
 import micro.repl.ma7moud3ly.managers.TerminalManager
 import micro.repl.ma7moud3ly.model.EditorMode
 import micro.repl.ma7moud3ly.model.MicroFile
+import micro.repl.ma7moud3ly.model.MicroScript
 import java.io.File
 
 private const val TAG = "FileManagerScreen"
@@ -22,8 +23,8 @@ fun FilesExplorerScreen(
     viewModel: MainViewModel,
     terminalManager: TerminalManager,
     filesManager: FilesManager?,
-    openTerminal: () -> Unit,
-    openEditor: () -> Unit,
+    openTerminal: (MicroScript) -> Unit,
+    openEditor: (MicroScript) -> Unit,
     onBack: () -> Unit
 ) {
     val root by remember { viewModel.root }
@@ -34,12 +35,12 @@ fun FilesExplorerScreen(
     fun onRun(file: MicroFile) {
         filesManager?.read(file.fullPath, onRead = { content ->
             Log.i(TAG, "onRun - $content")
-            viewModel.initScript(
+            val script = MicroScript(
                 path = file.fullPath,
                 content = content,
-                source = EditorMode.REMOTE
+                editorMode = EditorMode.REMOTE
             )
-            openTerminal()
+            openTerminal(script)
         })
     }
 
@@ -62,11 +63,15 @@ fun FilesExplorerScreen(
 
     fun onEdit(file: MicroFile) {
         Log.i(TAG, "onEdit - $file")
-        viewModel.initScript(
-            path = file.fullPath,
-            source = EditorMode.REMOTE
-        )
-        openEditor()
+        filesManager?.read(file.fullPath, onRead = { content ->
+            Log.i(TAG, "onRun - $content")
+            val script = MicroScript(
+                path = file.fullPath,
+                content = content,
+                editorMode = EditorMode.REMOTE
+            )
+            openEditor(script)
+        })
     }
 
     fun onNew(file: MicroFile) {

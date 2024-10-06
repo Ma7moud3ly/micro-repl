@@ -23,8 +23,8 @@ private const val TAG = "EditorScreen"
 
 @Composable
 fun EditorScreen(
-    script: MicroScript,
-    filesManager: FilesManager?,
+    script: () -> MicroScript,
+    filesManager: FilesManager,
     onRemoteRun: (MicroScript) -> Unit,
     onBack: () -> Unit
 ) {
@@ -33,24 +33,12 @@ fun EditorScreen(
     var showSaveDialog by remember { mutableStateOf(false) }
     var showSaveNewDialog by remember { mutableStateOf(false) }
 
-    fun onRemoteOpen(path: String) {
-        /* Log.v(TAG, "isConnected = $connected")
-         Log.i(TAG, "onRemoteOpen  = $path")
-         if (connected) {
-             filesManager?.read(path, onRead = { content ->
-                 Log.i(TAG, content)
-                 requireActivity().runOnUiThread {
-                     binding.editor.setText(content)
-                 }
-             })
-         } else onBack()*/
-    }
-
     fun initEditor(codeEditor: CodeEditor) {
+        Log.v(TAG, "initEditor")
         editorManager = EditorManager(
             context = context,
             editor = codeEditor,
-            microScript = script,
+            microScript = script(),
             filesManager = filesManager,
             onRun = onRemoteRun,
             afterEdit = onBack
@@ -58,6 +46,7 @@ fun EditorScreen(
     }
 
     fun checkAction(action: EditorAction) {
+        Log.i(TAG, "action - $action")
         editorManager?.actionAfterSave = action
         if (editorManager?.saveExisting() == true) {
             showSaveDialog = true
@@ -79,7 +68,7 @@ fun EditorScreen(
     }
 
     FileSaveDialog(
-        name = { script.title.value },
+        name = { script().name.ifEmpty { script().title.value } },
         show = { showSaveDialog },
         onOk = {
             showSaveDialog = false
@@ -109,13 +98,14 @@ fun EditorScreen(
     )
 
     EditorScreenContent(
-        microScript = { script },
+        microScript = script,
         uiEvents = {
             when (it) {
                 is EditorEvents.Init -> initEditor(it.codeEditor)
-                is EditorEvents.Run -> checkAction(EditorAction.NewScript)
+                is EditorEvents.Run -> checkAction(EditorAction.RunScript)
                 is EditorEvents.Save -> checkAction(EditorAction.SaveScript)
                 is EditorEvents.New -> checkAction(EditorAction.NewScript)
+                is EditorEvents.Back -> checkAction(EditorAction.CLoseScript)
                 is EditorEvents.Lines -> editorManager?.toggleLines()
                 is EditorEvents.Mode -> editorManager?.toggleDarkMode()
                 is EditorEvents.Clear -> editorManager?.clear()

@@ -69,11 +69,15 @@ fun FileSaveDialog(
     MyDialog(
         show = show,
         onDismiss = onDismiss,
+        dismissOnClickOutside = false
     ) {
+        val fileName = name()
         ApproveDialogContent(
-            message = stringResource(
-                if (name().isEmpty()) R.string.editor_msg_save
-                else R.string.editor_msg_save_changes
+            message = if (fileName.isEmpty())
+                stringResource(R.string.editor_msg_save)
+            else stringResource(
+                R.string.editor_msg_save_changes,
+                fileName
             ),
             onOk = onOk,
             onDismiss = onDismiss

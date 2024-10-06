@@ -9,16 +9,10 @@ package micro.repl.ma7moud3ly.managers
 
 import android.app.Activity
 import android.content.Context
-import android.content.Intent
-import android.graphics.Rect
-import android.net.Uri
-import android.view.KeyEvent
-import android.view.View
+import android.util.Log
 import android.widget.Toast
 import androidx.core.content.res.ResourcesCompat
 import io.github.rosemoe.sora.event.ContentChangeEvent
-import io.github.rosemoe.sora.event.EditorKeyEvent
-import io.github.rosemoe.sora.event.KeyBindingEvent
 import io.github.rosemoe.sora.event.SelectionChangeEvent
 import io.github.rosemoe.sora.event.SideIconClickEvent
 import io.github.rosemoe.sora.langs.textmate.TextMateColorScheme
@@ -34,6 +28,7 @@ import micro.repl.ma7moud3ly.model.MicroScript
 import org.eclipse.tm4e.core.registry.IGrammarSource
 import org.eclipse.tm4e.core.registry.IThemeSource
 import java.io.File
+import java.io.IOException
 import java.io.InputStreamReader
 
 
@@ -48,14 +43,21 @@ class EditorManager(
 ) {
     private val activity: Activity = context as Activity
     var actionAfterSave: EditorAction? = null
+    private var anyChanges: Boolean = false
 
     init {
         getEditorSettings()
         editor.setText(microScript.content)
-        initCodeEditor()
+        microScript.isDark.value = ThemeModeManager.isDark(activity).not()
+        microScript.showLines.value = editor.isLineNumberEnabled
+        initCodeEditor(
+            onTextChanges = {
+                anyChanges = true
+                microScript.canUndo.value = editor.canUndo()
+                microScript.canRedo.value = editor.canRedo()
+            }
+        )
     }
-
-    val canRun: Boolean get() = microScript.isPython
 
 
     /**
@@ -63,7 +65,7 @@ class EditorManager(
      */
 
 
-    private fun initCodeEditor() {
+    private fun initCodeEditor(onTextChanges: () -> Unit) {
         editor.apply {
             typefaceText = ResourcesCompat.getFont(context, R.font.jetbrains_mono_regular);
             setLineSpacing(2f, 1.1f)
@@ -76,14 +78,13 @@ class EditorManager(
             // Update display dynamically
             subscribeEvent<SelectionChangeEvent> { _, _ ->/* updatePositionText() */ }
             subscribeEvent<ContentChangeEvent> { _, _ ->
-                microScript.canUndo.value = editor.canUndo()
-                microScript.canRedo.value = editor.canRedo()
+                onTextChanges()
             }
             subscribeEvent<SideIconClickEvent> { _, _ ->
                 Toast.makeText(context, "Side icon clicked", Toast.LENGTH_SHORT).show()
             }
 
-            subscribeEvent<KeyBindingEvent> { event, _ ->
+            /*subscribeEvent<KeyBindingEvent> { event, _ ->
                 if (event.eventType != EditorKeyEvent.Type.DOWN) {
                     return@subscribeEvent
                 }
@@ -92,12 +93,7 @@ class EditorManager(
                     "Keybinding event: " + generateKeybindingString(event),
                     Toast.LENGTH_LONG
                 ).show()
-            }
-        }
-
-        editor.viewTreeObserver.addOnGlobalLayoutListener {
-            val isVisible = isKeyboardVisible(editor.rootView)
-            microScript.showTitle.value = isVisible.not()
+            }*/
         }
 
         //init theme
@@ -124,7 +120,7 @@ class EditorManager(
             editor.colorScheme = colorScheme
 
             // don't initialize python syntax for non python files
-            if (canRun.not()) return
+            if (microScript.isPython.not()) return
 
             //load python language configuration from assets/python
             val language = TextMateLanguage.create(
@@ -145,7 +141,7 @@ class EditorManager(
         }
     }
 
-    private fun generateKeybindingString(event: KeyBindingEvent): String {
+    /*private fun generateKeybindingString(event: KeyBindingEvent): String {
         val sb = StringBuilder()
         if (event.isCtrlPressed) {
             sb.append("Ctrl + ")
@@ -161,16 +157,7 @@ class EditorManager(
 
         sb.append(KeyEvent.keyCodeToString(event.keyCode))
         return sb.toString()
-    }
-
-    private fun isKeyboardVisible(rootView: View): Boolean {
-        val softKeyboardHeight = 100
-        val r = Rect()
-        rootView.getWindowVisibleDisplayFrame(r)
-        val dm = rootView.resources.displayMetrics
-        val heightDiff = rootView.bottom - r.bottom
-        return heightDiff > softKeyboardHeight * dm.density
-    }
+    }*/
 
     /**
      * Script Edit & Save
@@ -181,10 +168,12 @@ class EditorManager(
     }
 
     fun undo() {
+        Log.v(TAG, "undo")
         editor.undo()
     }
 
     fun redo() {
+        Log.v(TAG, "redo")
         editor.redo()
     }
 
@@ -194,7 +183,9 @@ class EditorManager(
 
 
     fun toggleLines() {
-        editor.isLineNumberEnabled = !editor.isLineNumberEnabled
+        val showLines = !editor.isLineNumberEnabled
+        editor.isLineNumberEnabled = showLines
+        microScript.showLines.value = showLines
     }
 
     fun release() {
@@ -203,13 +194,13 @@ class EditorManager(
 
 
     fun actionAfterSave() {
+        Log.v(TAG, "actionAfterSave")
         setEditorSettings()
         val action = this.actionAfterSave
         actionAfterSave = null
         when (action) {
             EditorAction.NewScript -> {
                 editor.setText("")
-                microScript.name = ""
                 microScript.path = ""
                 microScript.content = ""
                 microScript.title.value = context.getString(R.string.editor_untitled)
@@ -230,18 +221,23 @@ class EditorManager(
 
 
     fun saveExisting(): Boolean {
-        return microScript.path.isNotEmpty() && editor.canUndo()
+        val exist = microScript.exists && anyChanges
+        Log.v(TAG, "saveExisting  - $exist")
+        return exist
     }
 
     fun saveNew(): Boolean {
-        return microScript.path.isEmpty() && editor.text.toString().trim().isNotEmpty()
+        val new = microScript.exists.not() && editor.text.toString().trim().isNotEmpty()
+        Log.v(TAG, "saveNew - $new")
+        return new
     }
 
 
     fun save(onDone: () -> Unit) {
         if (microScript.isLocal) {
-            val saved = scriptsManager.write(microScript.path, editor.text.toString())
+            val saved = scriptsManager.write(microScript.file, editor.text.toString())
             if (saved) {
+                anyChanges = false
                 val name = microScript.name
                 microScript.title.value = name
                 Toast.makeText(context, "$name saved", Toast.LENGTH_SHORT).show()
@@ -259,9 +255,9 @@ class EditorManager(
 
     fun saveFileAs(name: String, onDone: () -> Unit) {
         scriptsManager.scriptDirectory()?.let {
-            microScript.path = it.path
-            microScript.name = name
+            microScript.path = it.path + "/" + name
             microScript.title.value = name
+            Log.v(TAG, "saveFileAs - $microScript")
             save(onDone)
         }
     }
@@ -273,7 +269,8 @@ class EditorManager(
     private fun setEditorSettings() {
         val sharedPrefEditor = activity.getPreferences(Context.MODE_PRIVATE).edit()
         sharedPrefEditor.putBoolean("show_lines", editor.isLineNumberEnabled)
-        if (microScript.isLocal && microScript.path.isNotEmpty()) {
+        if (microScript.isLocal && microScript.exists) {
+            Log.v(TAG, "setEditorSettings - hasScript")
             sharedPrefEditor.putString("script", microScript.path)
         }
         sharedPrefEditor.apply()
@@ -282,18 +279,31 @@ class EditorManager(
     private fun getEditorSettings() {
         val sharedPref = activity.getPreferences(Context.MODE_PRIVATE)
         editor.isLineNumberEnabled = sharedPref.getBoolean("show_lines", true)
-        if (microScript.isLocal) {
-            val path = sharedPref.getString("script", "").orEmpty()
-            if (path.isNotEmpty()) {
-                microScript.path = path
-                if (microScript.file.exists()) {
-                    val name = microScript.file.name
-                    microScript.name = name
+        val recentScript = sharedPref.getString("script", "").orEmpty()
+        if (recentScript.isNotEmpty()) readRecentScript(recentScript)
+    }
+
+    private fun readRecentScript(path: String) {
+        Log.v(TAG, "path: $path")
+        if (microScript.isLocal && microScript.exists.not()) {
+            val file = File(path)
+            if (file.exists()) {
+                try {
+                    val content = scriptsManager.read(file)
+                    microScript.content = content
+                    microScript.path = path
+                    val name = microScript.name
                     microScript.title.value = name
-                    microScript.content = scriptsManager.read(microScript.file)
+                    Log.v(TAG, "microScript: $microScript ")
+                } catch (e: IOException) {
+                    e.printStackTrace()
                 }
             }
         }
+    }
+
+    companion object {
+        private const val TAG = "EditorManager"
     }
 }
 

@@ -45,9 +45,8 @@ class ScriptsManager(private val context: Context) {
         val list = mutableListOf<MicroScript>()
         scriptDirectory()?.let { it ->
             it.listFiles()?.forEach { file ->
-                val name = file.name
                 val path = file.absolutePath
-                val script = MicroScript(name = name, path = path)
+                val script = MicroScript(path = path)
                 list.add(script)
             }
         }
@@ -61,7 +60,7 @@ class ScriptsManager(private val context: Context) {
         if (b) updateScriptsList()
     }
 
-    fun renameScript(script: MicroScript, newName:String) {
+    fun renameScript(script: MicroScript, newName: String) {
         val b = rename(script, newName)
         if (b) updateScriptsList()
     }
@@ -80,14 +79,14 @@ class ScriptsManager(private val context: Context) {
             String(byt, 0, byt.size)
         } catch (e: IOException) {
             e.printStackTrace()
-            e.stackTrace.toString()
+            throw IOException()
         }
     }
 
-    fun write(path: String, data: String): Boolean {
-        val file = File(path)
+    fun write(file: File, data: String): Boolean {
+        if (file.parentFile?.exists() == false) file.mkdirs()
         return try {
-            if (!file.exists()) file.createNewFile()
+            if (file.exists().not()) file.createNewFile()
             val out = FileOutputStream(file)
             val writer = OutputStreamWriter(out)
             writer.append(data)
@@ -114,7 +113,7 @@ class ScriptsManager(private val context: Context) {
     }
 
     private fun rename(script: MicroScript, newName: String): Boolean {
-        val newFile = File(script.parentFile, newName)
+        val newFile = File(script.file.parentFile, newName)
         val oldFile = script.file
         if (!oldFile.exists()) return false
         return try {

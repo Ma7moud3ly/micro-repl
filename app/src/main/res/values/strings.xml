@@ -39,7 +39,7 @@
     <string name="editor_untitled">untitled</string>
     <string name="editor_wait">Wait !</string>
     <string name="editor_msg_save">Do you want to save this file ?</string>
-    <string name="editor_msg_save_changes">Do you want to save changes ?</string>
+    <string name="editor_msg_save_changes">Do you want to save changes to (%s) ?</string>
     <string name="editor_msg_delete">Do you want to delete (%s) ?</string>
     <string name="editor_msg_rename">Please write the new name of (%s)</string>
 

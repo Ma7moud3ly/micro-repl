@@ -11,11 +11,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import micro.repl.ma7moud3ly.model.ConnectionStatus
-import micro.repl.ma7moud3ly.model.EditorMode
 import micro.repl.ma7moud3ly.model.MicroDevice
 import micro.repl.ma7moud3ly.model.MicroFile
 import micro.repl.ma7moud3ly.managers.TerminalHistoryManager
-import micro.repl.ma7moud3ly.model.toMicroDevice
+import micro.repl.ma7moud3ly.model.MicroScript
 
 class MainViewModel : ViewModel() {
     //the device connectivity status Connected,Connecting or OnFailure
@@ -34,36 +33,7 @@ class MainViewModel : ViewModel() {
      * for editor
      */
 
-    //is script saved locally or in micropython device
-    private var editorMode = EditorMode.LOCAL
-    val isLocalScript: Boolean get() = editorMode == EditorMode.LOCAL
-
-    //the script path
-    var scriptPath = mutableStateOf("")
-        private set
-
-    //python code in script
-    var scriptContent = ""
-        private set
-
-    fun initScript(
-        path: String,
-        source: EditorMode,
-        content: String = "",
-    ) {
-        this.editorMode = source
-        this.scriptPath.value = path
-        this.scriptContent = content
-    }
-
-    fun initScript(
-        path: String,
-        content: String
-    ) {
-        this.scriptPath.value = path
-        this.scriptContent = content
-    }
-
+    val script = mutableStateOf(MicroScript())
 
     /**
      * for terminal

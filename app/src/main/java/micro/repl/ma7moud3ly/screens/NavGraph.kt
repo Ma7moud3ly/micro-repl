@@ -11,8 +11,6 @@ import micro.repl.ma7moud3ly.managers.BoardManager
 import micro.repl.ma7moud3ly.managers.CommandsManager
 import micro.repl.ma7moud3ly.managers.FilesManager
 import micro.repl.ma7moud3ly.managers.TerminalManager
-import micro.repl.ma7moud3ly.model.EditorMode
-import micro.repl.ma7moud3ly.model.MicroScript
 import micro.repl.ma7moud3ly.screens.editor.EditorScreen
 import micro.repl.ma7moud3ly.screens.explorer.FilesExplorerScreen
 import micro.repl.ma7moud3ly.screens.home.HomeScreen
@@ -45,17 +43,9 @@ fun RootGraph(
                 viewModel = viewModel,
                 boardManager = boardManager,
                 terminalManager = terminalManager,
-                openExplorer = {
-                    navController.navigate(AppRoutes.Explorer)
-                },
-                openTerminal = {
-                    viewModel.initScript(path = "", source = EditorMode.LOCAL)
-                    navController.navigate(AppRoutes.Terminal)
-                },
-                openEditor = {
-                    viewModel.initScript(path = "", source = EditorMode.LOCAL)
-                    navController.navigate(AppRoutes.Editor)
-                },
+                openExplorer = { navController.navigate(AppRoutes.Explorer) },
+                openTerminal = { navController.navigate(AppRoutes.Terminal) },
+                openEditor = { navController.navigate(AppRoutes.Editor) },
                 openScripts = {
                     navController.navigate(AppRoutes.Scripts)
                 }
@@ -75,9 +65,9 @@ fun RootGraph(
         composable<AppRoutes.Editor> {
             EditorScreen(
                 filesManager = filesManager,
-                script = MicroScript(),
-                onRemoteRun = { script ->
-                    viewModel.initScript(path = script.path, content = script.content)
+                script = { viewModel.script.value },
+                onRemoteRun = { s ->
+                    viewModel.script.value = s
                     navController.navigate(AppRoutes.Terminal)
                 },
                 onBack = { navController.popBackStack() }
@@ -89,11 +79,12 @@ fun RootGraph(
                 filesManager = filesManager,
                 viewModel = viewModel,
                 terminalManager = terminalManager,
-                openTerminal = {
+                openTerminal = { script ->
+                    viewModel.script.value = script
                     navController.navigate(AppRoutes.Terminal)
                 },
-                openEditor = {
-                    //viewModel.initScript(path = "", source = EditorMode.LOCAL)
+                openEditor = { script ->
+                    viewModel.script.value = script
                     navController.navigate(AppRoutes.Editor)
                 },
                 onBack = { navController.popBackStack() }
@@ -102,11 +93,11 @@ fun RootGraph(
 
         composable<AppRoutes.Scripts> {
             ScriptsScreen(
-                onBack = { navController.popBackStack() },
-                onOpen = { script ->
-                    viewModel.initScript(path = script.path, source = EditorMode.LOCAL)
+                onOpenLocalScript = { script ->
+                    viewModel.script.value = script
                     navController.navigate(AppRoutes.Editor)
-                }
+                },
+                onBack = { navController.popBackStack() }
             )
         }
     }

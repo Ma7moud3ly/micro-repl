@@ -55,7 +55,7 @@ fun FileDeleteDialog(
 ) {
     MyDialog(
         show = show,
-        onDismiss = onDismiss,
+        onDismiss = onDismiss
     ) {
         ApproveDialogContent(
             message = stringResource(R.string.editor_msg_delete, name()),
@@ -83,7 +83,8 @@ internal fun ApproveDialogContent(
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center, maxLines = 1,
+            textAlign = TextAlign.Center,
+            maxLines = 2,
             overflow = TextOverflow.Ellipsis
         )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

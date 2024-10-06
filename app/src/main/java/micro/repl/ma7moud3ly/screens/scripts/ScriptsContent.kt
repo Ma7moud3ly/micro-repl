@@ -51,7 +51,7 @@ private val scripts = listOf(
 private fun ScriptsScreenPreviewLight() {
     AppTheme(darkTheme = false) {
         ScriptsScreenContent(
-            scripts = scripts,
+            scripts = { scripts },
             uiEvents = {}
         )
     }
@@ -62,7 +62,7 @@ private fun ScriptsScreenPreviewLight() {
 private fun ScriptsScreenPreviewDark() {
     AppTheme(darkTheme = true) {
         ScriptsScreenContent(
-            scripts = scripts,
+            scripts = { scripts },
             uiEvents = {}
         )
     }
@@ -70,7 +70,7 @@ private fun ScriptsScreenPreviewDark() {
 
 @Composable
 fun ScriptsScreenContent(
-    scripts: List<MicroScript>,
+    scripts: () -> List<MicroScript>,
     uiEvents: (ScriptsEvents) -> Unit,
 ) {
     MyScreen(
@@ -83,14 +83,15 @@ fun ScriptsScreenContent(
             )
         }
     ) {
-        if (scripts.isNotEmpty()) {
-            scripts.forEach { script ->
+        val list = scripts()
+        if (list.isNotEmpty()) {
+            list.forEach { script ->
                 ItemScript(
                     script = script,
                     onOpen = { uiEvents(ScriptsEvents.Open(script)) },
-                    onRename = { uiEvents(ScriptsEvents.Open(script)) },
-                    onDelete = { uiEvents(ScriptsEvents.Open(script)) },
-                    onRun = { uiEvents(ScriptsEvents.Open(script)) }
+                    onRename = { uiEvents(ScriptsEvents.Rename(script)) },
+                    onDelete = { uiEvents(ScriptsEvents.Delete(script)) },
+                    onRun = { uiEvents(ScriptsEvents.Run(script)) }
                 )
             }
         } else Text(
@@ -101,14 +102,13 @@ fun ScriptsScreenContent(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Header(onBack: () -> Unit) {
     Column {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 8.dp),
+                .padding(16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             IconButton(

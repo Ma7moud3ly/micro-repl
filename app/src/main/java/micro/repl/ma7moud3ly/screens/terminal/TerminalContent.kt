@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import micro.repl.ma7moud3ly.R
+import micro.repl.ma7moud3ly.model.MicroScript
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.components.MyScreen
 import micro.repl.ma7moud3ly.ui.theme.dividerColor
@@ -65,13 +66,26 @@ import java.io.File
 @Preview
 @Composable
 private fun TerminalScreenPreview() {
-    AppTheme(darkTheme = true) {
+    AppTheme(darkTheme = false) {
         TerminalScreenContent(
+            microScript = { MicroScript() },
             terminalOutput = { "" },
             terminalInput = { "" },
             onInputChanges = {},
-            scriptPath = "",
-            scriptLocal = true,
+            uiEvents = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun TerminalScreenPreviewDark() {
+    AppTheme(darkTheme = true) {
+        TerminalScreenContent(
+            microScript = { MicroScript() },
+            terminalOutput = { "" },
+            terminalInput = { "" },
+            onInputChanges = {},
             uiEvents = {}
         )
     }
@@ -80,11 +94,10 @@ private fun TerminalScreenPreview() {
 
 @Composable
 fun TerminalScreenContent(
+    microScript: () -> MicroScript,
     terminalInput: () -> String,
     onInputChanges: (input: String) -> Unit,
     terminalOutput: () -> String,
-    scriptPath: String,
-    scriptLocal: Boolean,
     uiEvents: (TerminalEvents) -> Unit,
 ) {
     var fontSize by remember { mutableStateOf(14.sp) }
@@ -100,7 +113,7 @@ fun TerminalScreenContent(
             )
         }
     ) {
-        Title(scriptPath, scriptLocal)
+        Title(microScript)
         Terminal(
             fontSize = { fontSize },
             input = terminalInput,
@@ -273,17 +286,17 @@ private fun Toolbar(
 }
 
 @Composable
-private fun Title(
-    scriptPath: String,
-    scriptLocal: Boolean
-) {
-    if (scriptPath.isNotEmpty()) Column {
+private fun Title(microScript: () -> MicroScript) {
+    val script = microScript()
+    if (script.exists.not()) return
+    Column {
         val source = stringResource(
-            id = if (scriptLocal) R.string.this_device
+            id = if (script.isLocal) R.string.this_device
             else R.string.micro_python
         )
-        val name = if (scriptLocal) File(scriptPath).name else scriptPath
+        val name = if (script.isLocal) script.name else script.path
         val title = "$source:// $name"
+
         Text(
             text = title,
             style = MaterialTheme.typography.labelMedium,

@@ -22,14 +22,14 @@ import micro.repl.ma7moud3ly.model.MicroScript
 @Composable
 fun ScriptsScreen(
     onBack: () -> Unit,
-    onOpen: (MicroScript) -> Unit
+    onOpenLocalScript: (MicroScript) -> Unit
 ) {
     val context = LocalContext.current
     val scriptsManager = remember { ScriptsManager(context) }
     var showFileRenameDialog by remember { mutableStateOf(false) }
     var showFileDeleteDialog by remember { mutableStateOf(false) }
     var selectedScript by remember { mutableStateOf<MicroScript?>(null) }
-
+    val scripts = remember { scriptsManager.scripts }
 
     FileRenameDialog(
         name = { selectedScript?.name.orEmpty() },
@@ -51,12 +51,22 @@ fun ScriptsScreen(
         onDismiss = { showFileDeleteDialog = false }
     )
 
+    fun readLocalScript(script: MicroScript) {
+        try {
+            val content = scriptsManager.read(script.file)
+            script.content = content
+            onOpenLocalScript(script)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     ScriptsScreenContent(
-        scripts = listOf(),
+        scripts = { scripts },
         uiEvents = {
             when (it) {
                 is ScriptsEvents.Back -> onBack()
-                is ScriptsEvents.Open -> onOpen(it.script)
+                is ScriptsEvents.Open -> readLocalScript(it.script)
                 is ScriptsEvents.Delete -> {
                     selectedScript = it.script
                     showFileDeleteDialog = true
