@@ -30,12 +30,6 @@ class MainViewModel : ViewModel() {
     val files = MutableStateFlow<List<MicroFile>>(listOf())
 
     /**
-     * for editor
-     */
-
-    val script = mutableStateOf(MicroScript())
-
-    /**
      * for terminal
      */
 

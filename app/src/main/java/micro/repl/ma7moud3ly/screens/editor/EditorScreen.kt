@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -15,6 +16,7 @@ import io.github.rosemoe.sora.widget.CodeEditor
 import micro.repl.ma7moud3ly.managers.EditorAction
 import micro.repl.ma7moud3ly.managers.EditorManager
 import micro.repl.ma7moud3ly.managers.FilesManager
+import micro.repl.ma7moud3ly.model.EditorState
 import micro.repl.ma7moud3ly.model.MicroScript
 import micro.repl.ma7moud3ly.screens.dialogs.FileSaveAsDialog
 import micro.repl.ma7moud3ly.screens.dialogs.FileSaveDialog
@@ -23,7 +25,8 @@ private const val TAG = "EditorScreen"
 
 @Composable
 fun EditorScreen(
-    script: () -> MicroScript,
+    canRun: () -> Boolean,
+    microScript: MicroScript,
     filesManager: FilesManager,
     onRemoteRun: (MicroScript) -> Unit,
     onBack: () -> Unit
@@ -32,13 +35,18 @@ fun EditorScreen(
     var editorManager by remember { mutableStateOf<EditorManager?>(null) }
     var showSaveDialog by remember { mutableStateOf(false) }
     var showSaveNewDialog by remember { mutableStateOf(false) }
+    val editorState = remember { EditorState(microScript) }
+
+    LaunchedEffect(canRun()) {
+        if (canRun()) editorState.canRun.value = true
+    }
 
     fun initEditor(codeEditor: CodeEditor) {
-        Log.v(TAG, "initEditor")
+        Log.v(TAG, "initEditor - $editorState")
         editorManager = EditorManager(
             context = context,
             editor = codeEditor,
-            microScript = script(),
+            editorState = editorState,
             filesManager = filesManager,
             onRun = onRemoteRun,
             afterEdit = onBack
@@ -49,7 +57,9 @@ fun EditorScreen(
         Log.i(TAG, "action - $action")
         editorManager?.actionAfterSave = action
         if (editorManager?.saveExisting() == true) {
-            showSaveDialog = true
+            if (action == EditorAction.SaveScript)
+                editorManager?.save {}
+            else showSaveDialog = true
         } else if (editorManager?.saveNew() == true) {
             showSaveNewDialog = true
         } else {
@@ -68,7 +78,7 @@ fun EditorScreen(
     }
 
     FileSaveDialog(
-        name = { script().name.ifEmpty { script().title.value } },
+        name = { editorState.title.value },
         show = { showSaveDialog },
         onOk = {
             showSaveDialog = false
@@ -98,7 +108,7 @@ fun EditorScreen(
     )
 
     EditorScreenContent(
-        microScript = script,
+        editorState = editorState,
         uiEvents = {
             when (it) {
                 is EditorEvents.Init -> initEditor(it.codeEditor)

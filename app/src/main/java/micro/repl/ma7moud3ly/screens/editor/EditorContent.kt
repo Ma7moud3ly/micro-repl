@@ -1,9 +1,11 @@
 package micro.repl.ma7moud3ly.screens.editor
 
 import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -15,11 +17,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
@@ -32,25 +36,26 @@ import androidx.compose.ui.viewinterop.AndroidView
 import io.github.rosemoe.sora.widget.CodeEditor
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.model.EditorMode
+import micro.repl.ma7moud3ly.model.EditorState
 import micro.repl.ma7moud3ly.model.MicroScript
 import micro.repl.ma7moud3ly.ui.components.MyScreen
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
-import micro.repl.ma7moud3ly.ui.theme.blue
 
-private val microScript = MicroScript(
-    path = "main.py",
-    content = "print(123)\nprint('Hello World')",
-    editorMode = EditorMode.LOCAL,
-    microPython = true
+private val editorState = EditorState(
+    MicroScript(
+        path = "main.py",
+        editorMode = EditorMode.LOCAL,
+        microPython = true
+    )
 )
 
 @Preview
 @Composable
 private fun EditorScreenPreviewLight() {
-    microScript.showTitle.value = true
+    editorState.canRun.value = true
     AppTheme(darkTheme = false) {
         EditorScreenContent(
-            microScript = { microScript },
+            editorState = editorState,
             uiEvents = {}
         )
     }
@@ -59,14 +64,14 @@ private fun EditorScreenPreviewLight() {
 
 @Composable
 fun EditorScreenContent(
-    microScript: () -> MicroScript,
+    editorState: EditorState,
     uiEvents: (EditorEvents) -> Unit
 ) {
     MyScreen(
         modifier = Modifier.padding(0.dp),
         header = {
             Header(
-                microScript = microScript,
+                editorState = editorState,
                 uiEvents = uiEvents
             )
         }
@@ -85,24 +90,27 @@ fun EditorScreenContent(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Header(
-    microScript: () -> MicroScript,
+    editorState: EditorState,
     uiEvents: (EditorEvents) -> Unit
 ) {
-    val script = microScript()
-    val canUndo by remember { script.canUndo }
-    val canRedo by remember { script.canRedo }
-    val canRun by remember { script.canRun }
-    val isDark by remember { script.isDark }
-    val showLines by remember { script.showLines }
+    val canUndo by remember { editorState.canUndo }
+    val canRedo by remember { editorState.canRedo }
+    val isDark by remember { editorState.isDark }
+    val showLines by remember { editorState.showLines }
 
     Column {
         MediumTopAppBar(
+            expandedHeight = 80.dp,
+            collapsedHeight = 40.dp,
             colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                 titleContentColor = MaterialTheme.colorScheme.primary
             ),
-            title = { ScriptTitle(script) },
-            expandedHeight = 80.dp,
-            collapsedHeight = 40.dp,
+            title = {
+                ScriptTitle(
+                    editorState = editorState,
+                    onRun = { uiEvents(EditorEvents.Run) }
+                )
+            },
             navigationIcon = {
                 EditorIcon(
                     icon = R.drawable.arrow_left,
@@ -116,11 +124,6 @@ private fun Header(
                         .fillMaxWidth(0.85f),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    if (canRun && script.isPython) EditorIcon(
-                        icon = R.drawable.run,
-                        tint = blue,
-                        onClick = { uiEvents(EditorEvents.Run) }
-                    )
                     EditorIcon(
                         icon = R.drawable.undo,
                         enabled = { canUndo },
@@ -131,7 +134,7 @@ private fun Header(
                         enabled = { canRedo },
                         onClick = { uiEvents(EditorEvents.Redo) }
                     )
-                    if (script.isLocal) EditorIcon(
+                    if (editorState.isLocal) EditorIcon(
                         icon = R.drawable.new_script,
                         onClick = { uiEvents(EditorEvents.New) }
                     )
@@ -161,19 +164,30 @@ private fun Header(
 }
 
 @Composable
-private fun ScriptTitle(script: MicroScript) {
-    val title by remember { script.title }
+private fun ScriptTitle(
+    editorState: EditorState,
+    onRun: () -> Unit
+) {
+    val title by remember { editorState.title }
+    val canRun by remember { editorState.canRun }
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        val scriptSource = if (script.isLocal)
+        val scriptSource = if (editorState.isLocal)
             R.string.this_device
-        else if (script.microPython)
+        else if (editorState.microPython)
             R.string.micro_python
         else R.string.circuit_python
+        if (canRun && editorState.isPython) {
+            EditorButton(
+                text = R.string.terminal_run,
+                onClick = onRun
+            )
+        }
         Text(
             text = stringResource(scriptSource) + "://",
             style = MaterialTheme.typography.bodyLarge,
@@ -185,13 +199,38 @@ private fun ScriptTitle(script: MicroScript) {
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.primary
         )
+        Spacer(Modifier.weight(1f))
+
     }
 }
 
+@Composable
+fun EditorButton(
+    @StringRes text: Int,
+    onClick: () -> Unit,
+    color: Color = Color.White,
+    background: Color = MaterialTheme.colorScheme.tertiary
+) {
+    SmallFloatingActionButton(
+        onClick = onClick,
+        containerColor = background
+    ) {
+        Text(
+            text = stringResource(text),
+            style = MaterialTheme.typography.bodySmall,
+            color = color,
+            modifier = Modifier.padding(
+                vertical = 4.dp,
+                horizontal = 8.dp
+            )
+        )
+    }
+}
 
 @Composable
-private fun EditorIcon(
+fun EditorIcon(
     @DrawableRes icon: Int,
+    @StringRes title: Int? = null,
     enabled: () -> Boolean = { true },
     selected: () -> Boolean = { true },
     tint: Color = MaterialTheme.colorScheme.primary,
@@ -210,7 +249,8 @@ private fun EditorIcon(
     ) {
         Icon(
             painterResource(icon),
-            contentDescription = "",
+            contentDescription = if (title != null) stringResource(title)
+            else "",
             modifier = Modifier
                 .fillMaxSize()
                 .padding(4.dp)

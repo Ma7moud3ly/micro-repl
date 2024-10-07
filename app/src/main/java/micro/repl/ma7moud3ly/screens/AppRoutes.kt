@@ -13,8 +13,8 @@ sealed interface AppRoutes {
     data object Scripts
 
     @Serializable
-    data object Terminal
+    data class Terminal(val script: String = "")
 
     @Serializable
-    data object Editor
+    data class Editor(val script: String = "")
 }

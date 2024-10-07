@@ -1,6 +1,6 @@
 package micro.repl.ma7moud3ly.screens.terminal
 
-import android.app.Activity
+import  android.app.Activity
 import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -16,39 +16,43 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.launch
 import micro.repl.ma7moud3ly.MainViewModel
 import micro.repl.ma7moud3ly.R
+import micro.repl.ma7moud3ly.managers.BoardManager
+import micro.repl.ma7moud3ly.managers.CommandsManager
 import micro.repl.ma7moud3ly.managers.TerminalManager
 import micro.repl.ma7moud3ly.managers.ThemeModeManager
+import micro.repl.ma7moud3ly.model.MicroScript
 
 private const val TAG = "TerminalScreen"
 
 
 @Composable
 fun TerminalScreen(
+    microScript: MicroScript,
     viewModel: MainViewModel,
-    terminalManager: TerminalManager? = null,
-    enterReplModel: () -> Unit
+    boardManager: BoardManager,
+    terminalManager: TerminalManager,
+    onBack: () -> Unit
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     var terminalInput by remember { viewModel.terminalInput }
     var terminalOutput by remember { viewModel.terminalOutput }
-    val script by remember { viewModel.script }
 
     fun onRun() {
         coroutineScope.launch {
             val code = terminalInput
             viewModel.history.push(code)
             // for one statement, execute it instantly with
-            if (code.contains("\n").not()) terminalManager?.eval(code)
+            if (code.contains("\n").not()) terminalManager.eval(code)
             // for multiline code, consider it as a script
-            else terminalManager?.evalMultiLine(code)
+            else terminalManager.evalMultiLine(code)
             terminalInput = ""
             terminalOutput += "\n"
         }
     }
 
     fun onTerminate() {
-        terminalManager?.terminateExecution {
+        terminalManager.terminateExecution {
             Toast.makeText(
                 context,
                 context.getString(R.string.terminal_terminate_msg),
@@ -58,7 +62,7 @@ fun TerminalScreen(
     }
 
     fun onSoftReset() {
-        terminalManager?.softResetDevice {
+        terminalManager.softResetDevice {
             Toast.makeText(
                 context,
                 context.getString(R.string.terminal_soft_reset_msg),
@@ -68,11 +72,11 @@ fun TerminalScreen(
     }
 
     LaunchedEffect(Unit) {
-        if (script.hasContent) {
-            terminalManager?.executeScript(script.content)
+        if (microScript.hasContent) {
+            terminalManager.executeScript(microScript.content)
         } else {
             viewModel.terminalOutput.value = ""
-            enterReplModel()
+            boardManager.writeCommand(CommandsManager.REPL_MODE)
         }
     }
 
@@ -108,11 +112,16 @@ fun TerminalScreen(
                     viewModel.terminalInput.value = it
                 }
             }
+
+            TerminalEvents.Back -> {
+                onTerminate()
+                onBack()
+            }
         }
     }
 
     TerminalScreenContent(
-        microScript = { script },
+        microScript = { microScript },
         uiEvents = ::uiEvents,
         terminalInput = { terminalInput },
         onInputChanges = { terminalInput = it },

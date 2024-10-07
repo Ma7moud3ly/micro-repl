@@ -2,15 +2,21 @@ package micro.repl.ma7moud3ly.screens
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import micro.repl.ma7moud3ly.MainViewModel
 import micro.repl.ma7moud3ly.managers.BoardManager
-import micro.repl.ma7moud3ly.managers.CommandsManager
 import micro.repl.ma7moud3ly.managers.FilesManager
 import micro.repl.ma7moud3ly.managers.TerminalManager
+import micro.repl.ma7moud3ly.model.ConnectionStatus
+import micro.repl.ma7moud3ly.model.asMicroScript
 import micro.repl.ma7moud3ly.screens.editor.EditorScreen
 import micro.repl.ma7moud3ly.screens.explorer.FilesExplorerScreen
 import micro.repl.ma7moud3ly.screens.home.HomeScreen
@@ -25,11 +31,14 @@ fun RootGraph(
     terminalManager: TerminalManager,
     navController: NavHostController = rememberNavController(),
 ) {
-
+    var canRun by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         viewModel.status.collect { status ->
-            if (status.isConnected.not()) {
-                navController.popBackStack(AppRoutes.Home, inclusive = false)
+            when (status) {
+                is ConnectionStatus.Connected -> canRun = true
+                else -> {
+                    navController.popBackStack(AppRoutes.Home, inclusive = false)
+                }
             }
         }
     }
@@ -43,32 +52,40 @@ fun RootGraph(
                 viewModel = viewModel,
                 boardManager = boardManager,
                 terminalManager = terminalManager,
-                openExplorer = { navController.navigate(AppRoutes.Explorer) },
-                openTerminal = { navController.navigate(AppRoutes.Terminal) },
-                openEditor = { navController.navigate(AppRoutes.Editor) },
+                openExplorer = {
+                    navController.navigate(AppRoutes.Explorer)
+                },
+                openTerminal = {
+                    navController.navigate(AppRoutes.Terminal())
+                },
+                openEditor = {
+                    navController.navigate(AppRoutes.Editor())
+                },
                 openScripts = {
                     navController.navigate(AppRoutes.Scripts)
                 }
             )
         }
 
-        composable<AppRoutes.Terminal> {
+        composable<AppRoutes.Terminal> { backStackEntry ->
+            val terminal: AppRoutes.Terminal = backStackEntry.toRoute()
             TerminalScreen(
+                microScript = terminal.script.asMicroScript(),
                 viewModel = viewModel,
                 terminalManager = terminalManager,
-                enterReplModel = {
-                    boardManager.writeCommand(CommandsManager.REPL_MODE)
-                }
+                boardManager = boardManager,
+                onBack = { navController.popBackStack() }
             )
         }
 
-        composable<AppRoutes.Editor> {
+        composable<AppRoutes.Editor> { backStackEntry ->
+            val editor: AppRoutes.Editor = backStackEntry.toRoute()
             EditorScreen(
+                canRun = { canRun },
+                microScript = editor.script.asMicroScript(),
                 filesManager = filesManager,
-                script = { viewModel.script.value },
-                onRemoteRun = { s ->
-                    viewModel.script.value = s
-                    navController.navigate(AppRoutes.Terminal)
+                onRemoteRun = { microScript ->
+                    navController.navigate(AppRoutes.Terminal(microScript.asJson))
                 },
                 onBack = { navController.popBackStack() }
             )
@@ -79,13 +96,11 @@ fun RootGraph(
                 filesManager = filesManager,
                 viewModel = viewModel,
                 terminalManager = terminalManager,
-                openTerminal = { script ->
-                    viewModel.script.value = script
-                    navController.navigate(AppRoutes.Terminal)
+                openTerminal = { microScript ->
+                    navController.navigate(AppRoutes.Terminal(microScript.asJson))
                 },
-                openEditor = { script ->
-                    viewModel.script.value = script
-                    navController.navigate(AppRoutes.Editor)
+                openEditor = { microScript ->
+                    navController.navigate(AppRoutes.Editor(microScript.asJson))
                 },
                 onBack = { navController.popBackStack() }
             )
@@ -93,9 +108,8 @@ fun RootGraph(
 
         composable<AppRoutes.Scripts> {
             ScriptsScreen(
-                onOpenLocalScript = { script ->
-                    viewModel.script.value = script
-                    navController.navigate(AppRoutes.Editor)
+                onOpenLocalScript = { microScript ->
+                    navController.navigate(AppRoutes.Editor(microScript.asJson))
                 },
                 onBack = { navController.popBackStack() }
             )

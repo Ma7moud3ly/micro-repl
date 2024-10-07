@@ -17,6 +17,8 @@ import io.github.rosemoe.sora.event.SelectionChangeEvent
 import io.github.rosemoe.sora.event.SideIconClickEvent
 import io.github.rosemoe.sora.langs.textmate.TextMateColorScheme
 import io.github.rosemoe.sora.langs.textmate.TextMateLanguage
+import io.github.rosemoe.sora.langs.textmate.registry.ThemeRegistry
+import io.github.rosemoe.sora.langs.textmate.registry.model.ThemeModel
 import io.github.rosemoe.sora.widget.CodeEditor
 import io.github.rosemoe.sora.widget.style.builtin.ScaleCursorAnimator
 import io.github.rosemoe.sora.widget.subscribeEvent
@@ -24,6 +26,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import micro.repl.ma7moud3ly.R
+import micro.repl.ma7moud3ly.model.EditorState
 import micro.repl.ma7moud3ly.model.MicroScript
 import org.eclipse.tm4e.core.registry.IGrammarSource
 import org.eclipse.tm4e.core.registry.IThemeSource
@@ -35,7 +38,7 @@ import java.io.InputStreamReader
 class EditorManager(
     private val context: Context,
     private val editor: CodeEditor,
-    private val microScript: MicroScript,
+    private val editorState: EditorState,
     private val scriptsManager: ScriptsManager = ScriptsManager(context),
     private val filesManager: FilesManager? = null,
     private val onRun: ((MicroScript) -> Unit)? = null,
@@ -47,14 +50,15 @@ class EditorManager(
 
     init {
         getEditorSettings()
-        editor.setText(microScript.content)
-        microScript.isDark.value = ThemeModeManager.isDark(activity).not()
-        microScript.showLines.value = editor.isLineNumberEnabled
+        editor.setText(editorState.content)
+        editorState.isDark.value = ThemeModeManager.isDark(activity).not()
+        editorState.showLines.value = editor.isLineNumberEnabled
         initCodeEditor(
             onTextChanges = {
                 anyChanges = true
-                microScript.canUndo.value = editor.canUndo()
-                microScript.canRedo.value = editor.canRedo()
+                editorState.content = editor.text.toString()
+                editorState.canUndo.value = editor.canUndo()
+                editorState.canRedo.value = editor.canRedo()
             }
         )
     }
@@ -114,26 +118,28 @@ class EditorManager(
                 theme,
                 null
             )
+            val themeRegistry = ThemeRegistry.getInstance()
+            themeRegistry.loadTheme(ThemeModel(themeSource, theme))
 
 
-            val colorScheme = TextMateColorScheme.create(themeSource)
+            val colorScheme = TextMateColorScheme.create(themeRegistry)
             editor.colorScheme = colorScheme
 
             // don't initialize python syntax for non python files
-            if (microScript.isPython.not()) return
+            if (editorState.isPython.not()) return
 
             //load python language configuration from assets/python
-            val language = TextMateLanguage.create(
-                IGrammarSource.fromInputStream(
-                    //https://github.com/microsoft/vscode/blob/main/extensions/python/syntaxes/MagicPython.tmLanguage.json
-                    context.assets.open("python/python.tmLanguage.json"),
-                    "Python.tmLanguage.json",
-                    null
-                ),
-                //https://github.com/microsoft/vscode/blob/main/extensions/python/language-configuration.json
-                InputStreamReader(context.assets.open("python/language-configuration.json")),
-                (colorScheme as TextMateColorScheme).themeSource
+            val grammarSource = IGrammarSource.fromInputStream(
+                //https://github.com/microsoft/vscode/blob/main/extensions/python/syntaxes/MagicPython.tmLanguage.json
+                context.assets.open("python/python.tmLanguage.json"),
+                "Python.tmLanguage.json",
+                null
             )
+            //https://github.com/microsoft/vscode/blob/main/extensions/python/language-configuration.json
+            val langConfiguration = InputStreamReader(
+                context.assets.open("python/language-configuration.json")
+            )
+            val language = TextMateLanguage.create(grammarSource, langConfiguration, themeSource)
             editor.setEditorLanguage(language)
 
         } catch (e: Exception) {
@@ -185,7 +191,7 @@ class EditorManager(
     fun toggleLines() {
         val showLines = !editor.isLineNumberEnabled
         editor.isLineNumberEnabled = showLines
-        microScript.showLines.value = showLines
+        editorState.showLines.value = showLines
     }
 
     fun release() {
@@ -201,9 +207,7 @@ class EditorManager(
         when (action) {
             EditorAction.NewScript -> {
                 editor.setText("")
-                microScript.path = ""
-                microScript.content = ""
-                microScript.title.value = context.getString(R.string.editor_untitled)
+                editorState.reset(context.getString(R.string.editor_untitled))
             }
 
             EditorAction.CLoseScript -> {
@@ -211,8 +215,7 @@ class EditorManager(
             }
 
             EditorAction.RunScript -> {
-                microScript.content = editor.text.toString().trim()
-                onRun?.invoke(microScript)
+                onRun?.invoke(editorState.asMicroScript)
             }
 
             else -> {}
@@ -221,33 +224,38 @@ class EditorManager(
 
 
     fun saveExisting(): Boolean {
-        val exist = microScript.exists && anyChanges
+        val exist = editorState.exists && anyChanges
         Log.v(TAG, "saveExisting  - $exist")
         return exist
     }
 
     fun saveNew(): Boolean {
-        val new = microScript.exists.not() && editor.text.toString().trim().isNotEmpty()
+        val new = editorState.exists.not() && editorState.content.isNotEmpty()
         Log.v(TAG, "saveNew - $new")
         return new
     }
 
 
     fun save(onDone: () -> Unit) {
-        if (microScript.isLocal) {
-            val saved = scriptsManager.write(microScript.file, editor.text.toString())
+        if (editorState.isLocal) {
+            val file = File(editorState.path)
+            val saved = scriptsManager.write(file, editorState.content)
             if (saved) {
                 anyChanges = false
-                val name = microScript.name
-                microScript.title.value = name
+                val name = file.name
+                editorState.title.value = name
                 Toast.makeText(context, "$name saved", Toast.LENGTH_SHORT).show()
             }
             onDone()
         } else {
             filesManager?.write(
-                path = microScript.path,
-                content = editor.text.toString(),
-                onSave = onDone
+                path = editorState.path,
+                content = editorState.content,
+                onSave = {
+                    anyChanges = false
+                    Toast.makeText(context, "${editorState.path} saved", Toast.LENGTH_SHORT).show()
+                    onDone()
+                }
             )
         }
     }
@@ -255,9 +263,9 @@ class EditorManager(
 
     fun saveFileAs(name: String, onDone: () -> Unit) {
         scriptsManager.scriptDirectory()?.let {
-            microScript.path = it.path + "/" + name
-            microScript.title.value = name
-            Log.v(TAG, "saveFileAs - $microScript")
+            editorState.path = it.path + "/" + name
+            editorState.title.value = name
+            Log.v(TAG, "saveFileAs - ${editorState.path}")
             save(onDone)
         }
     }
@@ -269,9 +277,9 @@ class EditorManager(
     private fun setEditorSettings() {
         val sharedPrefEditor = activity.getPreferences(Context.MODE_PRIVATE).edit()
         sharedPrefEditor.putBoolean("show_lines", editor.isLineNumberEnabled)
-        if (microScript.isLocal && microScript.exists) {
+        if (editorState.isLocal && editorState.exists) {
             Log.v(TAG, "setEditorSettings - hasScript")
-            sharedPrefEditor.putString("script", microScript.path)
+            sharedPrefEditor.putString("script", editorState.path)
         }
         sharedPrefEditor.apply()
     }
@@ -285,16 +293,16 @@ class EditorManager(
 
     private fun readRecentScript(path: String) {
         Log.v(TAG, "path: $path")
-        if (microScript.isLocal && microScript.exists.not()) {
+        if (editorState.isLocal && editorState.exists.not()) {
             val file = File(path)
             if (file.exists()) {
                 try {
-                    val content = scriptsManager.read(file)
-                    microScript.content = content
-                    microScript.path = path
-                    val name = microScript.name
-                    microScript.title.value = name
-                    Log.v(TAG, "microScript: $microScript ")
+                    editorState.apply {
+                        this.content = scriptsManager.read(file)
+                        this.path = path
+                        this.title.value = file.name
+                        this.isPython = file.name.endsWith(".py")
+                    }
                 } catch (e: IOException) {
                     e.printStackTrace()
                 }
