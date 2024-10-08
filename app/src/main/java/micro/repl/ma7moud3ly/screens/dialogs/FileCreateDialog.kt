@@ -1,11 +1,12 @@
-package micro.repl.ma7moud3ly.screens.explorer.dialogs
+package micro.repl.ma7moud3ly.screens.dialogs
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import micro.repl.ma7moud3ly.R
-import micro.repl.ma7moud3ly.screens.dialogs.InputDialogContent
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.components.MyDialog
 import micro.repl.ma7moud3ly.model.MicroFile
@@ -88,15 +89,17 @@ fun FileCreateDialog(
         stringResource(id = R.string.explorer_create) + " " + stringResource(
             id = if (file.isFile) R.string.explorer_new_file
             else R.string.explorer_new_folder
-        ) + " @ /" + file.path
+        ) + "~/" + file.path
     } else stringResource(
         id = R.string.explorer_rename_label, file.name
     )
 
-    val name = remember {
-        if (file.name.isNotEmpty()) file.name
-        else if (file.isFile) "file.txt"
-        else "folder"
+    val name by remember(file) {
+        derivedStateOf {
+            if (file.name.isNotEmpty()) file.name
+            else if (file.isFile) "file.txt"
+            else "folder"
+        }
     }
 
     MyDialog(

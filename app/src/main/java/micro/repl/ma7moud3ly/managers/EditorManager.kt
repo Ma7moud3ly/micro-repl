@@ -25,6 +25,7 @@ import io.github.rosemoe.sora.widget.subscribeEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.model.EditorState
 import micro.repl.ma7moud3ly.model.MicroScript
@@ -36,6 +37,7 @@ import java.io.InputStreamReader
 
 
 class EditorManager(
+    private val coroutineScope: CoroutineScope,
     private val context: Context,
     private val editor: CodeEditor,
     private val editorState: EditorState,
@@ -50,9 +52,6 @@ class EditorManager(
 
     init {
         getEditorSettings()
-        editor.setText(editorState.content)
-        editorState.isDark.value = ThemeModeManager.isDark(activity).not()
-        editorState.showLines.value = editor.isLineNumberEnabled
         initCodeEditor(
             onTextChanges = {
                 anyChanges = true
@@ -61,6 +60,12 @@ class EditorManager(
                 editorState.canRedo.value = editor.canRedo()
             }
         )
+        //init theme
+        coroutineScope.launch {
+            withContext(Dispatchers.Default) {
+                initEditorLanguage()
+            }
+        }
     }
 
 
@@ -70,6 +75,11 @@ class EditorManager(
 
 
     private fun initCodeEditor(onTextChanges: () -> Unit) {
+
+        editor.setText(editorState.content)
+        editorState.isDark.value = ThemeModeManager.isDark(activity).not()
+        editorState.showLines.value = editor.isLineNumberEnabled
+
         editor.apply {
             typefaceText = ResourcesCompat.getFont(context, R.font.jetbrains_mono_regular);
             setLineSpacing(2f, 1.1f)
@@ -99,15 +109,14 @@ class EditorManager(
                 ).show()
             }*/
         }
-
-        //init theme
-        CoroutineScope(Dispatchers.Default).launch { setEditorLanguage() }
     }
 
     /**
      * Configure the Theme & Programming Language of thr code editor
      */
-    private fun setEditorLanguage() {
+    private fun initEditorLanguage() {
+        Log.i(TAG, "setEditorLanguage")
+        Log.v(TAG, "state - ${editorState.title.value} | ${editorState.isPython}")
         try {
             val isDark = ThemeModeManager.isDark(activity)
             val theme = if (isDark) "darcula.json" else "QuietLight.tmTheme"
@@ -143,6 +152,7 @@ class EditorManager(
             editor.setEditorLanguage(language)
 
         } catch (e: Exception) {
+            Log.e(TAG, "Exception - ${e.message}")
             e.printStackTrace()
         }
     }

@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -26,6 +25,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -39,9 +39,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.model.ConnectionStatus
 import micro.repl.ma7moud3ly.model.MicroDevice
@@ -68,27 +70,29 @@ fun ColumnScope.SectionConnected(
     status: ConnectionStatus.Connected,
     uiEvents: (HomeEvents) -> Unit
 ) {
-    var showDeviceDetails by remember {
-        mutableStateOf(false)
+    var showDeviceDetails by remember { mutableStateOf(false) }
+    Column(
+        modifier = Modifier.padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        DeviceConnected(
+            device = status.microDevice,
+            onClick = { showDeviceDetails = showDeviceDetails.not() }
+        )
+        DeviceDetails(
+            visible = { showDeviceDetails },
+            microDevice = status.microDevice,
+            onForgetDevice = {
+                uiEvents(HomeEvents.ForgetDevice(status.microDevice))
+            },
+            onDisconnect = { uiEvents(HomeEvents.DisconnectDevice) },
+        )
+        HomeCommands(
+            onReset = { uiEvents(HomeEvents.Reset) },
+            onSoftReset = { uiEvents(HomeEvents.SoftReset) },
+            onTerminate = { uiEvents(HomeEvents.Terminate) }
+        )
     }
-    DeviceConnected(
-        device = status.microDevice,
-        onClick = { showDeviceDetails = showDeviceDetails.not() }
-    )
-    DeviceDetails(
-        visible = { showDeviceDetails },
-        microDevice = status.microDevice,
-        onForgetDevice = {
-            uiEvents(HomeEvents.ForgetDevice(status.microDevice))
-        },
-        onDisconnect = { uiEvents(HomeEvents.DisconnectDevice) },
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    HomeCommands(
-        onReset = { uiEvents(HomeEvents.Reset) },
-        onSoftReset = { uiEvents(HomeEvents.SoftReset) },
-        onTerminate = { uiEvents(HomeEvents.Terminate) }
-    )
     HomeButtons(
         isConnected = true,
         uiEvents = uiEvents
@@ -96,69 +100,81 @@ fun ColumnScope.SectionConnected(
     Footer(onHelp = { uiEvents(HomeEvents.Help) })
 }
 
-
 @Composable
 private fun DeviceConnected(
     device: MicroDevice,
     onClick: () -> Unit
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-        modifier = Modifier
-            .padding(vertical = 8.dp, horizontal = 16.dp)
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .clip(shape = RoundedCornerShape(8.dp))
-            .background(color = Color.Blue.copy(alpha = 0.2f))
-            .clickable { onClick() }
-            .padding(horizontal = 6.dp, vertical = 4.dp)
-
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(8.dp),
+        color = Color.Blue.copy(alpha = 0.2f)
     ) {
-        Image(
-            painter = painterResource(
-                if (device.isMicroPython) R.drawable.micro_python
-                else R.drawable.circuit_python
-            ),
-            contentDescription = device.port,
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
             modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(color = Color.White)
-                .padding(6.dp)
-        )
-        Column(Modifier.weight(1f)) {
+                .fillMaxWidth()
+                .padding(8.dp)
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Image(
+                    painter = painterResource(
+                        if (device.isMicroPython) R.drawable.micro_python
+                        else R.drawable.circuit_python
+                    ),
+                    contentDescription = device.port,
+                    modifier = Modifier
+                        .size(50.dp)
+                        .clip(CircleShape)
+                        .background(color = Color.White)
+                        .padding(6.dp)
+                )
+                Text(
+                    text = stringResource(R.string.home_details),
+                    style = MaterialTheme.typography.bodySmall,
+                    fontSize = 10.sp,
+                    textDecoration = TextDecoration.Underline,
+                    modifier = Modifier.clickable(onClick = onClick)
+                )
+            }
+            Column(Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(
+                        id = if (device.isMicroPython) R.string.micro_python
+                        else R.string.circuit_python
+                    ),
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = device.board,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.wrapContentWidth()
+                )
+
+            }
             Text(
-                text = stringResource(
-                    id = if (device.isMicroPython) R.string.micro_python
-                    else R.string.circuit_python
-                ),
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontWeight = FontWeight.Bold
-                ),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.fillMaxWidth()
+                text = stringResource(id = R.string.home_connected),
+                style = MaterialTheme.typography.labelSmall
             )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = device.board,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.fillMaxWidth()
+            Spacer(
+                modifier = Modifier
+                    .size(7.dp)
+                    .clip(shape = CircleShape)
+                    .background(color = Color.Green)
             )
         }
-        Text(
-            text = stringResource(id = R.string.home_connected),
-            style = MaterialTheme.typography.labelSmall
-        )
-        Spacer(
-            modifier = Modifier
-                .size(7.dp)
-                .clip(shape = CircleShape)
-                .background(color = Color.Green)
-        )
     }
 }
 
@@ -170,16 +186,15 @@ private fun DeviceDetails(
     onDisconnect: () -> Unit,
     onForgetDevice: () -> Unit
 ) {
-    if (visible())
+    if (visible()) Surface(
+        shape = RoundedCornerShape(8.dp),
+        color = grey100
+    ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
-                .padding(horizontal = 16.dp)
                 .fillMaxWidth()
-                .wrapContentHeight()
-                .clip(shape = RoundedCornerShape(8.dp))
-                .background(color = grey100)
                 .padding(horizontal = 16.dp, vertical = 8.dp)
 
         ) {
@@ -204,6 +219,7 @@ private fun DeviceDetails(
                 }
             }
         }
+    }
 }
 
 
@@ -216,11 +232,7 @@ private fun HomeCommands(
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
-        modifier = Modifier
-            .wrapContentWidth()
-            .wrapContentHeight()
-            .padding(horizontal = 16.dp)
-
+        modifier = Modifier.fillMaxWidth()
     ) {
         CommandButton(
             title = R.string.terminal_reset,
@@ -251,21 +263,29 @@ private fun CommandButton(
     onClick: () -> Unit
 ) {
     val label = stringResource(id = title)
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-        modifier = Modifier
-            .wrapContentWidth()
-            .background(color = color, shape = RoundedCornerShape(8.dp))
-            .clickable { onClick.invoke() }
-            .padding(horizontal = 8.dp, vertical = 2.dp)
-
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(8.dp),
+        color = color,
+        modifier = Modifier.height(28.dp)
     ) {
-        Text(text = label, style = MaterialTheme.typography.labelSmall)
-        Icon(
-            painter = painterResource(id = icon),
-            contentDescription = label
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier.padding(
+                horizontal = 4.dp,
+                vertical = 2.dp
+            )
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall
+            )
+            Icon(
+                painter = painterResource(id = icon),
+                contentDescription = label
+            )
+        }
     }
 }
 

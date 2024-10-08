@@ -12,46 +12,71 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import micro.repl.ma7moud3ly.R
-import micro.repl.ma7moud3ly.screens.explorer.dialogs.FileCreateDialog
+import micro.repl.ma7moud3ly.model.MicroFile
 import micro.repl.ma7moud3ly.screens.explorer.dialogs.FileOptionsDialog
-import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.components.MyScreen
+import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.fileColor
 import micro.repl.ma7moud3ly.ui.theme.folderColor
 import micro.repl.ma7moud3ly.ui.theme.grey100
-import micro.repl.ma7moud3ly.model.MicroFile
 
 private val iconSize = 80.dp
+private val microFile1 = MicroFile(
+    name = "main.py",
+    type = MicroFile.FILE,
+    size = 300000
+)
+private val microFile2 = MicroFile(
+    name = "lib",
+    type = MicroFile.DIRECTORY
+)
 
 @Preview
 @Composable
-fun FileManagerScreenPreview() {
-    val microFile1 = MicroFile(
-        name = "main.py",
-        type = MicroFile.FILE,
-        size = 300000
-    )
-    val microFile2 = MicroFile(
-        name = "lib",
-        type = MicroFile.DIRECTORY
-    )
+private fun FileManagerScreenPreviewLight() {
     val files = listOf(microFile1, microFile2)
-    AppTheme {
+    AppTheme(darkTheme = false) {
+        ExplorerScreenContent(
+            files = { files },
+            root = { "" },
+            uiEvents = { }
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun FileManagerScreenPreviewDark() {
+    val files = listOf(microFile1, microFile2)
+    AppTheme(darkTheme = true) {
         ExplorerScreenContent(
             files = { files },
             root = { "" },
@@ -114,8 +139,6 @@ internal fun ExplorerScreenContent(
                 }
             }
         }
-
-
     }
 }
 
@@ -126,68 +149,55 @@ private fun Header(
     isMicroPython: Boolean = true,
     uiEvents: (ExplorerEvents) -> Unit
 ) {
-    var showFileCreateDialog by remember { mutableStateOf(false) }
-    var isFile by remember { mutableStateOf(true) }
-
-    FileCreateDialog(
-        show = { showFileCreateDialog },
-        microFile = {
-            MicroFile(
-                "",
-                path = path(),
-                type = if (isFile) MicroFile.FILE
-                else MicroFile.DIRECTORY
-            )
-        },
-        onOk = { file ->
-            uiEvents(ExplorerEvents.New(file))
-            showFileCreateDialog = false
-        },
-        onDismiss = {
-            showFileCreateDialog = false
-        }
-    )
-
     Column {
         Row(
             Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 2.dp),
+                .padding(horizontal = 8.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
-                text = stringResource(
-                    id = if (isMicroPython) R.string.micro_python
-                    else R.string.circuit_python
-                ),
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary,
+            IconHeader(title = R.string.explorer_up,
+                icon = R.drawable.arrow_left,
+                tint = MaterialTheme.colorScheme.primary,
+                onClick = { uiEvents(ExplorerEvents.Up) }
             )
-            Text(
-                text = "/${path()}", maxLines = 1,
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(end = 8.dp)
-            )
-
+            Row(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(
+                        id = if (isMicroPython) R.string.micro_python
+                        else R.string.circuit_python
+                    ),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    text = "~/${path()}", maxLines = 1,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
             IconHeader(title = R.string.explorer_new_file,
                 icon = R.drawable.new_file,
                 tint = fileColor,
                 onClick = {
-                    isFile = true
-                    showFileCreateDialog = true
+                    val file = MicroFile(
+                        path = path(),
+                        type = MicroFile.FILE
+                    )
+                    uiEvents(ExplorerEvents.New(file))
                 }
             )
             IconHeader(title = R.string.explorer_new_folder,
                 icon = R.drawable.new_folder,
                 tint = folderColor,
                 onClick = {
-                    isFile = false
-                    showFileCreateDialog = true
+                    val file = MicroFile(
+                        path = path(),
+                        type = MicroFile.DIRECTORY
+                    )
+                    uiEvents(ExplorerEvents.New(file))
                 }
             )
 
@@ -196,18 +206,9 @@ private fun Header(
                 tint = MaterialTheme.colorScheme.primary,
                 onClick = { uiEvents(ExplorerEvents.Refresh) }
             )
-
-            IconHeader(title = R.string.explorer_up,
-                icon = R.drawable.arrow_up,
-                tint = MaterialTheme.colorScheme.primary,
-                onClick = { uiEvents(ExplorerEvents.Up) }
-            )
-
         }
         HorizontalDivider()
     }
-
-
 }
 
 @Composable
@@ -217,15 +218,16 @@ fun IconHeader(
     tint: Color,
     onClick: () -> Unit
 ) {
-    Icon(
-        painter = painterResource(id = icon),
-        contentDescription = stringResource(
-            id = title
-        ), modifier = Modifier
-            .size(25.dp)
-            .clickable { onClick() },
-        tint = tint
-    )
+    IconButton(
+        onClick = onClick,
+        modifier = Modifier.size(30.dp)
+    ) {
+        Icon(
+            painter = painterResource(id = icon),
+            contentDescription = stringResource(title),
+            tint = tint
+        )
+    }
 }
 
 @OptIn(ExperimentalFoundationApi::class)

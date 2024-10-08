@@ -19,10 +19,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -32,13 +28,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import micro.repl.ma7moud3ly.R
-import micro.repl.ma7moud3ly.screens.dialogs.FileRenameDialog
+import micro.repl.ma7moud3ly.model.MicroFile
 import micro.repl.ma7moud3ly.screens.explorer.ExplorerEvents
-import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.components.MyDialog
+import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.fileColor
 import micro.repl.ma7moud3ly.ui.theme.folderColor
-import micro.repl.ma7moud3ly.model.MicroFile
 
 private val microFile = MicroFile(
     name = "main.py",
@@ -79,9 +74,6 @@ internal fun FileOptionsDialog(
     onDismiss: () -> Unit,
     uiEvents: (ExplorerEvents) -> Unit,
 ) {
-    var showRenameFileDialog by remember { mutableStateOf(false) }
-    var selectedFile by remember { mutableStateOf<MicroFile?>(null) }
-
     MyDialog(
         show = show,
         onDismiss = onDismiss,
@@ -123,8 +115,7 @@ internal fun FileOptionsDialog(
                 title = R.string.explorer_rename,
                 onClick = {
                     onDismiss()
-                    selectedFile = file
-                    showRenameFileDialog = true
+                    uiEvents(ExplorerEvents.Rename(file))
                 }
             )
             FileOptionItem(
@@ -137,25 +128,6 @@ internal fun FileOptionsDialog(
             )
         }
     }
-
-    //rename dialog
-    FileRenameDialog(
-        name = { selectedFile?.name.orEmpty() },
-        show = { showRenameFileDialog && selectedFile != null },
-        onOk = { newName ->
-            val newFile = MicroFile(
-                name = newName,
-                path = selectedFile!!.path,
-                type = if (selectedFile!!.isFile) MicroFile.FILE
-                else MicroFile.DIRECTORY
-            )
-            uiEvents(ExplorerEvents.Rename(selectedFile!!, newFile))
-            showRenameFileDialog = false
-        },
-        onDismiss = {
-            showRenameFileDialog = false
-        }
-    )
 }
 
 @Composable

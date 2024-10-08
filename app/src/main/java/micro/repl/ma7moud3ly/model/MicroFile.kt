@@ -1,7 +1,7 @@
 package micro.repl.ma7moud3ly.model
 
 data class MicroFile(
-    val name: String,
+    val name: String = "",
     var path: String = "",
     private val type: Int = FILE,
     private val size: Int = 0,

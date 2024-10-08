@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -68,6 +69,8 @@ fun FileDeleteDialog(
 @Composable
 internal fun ApproveDialogContent(
     message: String,
+    style: TextStyle = MaterialTheme.typography.bodyLarge,
+    textAlign: TextAlign = TextAlign.Center,
     onOk: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -80,12 +83,10 @@ internal fun ApproveDialogContent(
     ) {
         Text(
             text = message,
-            style = MaterialTheme.typography.bodyLarge,
+            style = style,
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis
+            textAlign = textAlign
         )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             MyButton(

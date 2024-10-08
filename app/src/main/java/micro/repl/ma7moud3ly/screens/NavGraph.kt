@@ -69,8 +69,9 @@ fun RootGraph(
 
         composable<AppRoutes.Terminal> { backStackEntry ->
             val terminal: AppRoutes.Terminal = backStackEntry.toRoute()
+            val microScript = remember { terminal.script.asMicroScript() }
             TerminalScreen(
-                microScript = terminal.script.asMicroScript(),
+                microScript = microScript,
                 viewModel = viewModel,
                 terminalManager = terminalManager,
                 boardManager = boardManager,
@@ -80,12 +81,13 @@ fun RootGraph(
 
         composable<AppRoutes.Editor> { backStackEntry ->
             val editor: AppRoutes.Editor = backStackEntry.toRoute()
+            val microScript = remember { editor.script.asMicroScript() }
             EditorScreen(
                 canRun = { canRun },
-                microScript = editor.script.asMicroScript(),
+                microScript = microScript,
                 filesManager = filesManager,
-                onRemoteRun = { microScript ->
-                    navController.navigate(AppRoutes.Terminal(microScript.asJson))
+                onRemoteRun = { s ->
+                    navController.navigate(AppRoutes.Terminal(s.asJson))
                 },
                 onBack = { navController.popBackStack() }
             )

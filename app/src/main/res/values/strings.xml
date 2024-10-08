@@ -21,6 +21,7 @@
     <string name="home_connected">Connected</string>
     <string name="home_disconnected">Disconnected</string>
     <string name="home_connecting">Connecting</string>
+    <string name="home_details">Details</string>
     <string name="home_help">for support or bugs reporting 🐞</string>
     <string name="home_help_link">https://github.com/Ma7moud3ly/micro-repl</string>
     <string name="home_device_is_flashed">Are you sure that one of the connected devices is a supported port flashed with MicroPython firmware?</string>
@@ -42,6 +43,9 @@
     <string name="editor_msg_save_changes">Do you want to save changes to (%s) ?</string>
     <string name="editor_msg_delete">Do you want to delete (%s) ?</string>
     <string name="editor_msg_rename">Please write the new name of (%s)</string>
+    <string name="editor_msg_mode">Do you want to change to (%s) ?\nNote: Activity will restart and connection to any port will be lost.</string>
+    <string name="editor_msg_dark">Dark Mode</string>
+    <string name="editor_msg_light">Light Mode</string>
 
     <string name="explorer_run">Run</string>
     <string name="explorer_edit">Open in Editor</string>
