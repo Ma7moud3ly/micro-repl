@@ -4,17 +4,16 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -45,64 +44,65 @@ private fun SectionErrorPreview() {
 
 
 @Composable
-fun ColumnScope.SectionError(
+fun SectionError(
     status: ConnectionStatus.Error,
     uiEvents: (HomeEvents) -> Unit
 ) {
-    DeviceNotConnected(
-        onClick = { uiEvents(HomeEvents.FindDevices) }
-    )
-    HomeButtons(
-        isConnected = false,
-        uiEvents = uiEvents
-    )
-    Footer(onHelp = { uiEvents(HomeEvents.Help) })
+    Column(modifier = Modifier.padding(16.dp)) {
+        DeviceNotConnected(
+            onClick = { uiEvents(HomeEvents.FindDevices) }
+        )
+        HomeButtons(
+            isConnected = false,
+            uiEvents = uiEvents
+        )
+    }
 }
 
 @Composable
 fun DeviceNotConnected(onClick: () -> Unit) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier
-            .padding(16.dp)
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .clip(shape = RoundedCornerShape(8.dp))
-            .background(color = Color.Red.copy(alpha = 0.2f))
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-
+    Surface(
+        shape = RoundedCornerShape(8.dp),
+        color = Color.Red.copy(alpha = 0.2f)
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
         ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
 
-            Button(onClick = onClick) {
-                Text(text = stringResource(id = R.string.home_connect))
+                Button(onClick = onClick) {
+                    Text(text = stringResource(id = R.string.home_connect))
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = stringResource(id = R.string.home_disconnected),
+                    style = MaterialTheme.typography.labelSmall
+                )
+                Spacer(
+                    modifier = Modifier
+                        .size(7.dp)
+                        .clip(shape = CircleShape)
+                        .background(color = Color.Red)
+                )
             }
-            Spacer(modifier = Modifier.weight(1f))
-            Text(
-                text = stringResource(id = R.string.home_disconnected),
-                style = MaterialTheme.typography.labelSmall
+            Image(
+                painter = painterResource(id = R.drawable.connection),
+                contentDescription = "", modifier = Modifier.fillMaxWidth()
             )
-            Spacer(
-                modifier = Modifier
-                    .size(7.dp)
-                    .clip(shape = CircleShape)
-                    .background(color = Color.Red)
+            Text(
+                text = stringResource(id = R.string.home_connection_msg),
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    textAlign = TextAlign.Justify
+                ),
+                modifier = Modifier.padding(horizontal = 16.dp)
             )
         }
-        Image(
-            painter = painterResource(id = R.drawable.connection),
-            contentDescription = "", modifier = Modifier.fillMaxWidth()
-        )
-        Text(
-            text = stringResource(id = R.string.home_connection_msg),
-            style = MaterialTheme.typography.bodyMedium.copy(
-                textAlign = TextAlign.Justify
-            ),
-            modifier = Modifier.padding(horizontal = 16.dp)
-        )
     }
 }

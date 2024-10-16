@@ -86,6 +86,8 @@ fun TerminalScreen(
 
     DisposableEffect(LocalLifecycleOwner.current) {
         onDispose {
+            terminalOutput = ""
+            terminalInput = ""
             onTerminate()
         }
     }

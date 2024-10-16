@@ -66,15 +66,15 @@ private fun SectionConnectedPreview() {
 
 
 @Composable
-fun ColumnScope.SectionConnected(
+fun SectionConnected(
     status: ConnectionStatus.Connected,
     uiEvents: (HomeEvents) -> Unit
 ) {
-    var showDeviceDetails by remember { mutableStateOf(false) }
     Column(
         modifier = Modifier.padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        var showDeviceDetails by remember { mutableStateOf(false) }
         DeviceConnected(
             device = status.microDevice,
             onClick = { showDeviceDetails = showDeviceDetails.not() }
@@ -92,12 +92,12 @@ fun ColumnScope.SectionConnected(
             onSoftReset = { uiEvents(HomeEvents.SoftReset) },
             onTerminate = { uiEvents(HomeEvents.Terminate) }
         )
+
+        HomeButtons(
+            isConnected = true,
+            uiEvents = uiEvents
+        )
     }
-    HomeButtons(
-        isConnected = true,
-        uiEvents = uiEvents
-    )
-    Footer(onHelp = { uiEvents(HomeEvents.Help) })
 }
 
 @Composable
@@ -117,9 +117,7 @@ private fun DeviceConnected(
                 .fillMaxWidth()
                 .padding(8.dp)
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Image(
                     painter = painterResource(
                         if (device.isMicroPython) R.drawable.micro_python
@@ -135,6 +133,7 @@ private fun DeviceConnected(
                 Text(
                     text = stringResource(R.string.home_details),
                     style = MaterialTheme.typography.bodySmall,
+                    color = Color.Black,
                     fontSize = 10.sp,
                     textDecoration = TextDecoration.Underline,
                     modifier = Modifier.clickable(onClick = onClick)
@@ -153,13 +152,14 @@ private fun DeviceConnected(
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = device.board,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.bodySmall,
+                    fontSize = 10.sp,
                     modifier = Modifier.wrapContentWidth()
                 )
 

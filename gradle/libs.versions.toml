@@ -1,6 +1,6 @@
 [versions]
 
-androidGradlePlugin = "8.7.0"
+androidGradlePlugin = "8.7.1"
 desugarJdk = "2.1.2"
 kotlin = "2.0.10"
 firebaseCrashlytics = "3.0.2"

@@ -23,10 +23,12 @@ fun MyScreen(
     modifier: Modifier = Modifier.padding(16.dp),
     background: Color = MaterialTheme.colorScheme.background,
     header: @Composable () -> Unit = {},
+    footer: @Composable () -> Unit = {},
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Scaffold(
         topBar = header,
+        bottomBar = footer,
         containerColor = background
     ) {
         Box(

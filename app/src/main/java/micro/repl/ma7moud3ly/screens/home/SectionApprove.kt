@@ -3,11 +3,8 @@ package micro.repl.ma7moud3ly.screens.home
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
@@ -51,18 +48,18 @@ private fun SectionApprovePreview() {
 
 
 @Composable
-fun ColumnScope.SectionApprove(
+fun SectionApprove(
     status: ConnectionStatus.Approve,
     uiEvents: (HomeEvents) -> Unit
 ) {
-    Spacer(modifier = Modifier.height(16.dp))
-    DeviceApproveList(
-        modifier = Modifier.weight(1f),
-        usbDevices = status.devices,
-        onApprove = { uiEvents(HomeEvents.ApproveDevice(it)) },
-        onCancel = { uiEvents(HomeEvents.DenyDevice) }
-    )
-    Footer(onHelp = { uiEvents(HomeEvents.Help) })
+    Column(Modifier.padding(16.dp)) {
+        DeviceApproveList(
+            modifier = Modifier.weight(1f),
+            usbDevices = status.devices,
+            onApprove = { uiEvents(HomeEvents.ApproveDevice(it)) },
+            onCancel = { uiEvents(HomeEvents.DenyDevice) }
+        )
+    }
 }
 
 @Composable
@@ -82,11 +79,8 @@ private fun DeviceApproveList(
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Justify,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
+                modifier = Modifier.fillMaxWidth()
             )
-
         }
         items(usbDevices) { device ->
             UsbDeviceApprove(
@@ -111,7 +105,6 @@ private fun UsbDeviceApprove(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
-                .padding(horizontal = 16.dp)
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .clip(shape = RoundedCornerShape(8.dp))
