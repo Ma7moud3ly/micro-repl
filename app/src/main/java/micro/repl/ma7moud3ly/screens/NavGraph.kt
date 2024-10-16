@@ -16,6 +16,7 @@ import micro.repl.ma7moud3ly.managers.BoardManager
 import micro.repl.ma7moud3ly.managers.FilesManager
 import micro.repl.ma7moud3ly.managers.TerminalManager
 import micro.repl.ma7moud3ly.model.ConnectionStatus
+import micro.repl.ma7moud3ly.model.EditorState
 import micro.repl.ma7moud3ly.model.asMicroScript
 import micro.repl.ma7moud3ly.screens.editor.EditorScreen
 import micro.repl.ma7moud3ly.screens.explorer.FilesExplorerScreen
@@ -81,10 +82,10 @@ fun RootGraph(
 
         composable<AppRoutes.Editor> { backStackEntry ->
             val editor: AppRoutes.Editor = backStackEntry.toRoute()
-            val microScript = remember { editor.script.asMicroScript() }
+            val editorState = remember { EditorState(editor.script.asMicroScript(), editor.blank) }
             EditorScreen(
                 canRun = { canRun },
-                microScript = microScript,
+                editorState = editorState,
                 filesManager = filesManager,
                 onRemoteRun = { s ->
                     navController.navigate(AppRoutes.Terminal(s.asJson))
@@ -112,6 +113,9 @@ fun RootGraph(
             ScriptsScreen(
                 onOpenLocalScript = { microScript ->
                     navController.navigate(AppRoutes.Editor(microScript.asJson))
+                },
+                onNewScript = {
+                    navController.navigate(AppRoutes.Editor(blank = true))
                 },
                 onBack = { navController.popBackStack() }
             )

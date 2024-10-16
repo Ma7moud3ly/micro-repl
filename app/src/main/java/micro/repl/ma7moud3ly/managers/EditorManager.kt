@@ -37,7 +37,7 @@ import java.io.InputStreamReader
 
 
 class EditorManager(
-    private val coroutineScope: CoroutineScope,
+    coroutineScope: CoroutineScope,
     private val context: Context,
     private val editor: CodeEditor,
     private val editorState: EditorState,
@@ -81,7 +81,7 @@ class EditorManager(
         editorState.showLines.value = editor.isLineNumberEnabled
 
         editor.apply {
-            typefaceText = ResourcesCompat.getFont(context, R.font.jetbrains_mono_regular);
+            typefaceText = ResourcesCompat.getFont(context, R.font.jetbrains_mono_regular)
             setLineSpacing(2f, 1.1f)
             cursorAnimator = ScaleCursorAnimator(this)
             nonPrintablePaintingFlags =
@@ -297,8 +297,10 @@ class EditorManager(
     private fun getEditorSettings() {
         val sharedPref = activity.getPreferences(Context.MODE_PRIVATE)
         editor.isLineNumberEnabled = sharedPref.getBoolean("show_lines", true)
-        val recentScript = sharedPref.getString("script", "").orEmpty()
-        if (recentScript.isNotEmpty()) readRecentScript(recentScript)
+        if (editorState.isBlank.not()) {
+            val recentScript = sharedPref.getString("script", "").orEmpty()
+            if (recentScript.isNotEmpty()) readRecentScript(recentScript)
+        }
     }
 
     private fun readRecentScript(path: String) {

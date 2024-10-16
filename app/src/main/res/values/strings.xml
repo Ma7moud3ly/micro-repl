@@ -76,5 +76,6 @@
 
     <string name="scripts_empty">"No scripts saved yet!"</string>
     <string name="scripts_local">Local Scripts</string>
+    <string name="scripts_new">New</string>
 
 </resources>

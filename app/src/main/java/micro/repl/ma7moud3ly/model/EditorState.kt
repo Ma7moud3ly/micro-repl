@@ -2,7 +2,10 @@ package micro.repl.ma7moud3ly.model
 
 import androidx.compose.runtime.mutableStateOf
 
-data class EditorState(private var microScript: MicroScript) {
+data class EditorState(
+    private var microScript: MicroScript,
+    val isBlank: Boolean = false
+) {
     val isLocal: Boolean get() = microScript.isLocal
     val microPython: Boolean get() = microScript.microPython
     val exists: Boolean get() = microScript.exists || path.isEmpty().not()

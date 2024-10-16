@@ -24,6 +24,7 @@ private const val TAG = "ScriptsScreen"
 @Composable
 fun ScriptsScreen(
     onBack: () -> Unit,
+    onNewScript: () -> Unit,
     onOpenLocalScript: (MicroScript) -> Unit
 ) {
     val context = LocalContext.current
@@ -69,6 +70,7 @@ fun ScriptsScreen(
         uiEvents = {
             when (it) {
                 is ScriptsEvents.Back -> onBack()
+                is ScriptsEvents.NewScript -> onNewScript()
                 is ScriptsEvents.Open -> readLocalScript(it.script)
                 is ScriptsEvents.Delete -> {
                     selectedScript = it.script

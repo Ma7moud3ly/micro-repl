@@ -1,6 +1,5 @@
 package micro.repl.ma7moud3ly.screens.editor
 
-
 import android.app.Activity
 import android.util.Log
 import androidx.activity.compose.BackHandler
@@ -32,14 +31,13 @@ private const val TAG = "EditorScreen"
 @Composable
 fun EditorScreen(
     canRun: () -> Boolean,
-    microScript: MicroScript,
+    editorState: EditorState,
     filesManager: FilesManager,
     onRemoteRun: (MicroScript) -> Unit,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    val editorState = remember { EditorState(microScript) }
     var editorManager by remember { mutableStateOf<EditorManager?>(null) }
     var showSaveDialog by remember { mutableStateOf(false) }
     var showSaveNewDialog by remember { mutableStateOf(false) }

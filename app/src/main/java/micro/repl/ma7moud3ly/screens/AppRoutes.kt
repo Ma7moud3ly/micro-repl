@@ -16,5 +16,5 @@ sealed interface AppRoutes {
     data class Terminal(val script: String = "")
 
     @Serializable
-    data class Editor(val script: String = "")
+    data class Editor(val script: String = "", val blank: Boolean = false)
 }

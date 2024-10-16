@@ -7,5 +7,6 @@ sealed interface ScriptsEvents {
     data class Open(val script: MicroScript) : ScriptsEvents
     data class Delete(val script: MicroScript) : ScriptsEvents
     data class Rename(val script: MicroScript) : ScriptsEvents
+    data object NewScript : ScriptsEvents
     data object Back : ScriptsEvents
 }

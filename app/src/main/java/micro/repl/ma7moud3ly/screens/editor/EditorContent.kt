@@ -209,10 +209,12 @@ fun EditorButton(
     @StringRes text: Int,
     onClick: () -> Unit,
     color: Color = Color.White,
+    modifier: Modifier = Modifier,
     background: Color = MaterialTheme.colorScheme.tertiary
 ) {
     SmallFloatingActionButton(
         onClick = onClick,
+        modifier = modifier,
         containerColor = background
     ) {
         Text(
