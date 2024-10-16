@@ -2,6 +2,7 @@ package micro.repl.ma7moud3ly.screens.editor
 
 import android.app.Activity
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -14,8 +15,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.github.rosemoe.sora.widget.CodeEditor
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import micro.repl.ma7moud3ly.managers.EditorAction
 import micro.repl.ma7moud3ly.managers.EditorManager
 import micro.repl.ma7moud3ly.managers.FilesManager
@@ -65,7 +68,13 @@ fun EditorScreen(
         editorManager?.actionAfterSave = action
         if (editorManager?.saveExisting() == true) {
             if (action == EditorAction.SaveScript)
-                editorManager?.save {}
+                editorManager?.save {
+                    coroutineScope.launch {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(context, "Saved...", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
             else showSaveDialog = true
         } else if (editorManager?.saveNew() == true) {
             showSaveNewDialog = true

@@ -254,7 +254,6 @@ class EditorManager(
                 anyChanges = false
                 val name = file.name
                 editorState.title.value = name
-                Toast.makeText(context, "$name saved", Toast.LENGTH_SHORT).show()
             }
             onDone()
         } else {
@@ -263,7 +262,6 @@ class EditorManager(
                 content = editorState.content,
                 onSave = {
                     anyChanges = false
-                    Toast.makeText(context, "${editorState.path} saved", Toast.LENGTH_SHORT).show()
                     onDone()
                 }
             )
