@@ -19,20 +19,38 @@ import java.io.OutputStreamWriter
 
 
 /**
- * This class manages saving and retrieving  scripts locally
- * in the app external storage /storage/android/data/package-name/
+ * Manages the saving and retrieval of scripts locally on the device.
+ *
+ * This class handles the storage and management of scripts in the
+ * application's external storage directory. It provides methods for creating,
+ * reading, writing, deleting, and renaming script files. The scripts are stored
+ * in the directory `/storage/emulated/0/Android/data/package-name/files/scripts/`.
+ *
+ * The `ScriptsManager` maintains a list of `MicroScript` objects representing
+ * the available scripts. This list is updated whenever scripts are added,
+ * deleted, or renamed.
  */
 class ScriptsManager(private val context: Context) {
     companion object {
         private const val TAG = "ScriptsManager"
     }
 
+    /**
+     * A list of `MicroScript` objects representing the available scripts.
+     */
     val scripts = mutableStateListOf<MicroScript>()
 
     init {
         updateScriptsList()
     }
 
+    /**
+     * Returns the directory where scripts are stored.
+     *
+     * Creates the directory if it does not exist.
+     *
+     * @return The scripts directory, or `null` if it could not be created.
+     */
     fun scriptDirectory(): File? {
         if (context.getExternalFilesDir("scripts")?.exists() == false) {
             val outFile = context.getExternalFilesDir("scripts")
@@ -41,6 +59,12 @@ class ScriptsManager(private val context: Context) {
         return context.getExternalFilesDir("scripts")
     }
 
+    /**
+     * Updates the list of available scripts.
+     *
+     * Scans the scripts directory and updates the `scripts` list with the
+     * found scripts.
+     */
     private fun updateScriptsList() {
         val list = mutableListOf<MicroScript>()
         scriptDirectory()?.let { it ->
@@ -54,22 +78,34 @@ class ScriptsManager(private val context: Context) {
         scripts.addAll(list)
     }
 
-
+    /**
+     * Deletes a script.
+     *
+     * @param script The `MicroScript` object representing the script to delete.
+     */
     fun deleteScript(script: MicroScript) {
         val b = delete(script)
         if (b) updateScriptsList()
     }
 
+    /**
+     * Renames a script.
+     *
+     * @param script The `MicroScript` object representing the script to rename.
+     * @param newName The new name for the script.
+     */
     fun renameScript(script: MicroScript, newName: String) {
         val b = rename(script, newName)
         if (b) updateScriptsList()
     }
 
-
     /**
-     * File Methods
+     * Reads the content of a script file.
+     *
+     * @param file The `File` object representing the script file to read.
+     * @return The content of the script file as a string.
+     * @throws IOException If an I/O error occurs while reading the file.
      */
-
     fun read(file: File): String {
         return if (!file.exists()) "" else try {
             val dis = DataInputStream(FileInputStream(file))
@@ -83,6 +119,13 @@ class ScriptsManager(private val context: Context) {
         }
     }
 
+    /**
+     * Writes data to a script file.
+     *
+     * @param file The `File` object representing the script file to write to.
+     * @param data The data to write to the file as a string.
+     * @return `true` if the write operation was successful, `false` otherwise.
+     */
     fun write(file: File, data: String): Boolean {
         if (file.parentFile?.exists() == false) file.mkdirs()
         return try {
@@ -101,6 +144,12 @@ class ScriptsManager(private val context: Context) {
         }
     }
 
+    /**
+     * Deletes a script file.
+     *
+     * @param script The `MicroScript` object representing the script file to delete.
+     * @return `true` if the delete operation was successful, `false` otherwise.
+     */
     private fun delete(script: MicroScript): Boolean {
         val file = script.file
         return if (!file.exists()) false
@@ -112,6 +161,13 @@ class ScriptsManager(private val context: Context) {
         }
     }
 
+    /**
+     * Renames a script file.
+     *
+     * @param script The `MicroScript` object representing the script file to rename.
+     * @param newName The new name for the script file.
+     * @return `true` if the rename operation was successful, `false` otherwise.
+     */
     private fun rename(script: MicroScript, newName: String): Boolean {
         val newFile = File(script.file.parentFile, newName)
         val oldFile = script.file
@@ -124,4 +180,3 @@ class ScriptsManager(private val context: Context) {
         }
     }
 }
-

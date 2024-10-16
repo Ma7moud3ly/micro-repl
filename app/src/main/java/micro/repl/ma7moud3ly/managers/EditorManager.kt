@@ -35,7 +35,23 @@ import java.io.File
 import java.io.IOException
 import java.io.InputStreamReader
 
-
+/**
+ * Manages the code editor and its interactions with scripts and files.
+ *
+ * This class handles the initialization, configuration, and operations of the
+ * code editor. It interacts with the `ScriptsManager` and `FilesManager`
+ * to manage scripts and files, respectively. It also provides functionality
+ * for running scripts, handling editor actions, and managing editor settings.
+ *
+ * @param coroutineScope The coroutine scope used for asynchronous operations.
+ * @param context The application context.
+ * @param editor The `CodeEditor` instance.
+ * @param editorState The `EditorState` object that holds the editor's state.
+ * @param scriptsManager The `ScriptsManager` used to manage local scripts.
+ * @param filesManager The `FilesManager` used to manage files on the MicroPython board.
+ * @param onRun A callback function that is invoked when a script is run.
+ * @param afterEdit A callback function that is invoked after an edit operation is performed.
+ */
 class EditorManager(
     coroutineScope: CoroutineScope,
     private val context: Context,
@@ -70,10 +86,17 @@ class EditorManager(
 
 
     /**
-     *  Editor Initialization
+     * Initializes the code editor with settings and event listeners.
+     *
+     * This method sets up the code editor with the appropriate settings, such as
+     * the typeface, line spacing, cursor animator, and non-printable painting
+     * flags. It also subscribes to various editor events to update the editor
+     * state and perform actions based on user interactions.
+     *
+     * @param onTextChanges A callback function that is invoked when the text in the
+     *                       editor is changed. This function is used to update the
+     *                       editor state and to mark the editor as having unsaved changes.
      */
-
-
     private fun initCodeEditor(onTextChanges: () -> Unit) {
 
         editor.setText(editorState.content)
@@ -112,7 +135,11 @@ class EditorManager(
     }
 
     /**
-     * Configure the Theme & Programming Language of thr code editor
+     * Initializes the programming language and theme for the code editor.
+     *
+     * This method loads the appropriate language configuration and theme based
+     * on the editor state. It supports Python syntax highlighting and themes
+     * such as "darcula.json" and "QuietLight.tmTheme".
      */
     private fun initEditorLanguage() {
         Log.i(TAG, "setEditorLanguage")
@@ -179,36 +206,60 @@ class EditorManager(
      * Script Edit & Save
      */
 
+    /**
+     * Clears the content of the editor.
+     */
     fun clear() {
         editor.setText("")
     }
 
+    /**
+     * Performs an undo operation in the editor.
+     */
     fun undo() {
         Log.v(TAG, "undo")
         editor.undo()
     }
 
+    /**
+     * Performs a redo operation in the editor.
+     */
     fun redo() {
         Log.v(TAG, "redo")
         editor.redo()
     }
 
+    /**
+     * Toggles the dark mode of the editor.
+     */
     fun toggleDarkMode() {
         ThemeModeManager.toggleMode(activity)
     }
 
-
+    /**
+     * Toggles the display of line numbers in the editor.
+     */
     fun toggleLines() {
         val showLines = !editor.isLineNumberEnabled
         editor.isLineNumberEnabled = showLines
         editorState.showLines.value = showLines
     }
 
+    /**
+     * Releases the resources used by the editor.
+     */
     fun release() {
         editor.release()
     }
 
-
+    /**
+     * Executes the action specified by `actionAfterSave`.
+     *
+     * This method is typically called after a save operation is completed.
+     * It checks the value of `actionAfterSave` and performs the corresponding
+     * action, such as creating a new script, closing the current script, or
+     * running the current script.
+     */
     fun actionAfterSave() {
         Log.v(TAG, "actionAfterSave")
         setEditorSettings()
@@ -232,20 +283,37 @@ class EditorManager(
         }
     }
 
-
+    /**
+     * Checks if there are any unsaved changes in the editor and the script exists.
+     *
+     * @return `true` if there are unsaved changes and the script exists, `false` otherwise.
+     */
     fun saveExisting(): Boolean {
         val exist = editorState.exists && anyChanges
         Log.v(TAG, "saveExisting  - $exist")
         return exist
     }
 
+    /**
+     * Checks if the current script is new and has content.
+     *
+     * @return `true` if the script is new and has content, `false` otherwise.
+     */
     fun saveNew(): Boolean {
         val new = editorState.exists.not() && editorState.content.isNotEmpty()
         Log.v(TAG, "saveNew - $new")
         return new
     }
 
-
+    /**
+     * Saves the current script.
+     *
+     * If the script is local, it is saved to the local file system using the
+     * `ScriptsManager`. If the script is on the MicroPython board, it is saved
+     * using the `FilesManager`.
+     *
+     * @param onDone A callback function that is invoked when the save operation is complete.
+     */
     fun save(onDone: () -> Unit) {
         if (editorState.isLocal) {
             val file = File(editorState.path)
@@ -268,7 +336,15 @@ class EditorManager(
         }
     }
 
-
+    /**
+     * Saves the current script as a new file.
+     *
+     * This method prompts the user to enter a new file name and then saves the
+     * current script to that file using the `ScriptsManager`.
+     *
+     * @param name The new file name for the script.
+     * @param onDone A callback function that is invoked when the save operation is complete.
+     */
     fun saveFileAs(name: String, onDone: () -> Unit) {
         scriptsManager.scriptDirectory()?.let {
             editorState.path = it.path + "/" + name
@@ -282,6 +358,9 @@ class EditorManager(
      * SharedPreferences
      */
 
+    /**
+     * Saves the editor settings to shared preferences.
+     */
     private fun setEditorSettings() {
         val sharedPrefEditor = activity.getPreferences(Context.MODE_PRIVATE).edit()
         sharedPrefEditor.putBoolean("show_lines", editor.isLineNumberEnabled)
@@ -292,6 +371,9 @@ class EditorManager(
         sharedPrefEditor.apply()
     }
 
+    /**
+     * Retrieves the editor settings from shared preferences.
+     */
     private fun getEditorSettings() {
         val sharedPref = activity.getPreferences(Context.MODE_PRIVATE)
         editor.isLineNumberEnabled = sharedPref.getBoolean("show_lines", true)
@@ -301,6 +383,11 @@ class EditorManager(
         }
     }
 
+    /**
+     * Reads the recent script from the specified path.
+     *
+     * @param path The path to the recent script.
+     */
     private fun readRecentScript(path: String) {
         Log.v(TAG, "path: $path")
         if (editorState.isLocal && editorState.exists.not()) {

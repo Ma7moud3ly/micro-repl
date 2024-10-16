@@ -12,20 +12,28 @@ import com.google.gson.Gson
 import micro.repl.ma7moud3ly.model.MicroDevice
 
 /**
- * This class manages the terminal commands
- * such as reset interpreter, stop execution, evaluate code, and execute scripts.
+ * Manages terminal commands for interacting with a MicroPython board.
+ *
+ * This class provides methods for executing various terminal commands, such as
+ * resetting the interpreter, stopping code execution, evaluating code snippets,
+ * and executing complete scripts. It utilizes the `BoardManager` to communicate
+ * with the MicroPython board.
  */
 class TerminalManager(
     /**
-     * The board manager used to communicate with microcontroller.
+     * The `BoardManager` instance used to communicate with the MicroPython board.
      */
     private val boardManager: BoardManager
 ) {
 
     /**
-     * Terminates the execution of the code on the board.
+     * Terminates the execution of the currently running code on the board.
      *
-     * @param onTerminate Optional callback to be invoked after the execution has been terminated.
+     * This method sends a termination command (CTRL+C) to the board, effectively
+     * stopping any ongoing code execution.
+     *
+     * @param onTerminate An optional callback function that is invoked after
+     *                    the execution has been terminated.
      */
     fun terminateExecution(onTerminate: (() -> Unit)? = null) {
         boardManager.writeCommand(CommandsManager.TERMINATE)
@@ -33,10 +41,14 @@ class TerminalManager(
     }
 
     /**
-     * Resets the device.
+     * Resets the MicroPython board or other microcontroller device.
      *
-     * @param microDevice The micro device to reset.
-     * @param onReset Optional callback to be invoked after the device has been reset.
+     * This method sends a reset command to the board, causing it to restart.
+     * The specific reset command used depends on the type of device.
+     *
+     * @param microDevice The `MicroDevice` object representing the device to reset.
+     * @param onReset An optional callback function that is invoked after the
+     *                device has been reset.
      */
     fun resetDevice(
         microDevice: MicroDevice,
@@ -48,9 +60,13 @@ class TerminalManager(
     }
 
     /**
-     * Performs a soft reset of the device.
+     * Performs a soft reset of the MicroPython board.
      *
-     * @param onReset Optional callback to be invoked after the soft reset has been performed.
+     * This method sends a soft reset command (CTRL+D) to the board, causing
+     * it to restart without a full power cycle.
+     *
+     * @param onReset An optional callback function that is invoked after the
+     *                soft reset has been performed.
      */
     fun softResetDevice(onReset: (() -> Unit)? = null) {
         boardManager.writeCommand(CommandsManager.RESET)
@@ -58,10 +74,15 @@ class TerminalManager(
     }
 
     /**
-     * Evaluates the given code on the board.
+     * Evaluates a single line of MicroPython code on the board.
      *
-     * @param code The code to evaluate.
-     * @param onEval Optional callback to be invoked after the code has been evaluated.
+     * This method sends the given code snippet to the board for evaluation.
+     * The result of the evaluation is not returned directly but may be printed
+     * on the board's console.
+     *
+     * @param code The MicroPython code to evaluate.
+     * @param onEval An optional callback function that is invoked after the
+     *               code has been evaluated.
      */
     fun eval(code: String, onEval: (() -> Unit)? = null) {
         Log.i(TAG, "eval - $code")
@@ -69,6 +90,16 @@ class TerminalManager(
         onEval?.invoke()
     }
 
+    /**
+     * Evaluates multi-line MicroPython code on the board.
+     *
+     * This method sends the given multi-line code to the board for evaluation.
+     * It handles line breaks and ensures the code is properly executed.
+     *
+     * @param code The multi-line MicroPython code to evaluate.
+     * @param onEval An optional callback function that is invoked after the
+     *               code has been evaluated.
+     */
     fun evalMultiLine(code: String, onEval: (() -> Unit)? = null) {
         Log.i(TAG, "evalMultiLine - ${Gson().toJson(code)}")
         boardManager.write(code.replace("\n", "\r").trim())
@@ -76,12 +107,16 @@ class TerminalManager(
         onEval?.invoke()
     }
 
-
     /**
-     * Executes the given script on the board.
+     * Executes a complete MicroPython script on the board.
      *
-     * @param code The script to execute.
-     * @param onExecute Optional callback to be invoked after the script has been executed.
+     * This method sends the given script to the board and executes it in silent
+     * mode. The output of the script is not returned directly but may be printed
+     * on the board's console.
+     *
+     * @param code The MicroPython script to execute.
+     * @param onExecute An optional callback function that is invoked after the
+     *                  script has been executed.
      */
     fun executeScript(
         code: String,
@@ -91,6 +126,7 @@ class TerminalManager(
         boardManager.writeCommand(CommandsManager.SILENT_MODE)
 
         // Print a new line to separate the silent mode message from the output.
+        // And write the code to interpreter to execute it
         boardManager.writeCommand("print()\r\n$code")
 
         // Exit silent mode.

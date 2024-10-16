@@ -39,9 +39,29 @@ import micro.repl.ma7moud3ly.model.toMicroDevice
 
 
 /**
- * This class is responsible for:
- * - USB to Serial connection between the microcontroller and smartphone.
- * - sending & receiving data/commands.
+ * Manages the connection and communication with a microcontroller board
+ * over a USB serial port.
+ *
+ * This class handles the following tasks:
+ * - Establishing and maintaining a USB serial connection.
+ * - Detecting and approving compatible microcontroller boards.
+ * - Sending and receiving data/commands to/from the board.
+ * - Handling connection status changes and errors.
+ *
+ * The `BoardManager` currently supports MicroPython boards. It automatically
+ * detects and connects to compatible boards upon creation. You can also manually
+ * approve or deny devices using the `approveDevice()` and `onDenyDevice()` methods.
+ *
+ * To send data to the board, use the `write()` or `writeSync()` methods.
+ * To receive data from the board, provide a callback to the `onReceiveData`
+ * constructor parameter.
+ *
+ * Connection status changes are reported through the `onStatusChanges` callback.
+ * Errors are reported through the `ConnectionStatus.Error` status.
+ *
+ * @param context The application context.
+ * @param onStatusChanges A callback to be invoked when the connection status changes.
+ * @param onReceiveData A callback to be invoked when data is received from the board.
  */
 class BoardManager(
     private val context: Context,
@@ -114,7 +134,14 @@ class BoardManager(
 
 
     /**
-     * Write python code to serial port and return response in the callback
+     * Writes the given code to the serial port and waits for a response.
+     *
+     * This method is used to execute Python code on the microcontroller
+     * and receive the output synchronously.
+     *
+     * @param code The Python code to execute.
+     * @param onResponse A callback that will be invoked with the response
+     * from the microcontroller.
      */
     private fun writeSync(
         code: String,
@@ -142,9 +169,12 @@ class BoardManager(
      * Writes the given code in silent mode.
      *
      * In silent mode, the output of the code is not displayed in the REPL.
+     * This is useful for executing commands that do not produce output,
+     * or for suppressing unwanted output.
      *
      * @param code The code to write.
-     * @param onResponse A callback that will be invoked with the output of the code, if any.
+     * @param onResponse A callback that will be invoked with the output of
+     * the code, if any.
      */
     fun writeInSilentMode(
         code: String,
@@ -156,8 +186,15 @@ class BoardManager(
     }
 
     /**
-     * Write python statement to the serial REPL
-     * don't wait to response it will be echoed to SerialInputOutputManager listener
+     * Writes the given code to the serial REPL.
+     *
+     * This method is used to send Python statements to the microcontroller
+     * for immediate execution. The response from the microcontroller, if any,
+     * will be received asynchronously through the `onReceiveData` callback.
+     *
+     * @param code The Python code to write.
+     * @param onWrite An optional callback that will be invoked after the code
+     * has been written to the serial port.
      */
     fun write(code: String, onWrite: (() -> Unit)? = null) {
         try {
@@ -176,7 +213,15 @@ class BoardManager(
     }
 
     /**
-     * Write REPL commands that don't require to echo >>>
+     * Writes a REPL command to the serial port.
+     *
+     * This method is used to send special commands to the microcontroller's
+     * REPL, such as control characters or commands that do not require a
+     * response.
+     *
+     * @param code The REPL command to write.
+     * @param onWrite An optional callback that will be invoked after the
+     * command has been written to the serial port.
      */
     fun writeCommand(code: String, onWrite: (() -> Unit)? = null) {
         try {
@@ -189,7 +234,14 @@ class BoardManager(
 
 
     /**
-     * List the connected devices & connect to the supported devices only
+     * Detects and lists connected USB devices, and attempts to connect
+     * to a supported device.
+     *
+     * This method scans for connected USB devices and checks if any of them
+     * are compatible with the `BoardManager`. If a supported device is found,
+     * it will attempt to establish a connection. If no supported devices are
+     * found, or if an error occurs during the connection process, an error
+     * status will be reported through the `onStatusChanges` callback.
      */
     fun detectUsbDevices() {
         usbManager = context.getSystemService(Context.USB_SERVICE) as UsbManager
@@ -208,26 +260,69 @@ class BoardManager(
         } else throwError(ConnectionError.NO_DEVICES)
     }
 
+    /**
+     * Approves the given USB device and attempts to connect to it.
+     *
+     * This method should be called after a user has granted permission to
+     * access the USB device. It will attempt to establish a serial connection
+     * to the device and start listening for data.
+     *
+     * @param usbDevice The USB device to approve and connect to.
+     */
     fun approveDevice(usbDevice: UsbDevice) {
-        Log.i(TAG, "supportedDevice - $usbDevice")
-        if (usbManager.hasPermission(usbDevice)) connectToSerial(usbDevice)
-        else requestUsbPermission(usbDevice)
+        try {
+            Log.i(TAG, "supportedDevice - $usbDevice")
+            if (usbManager.hasPermission(usbDevice)) connectToSerial(usbDevice)
+            else requestUsbPermission(usbDevice)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
+    /**
+     * Called when the user denies permission to access a USB device.
+     *
+     * This method will report an error status through the `onStatusChanges`
+     * callback, indicating that the device is not supported or permission
+     * was denied.
+     */
     fun onDenyDevice() {
         throwError(error = ConnectionError.NOT_SUPPORTED)
     }
 
+    /**
+     * Called when the connection to the USB device is lost.
+     *
+     * This method will report an error status through the `onStatusChanges`
+     * callback, indicating that the connection has been lost.
+     */
     fun onDisconnectDevice() {
         throwError(error = ConnectionError.CONNECTION_LOST)
     }
 
+    /**
+     * Called when the user chooses to forget a previously connected device.
+     *
+     * This method will disconnect from the device, remove it from the list of
+     * supported devices, and rescan for connected devices.
+     *
+     * @param device The USB device to forget.
+     */
     fun onForgetDevice(device: UsbDevice) {
         onDisconnectDevice()
         removeProduct(device.productId)
         detectUsbDevices()
     }
 
+    /**
+     * Requests permission from the user to access the given USB device.
+     *
+     * This method will display a system dialog asking the user to grant
+     * permission to access the USB device. The result of the permission
+     * request will be handled by the `usbReceiver` broadcast receiver.
+     *
+     * @param usbDevice The USB device to request permission for.
+     */
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     private fun requestUsbPermission(usbDevice: UsbDevice) {
         Log.i(TAG, "requestUsbPermission")
@@ -249,6 +344,15 @@ class BoardManager(
         usbManager.requestPermission(usbDevice, permissionIntent)
     }
 
+    /**
+     * A broadcast receiver that handles USB permission events.
+     *
+     * This receiver is registered to listen for the `ACTION_USB_PERMISSION`
+     * broadcast, which is sent by the system when the user grants or denies
+     * permission to access a USB device. If permission is granted, this
+     * receiver will attempt to connect to the device. If permission is denied,
+     * it will report an error status.
+     */
     private val usbReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             Log.i(TAG, "onReceive")
@@ -269,7 +373,12 @@ class BoardManager(
     }
 
     /**
-     * Make a serial connection to a usb device
+     * Establishes a serial connection to the given USB device.
+     *
+     * This method opens a serial port to the device, configures the
+     * connection parameters, and starts listening for data.
+     *
+     * @param usbDevice The USB device to connect to.
      */
     private fun connectToSerial(usbDevice: UsbDevice) {
         val allDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(usbManager)
@@ -311,6 +420,15 @@ class BoardManager(
     }
 
 
+    /**
+     * Called when new data is received from the serial port.
+     *
+     * This method is invoked by the `SerialInputOutputManager` when new data
+     * is available from the USB serial port. It handles the received data
+     * based on the current execution mode.
+     *
+     * @param bytes The received data as a byte array.
+     */
     override fun onNewData(bytes: ByteArray?) {
         val data = bytes?.toString(Charsets.UTF_8).orEmpty()
         // when writeSync is called, we need to collect all outputs
@@ -342,6 +460,16 @@ class BoardManager(
         }
     }
 
+    /**
+     * Called when an error occurs during serial communication.
+     *
+     * This method is invoked by the `SerialInputOutputManager` when an error
+     * occurs during serial communication, such as a connection loss or a
+     * communication timeout. It reports an error status through the
+     * `onStatusChanges` callback.
+     *
+     * @param e The exception that caused the error.
+     */
     override fun onRunError(e: Exception?) {
         val errorMessage = e?.message ?: ""
         Log.e(TAG, "onRunError - ${e?.message}")

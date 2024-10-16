@@ -6,7 +6,10 @@ data class MicroFile(
     private val type: Int = FILE,
     private val size: Int = 0,
 ) {
-    val fullPath: String get() = if (path.isEmpty()) name else "$path/$name".replace("//", "/")
+    val fullPath: String
+        get() = if (path.isEmpty()) name
+        else "$path/$name".replace("//", "/")
+
     val isFile: Boolean get() = type == FILE
     val canRun: Boolean get() = ext == ".py"
 

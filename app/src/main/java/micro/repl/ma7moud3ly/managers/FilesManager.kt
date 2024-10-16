@@ -13,9 +13,22 @@ import org.json.JSONArray
 
 
 /**
- * This class manages our micro file explorer
- * is has methods to list files/directories and decode them as MicroFile list
- * also it has methods to rename/remove/create files and folders
+ * Used by Files Explorer to manage file and directory operations on a MicroPython board.
+ *
+ * This class provides methods for listing, creating, deleting, renaming,
+ * reading, and writing files and directories on a MicroPython board.
+ * It interacts with the `BoardManager` to send commands and receive responses
+ * from the board's REPL.
+ *
+ * The `FilesManager` uses the `CommandsManager` to generate the appropriate
+ * MicroPython commands for each operation. It also handles decoding the
+ * responses from the board to extract file and directory information.
+ *
+ * @param boardManager The `BoardManager` instance used to communicate with the board.
+ * @param onUpdateFiles A callback function that is invoked when the list of files
+ *                       in the current directory is updated. This function receives
+ *                       a list of `MicroFile` objects representing the files and
+ *                       directories in the current directory.
  */
 class FilesManager(
     private val boardManager: BoardManager,
@@ -26,13 +39,19 @@ class FilesManager(
         private const val TAG = "FileManager"
     }
 
+
     /**
-     * The current path being displayed.
+     * The current working directory path on the MicroPython board.
      */
     var path = ""
 
     /**
-     * Lists the files and directories in the current path.
+     * Lists the files and directories in the current working directory.
+     *
+     * This method sends a command to the MicroPython board to list the contents
+     * of the current working directory. The response from the board is then
+     * decoded into a list of `MicroFile` objects, which is then passed to the
+     * `onUpdateFiles` callback function if it is set.
      */
     fun listDir() {
         val code = CommandsManager.iListDir(path)
@@ -42,9 +61,9 @@ class FilesManager(
     }
 
     /**
-     * Removes the specified file or directory.
+     * Removes a file or directory.
      *
-     * @param file The file or directory to remove.
+     * @param file The `MicroFile` object representing the file or directory to remove.
      */
     fun remove(file: MicroFile) {
         val code = if (file.isFile) CommandsManager.removeFile(file)
@@ -57,7 +76,7 @@ class FilesManager(
     /**
      * Creates a new file or directory.
      *
-     * @param file The file or directory to create.
+     * @param file The `MicroFile` object representing the file or directory to create.
      */
     fun new(file: MicroFile) {
         val code = if (file.isFile) CommandsManager.makeFile(file)
@@ -68,10 +87,10 @@ class FilesManager(
     }
 
     /**
-     * Renames the specified file or directory.
+     * Renames a file or directory.
      *
-     * @param src The original file or directory.
-     * @param dst The new name for the file or directory.
+     * @param src The `MicroFile` object representing the source file or directory.
+     * @param dst The `MicroFile` object representing the destination file or directory.
      */
     fun rename(src: MicroFile, dst: MicroFile) {
         val code = CommandsManager.rename(src, dst)
@@ -81,10 +100,10 @@ class FilesManager(
     }
 
     /**
-     * Reads the contents of the specified file.
+     * Reads the contents of a file.
      *
-     * @param path The path to the file.
-     * @param onRead A callback function that will be invoked with the contents of the file.
+     * @param path The path to the file to read.
+     * @param onRead A callback function that is invoked with the contents of the file.
      */
     fun read(path: String, onRead: (content: String) -> Unit) {
         val code = CommandsManager.readFile(path)
@@ -94,11 +113,11 @@ class FilesManager(
     }
 
     /**
-     * Writes the specified content to the specified file.
+     * Writes content to a file.
      *
-     * @param path The path to the file.
+     * @param path The path to the file to write to.
      * @param content The content to write to the file.
-     * @param onSave A callback function that will be invoked when the file has been saved.
+     * @param onSave A callback function that is invoked when the write operation is complete.
      */
     fun write(path: String, content: String, onSave: () -> Unit) {
         val code = CommandsManager.writeFile(path, content)
@@ -109,9 +128,14 @@ class FilesManager(
     }
 
     /**
-     * Decodes the JSON response from the board manager into a list of MicroFile objects.
+     * Decodes the JSON response from the board manager into a list of `MicroFile` objects.
      *
-     * @param json The JSON response from the board manager.
+     * This method parses the JSON response received from the MicroPython board
+     * and creates a list of `MicroFile` objects representing the files and
+     * directories in the current working directory. The list is then passed
+     * to the `onUpdateFiles` callback function if it is set.
+     *
+     * @param json The JSON response string received from the board manager.
      */
     private fun decodeFiles(json: String) {
         val list = mutableListOf<MicroFile>()
