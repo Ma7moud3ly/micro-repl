@@ -49,6 +49,7 @@ import micro.repl.ma7moud3ly.ui.components.MyScreen
 import micro.repl.ma7moud3ly.ui.components.ProgressView
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
+import micro.repl.ma7moud3ly.ui.theme.terminalGreen
 
 private const val TAG = "HomeScreen"
 
@@ -159,7 +160,7 @@ private fun HomeHeader(status: () -> ConnectionStatus) {
                 Spacer(Modifier.height(8.dp))
                 Text(
                     text = message,
-                    color = Color(0xFF4AF626),
+                    color = terminalGreen,
                     modifier = Modifier.fillMaxWidth(),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,

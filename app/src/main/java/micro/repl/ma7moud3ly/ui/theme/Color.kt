@@ -19,6 +19,7 @@ val grey200 = Color(0xFFE8E8E8)
 val grey100 = Color(0xFFE8E8E8)
 val grey50 = Color(0xFFF8F8F8)
 val grey800 = Color(0xFF414141)
+val terminalGreen = Color(0xFF4AF626)
 
 val secondaryColor = grey250
 val secondaryColorDark = Color(0xFF2B2B2B)

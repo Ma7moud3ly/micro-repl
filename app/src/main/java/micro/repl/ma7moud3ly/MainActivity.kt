@@ -33,7 +33,13 @@ class MainActivity : ComponentActivity() {
             context = this,
             onStatusChanges = { viewModel.status.value = it },
             onReceiveData = { data ->
-                viewModel.terminalOutput.value += data
+                runOnUiThread {
+                    // limit terminal output to 10000 chars to avoid app
+                    // freeze for very large outputs
+                    if (viewModel.terminalOutput.value.length > 10000)
+                        viewModel.terminalOutput.value = data
+                    else viewModel.terminalOutput.value += data
+                }
             }
         )
         terminalManager = TerminalManager(boardManager)

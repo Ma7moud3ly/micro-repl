@@ -11,11 +11,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -33,6 +30,7 @@ import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,6 +50,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.model.MicroScript
 import micro.repl.ma7moud3ly.screens.editor.EditorButton
@@ -67,8 +66,8 @@ import micro.repl.ma7moud3ly.ui.theme.fontConsolas
 private fun TerminalScreenPreview() {
     AppTheme(darkTheme = false) {
         TerminalScreenContent(
-            microScript = { MicroScript() },
-            terminalOutput = { "" },
+            microScript = { MicroScript(path = "/") },
+            terminalOutput = { "Hello World" },
             terminalInput = { "" },
             onInputChanges = {},
             uiEvents = {}
@@ -81,8 +80,8 @@ private fun TerminalScreenPreview() {
 private fun TerminalScreenPreviewDark() {
     AppTheme(darkTheme = true) {
         TerminalScreenContent(
-            microScript = { MicroScript() },
-            terminalOutput = { "" },
+            microScript = { MicroScript(path = "/") },
+            terminalOutput = { "Hello World" },
             terminalInput = { "" },
             onInputChanges = {},
             uiEvents = {}
@@ -100,131 +99,143 @@ fun TerminalScreenContent(
     uiEvents: (TerminalEvents) -> Unit,
 ) {
     var fontSize by remember { mutableStateOf(14.sp) }
-
     MyScreen(
-        spacedBy = 4.dp,
-        modifier = Modifier.padding(vertical = 16.dp),
+        spacedBy = 8.dp,
+        modifier = Modifier.padding(vertical = 8.dp),
         header = {
             Header(
+                microScript = microScript,
                 uiEvents = uiEvents,
                 onZoomIn = { fontSize = zoom(fontSize, zoomIn = true) },
                 onZoomOut = { fontSize = zoom(fontSize, zoomIn = false) },
             )
         }
     ) {
-        Title(microScript)
-        Terminal(
-            fontSize = { fontSize },
-            input = terminalInput,
+        TerminalOutput(
             output = terminalOutput,
-            onInputChanges = onInputChanges,
-            onKeyboardSend = { uiEvents(TerminalEvents.Run) }
+            fontSize = { fontSize }
+        )
+        TerminalInputFiled(
+            input = terminalInput,
+            fontSize = { fontSize },
+            onKeyboardSend = { uiEvents(TerminalEvents.Run) },
+            onInputChanges = onInputChanges
         )
     }
 }
 
 
 @Composable
-private fun ColumnScope.Terminal(
+private fun TerminalOutput(
     output: () -> String,
-    input: () -> String,
-    onKeyboardSend: () -> Unit,
-    onInputChanges: (input: String) -> Unit,
     fontSize: () -> TextUnit
 ) {
-    val fSize = fontSize()
-    val focusManager = LocalFocusManager.current
-    val focusRequester = remember { FocusRequester() }
-    val inp = input()
-    fun multiLine() = inp.contains("\n")
-
+    val scrollState = rememberScrollState()
+    LaunchedEffect(output()) {
+        scrollState.animateScrollTo(scrollState.maxValue)
+        delay(2000)
+    }
     Column(
-        Modifier
-            .fillMaxWidth()
-            .weight(1f)
+        modifier = Modifier
+            .verticalScroll(scrollState)
             .padding(horizontal = 8.dp)
-            .verticalScroll(rememberScrollState())
     ) {
         SelectionContainer {
             Text(
                 text = output(),
-                style = MaterialTheme.typography.labelMedium.copy(
-                    fontSize = fSize,
-                    lineHeight = fSize,
-                    fontFamily = fontConsolas
-                )
+                style = MaterialTheme.typography.labelMedium,
+                fontSize = fontSize(),
+                lineHeight = fontSize(),
+                fontFamily = fontConsolas,
+                color = MaterialTheme.colorScheme.primary
             )
         }
-        Spacer(modifier = Modifier.height(8.dp))
-        Row(
-            Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(
-                text = ">>>",
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontFamily = fontConsolas,
-                    fontSize = fSize
-                ),
-                modifier = Modifier.clickable {
-                    focusRequester.requestFocus()
+    }
+}
+
+@Composable
+private fun TerminalInputFiled(
+    input: () -> String,
+    fontSize: () -> TextUnit,
+    onKeyboardSend: () -> Unit,
+    onInputChanges: (input: String) -> Unit,
+) {
+    val inp = input()
+    val focusManager = LocalFocusManager.current
+    val focusRequester = remember { FocusRequester() }
+    fun multiLine() = inp.contains("\n")
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = ">>>",
+            style = MaterialTheme.typography.bodyMedium.copy(
+                fontFamily = fontConsolas,
+                fontSize = fontSize()
+            ),
+            modifier = Modifier.clickable {
+                focusRequester.requestFocus()
+            }
+        )
+        BasicTextField(
+            value = inp,
+            onValueChange = onInputChanges,
+            modifier = Modifier
+                .weight(1f)
+                .wrapContentHeight()
+                .background(
+                    color = if (multiLine()) MaterialTheme.colorScheme
+                        .primary.copy(alpha = 0.1f)
+                    else Color.Transparent
+                )
+                .padding(horizontal = 8.dp, vertical = 4.dp)
+                .focusRequester(focusRequester),
+            textStyle = TextStyle(
+                fontFamily = fontConsolas,
+                fontSize = fontSize(),
+                color = MaterialTheme.colorScheme.primary
+            ), cursorBrush = SolidColor(
+                MaterialTheme.colorScheme.primary
+            ),
+            keyboardOptions = KeyboardOptions(
+                imeAction = if (inp.contains("\n")) ImeAction.Default
+                else ImeAction.Send
+            ),
+            keyboardActions = KeyboardActions(
+                onSend = {
+                    onKeyboardSend.invoke()
+                    focusManager.clearFocus()
                 }
             )
-            BasicTextField(
-                value = inp,
-                onValueChange = onInputChanges,
-                modifier = Modifier
-                    .weight(1f)
-                    .wrapContentHeight()
-                    .background(
-                        color = if (multiLine()) MaterialTheme.colorScheme
-                            .primary.copy(alpha = 0.1f)
-                        else Color.Transparent
-                    )
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                    .focusRequester(focusRequester),
-                textStyle = TextStyle(
-                    fontFamily = fontConsolas,
-                    fontSize = fSize,
-                    color = MaterialTheme.colorScheme.primary
-                ), cursorBrush = SolidColor(
-                    MaterialTheme.colorScheme.primary
-                ),
-                keyboardOptions = KeyboardOptions(
-                    imeAction = if (inp.contains("\n")) ImeAction.Default
-                    else ImeAction.Send
-                ),
-                keyboardActions = KeyboardActions(
-                    onSend = {
-                        onKeyboardSend.invoke()
+        )
+        Icon(
+            painter = painterResource(
+                id = if (multiLine()) R.drawable.run
+                else R.drawable.line_break
+            ),
+            contentDescription = stringResource(
+                id = R.string.terminal_new_line
+            ), modifier = Modifier
+                .size(20.dp)
+                .clickable {
+                    if (multiLine()) {
+                        onKeyboardSend()
                         focusManager.clearFocus()
-                    }
-                )
-            )
-            Icon(
-                painter = painterResource(
-                    id = if (multiLine()) R.drawable.run
-                    else R.drawable.line_break
-                ),
-                contentDescription = stringResource(
-                    id = R.string.terminal_new_line
-                ), modifier = Modifier
-                    .size(20.dp)
-                    .clickable {
-                        if (multiLine()) {
-                            onKeyboardSend()
-                            focusManager.clearFocus()
-                        } else onInputChanges(inp + "\r\n")
-                    },
-                tint = MaterialTheme.colorScheme.primary
-            )
-        }
+                    } else onInputChanges(inp + "\r\n")
+                },
+            tint = MaterialTheme.colorScheme.primary
+        )
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Header(
+    microScript: () -> MicroScript,
     onZoomIn: () -> Unit,
     onZoomOut: () -> Unit,
     uiEvents: (TerminalEvents) -> Unit
@@ -315,6 +326,7 @@ private fun Header(
             }
         )
         HorizontalDivider()
+        Title(microScript)
     }
 }
 
@@ -322,23 +334,18 @@ private fun Header(
 private fun Title(microScript: () -> MicroScript) {
     val script = microScript()
     if (script.exists.not()) return
-    Column {
-        val source = stringResource(
-            id = if (script.isLocal) R.string.this_device
-            else R.string.micro_python
-        )
-        val name = if (script.isLocal) script.name else script.path
-        val title = "$source:// $name"
-
-        Text(
-            text = title,
-            style = MaterialTheme.typography.labelMedium,
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .padding(vertical = 1.dp, horizontal = 8.dp)
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        HorizontalDivider(color = dividerColor)
-    }
+    val source = stringResource(
+        id = if (script.isLocal) R.string.this_device
+        else R.string.micro_python
+    )
+    val name = if (script.isLocal) script.name else script.path
+    val title = "$source:// $name"
+    Text(
+        text = title,
+        style = MaterialTheme.typography.labelMedium,
+        modifier = Modifier
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .fillMaxWidth()
+    )
+    HorizontalDivider(color = dividerColor)
 }

@@ -14,8 +14,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import micro.repl.ma7moud3ly.MainViewModel
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.managers.BoardManager
@@ -55,6 +57,14 @@ fun TerminalScreen(
         }
     }
 
+    fun executeScript() {
+        coroutineScope.launch {
+            withContext(Dispatchers.IO) {
+                terminalManager.executeScript(microScript.content)
+            }
+        }
+    }
+
     fun onTerminate() {
         terminalManager.terminateExecution {
             Toast.makeText(
@@ -77,7 +87,7 @@ fun TerminalScreen(
 
     LaunchedEffect(Unit) {
         if (microScript.hasContent) {
-            terminalManager.executeScript(microScript.content)
+            executeScript()
         } else {
             viewModel.terminalOutput.value = ""
             boardManager.writeCommand(CommandsManager.REPL_MODE)
