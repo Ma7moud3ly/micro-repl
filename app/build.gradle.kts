@@ -1,9 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 // apply gms & firebase plugin only for gms build flavour
@@ -68,8 +67,6 @@ android {
 
     buildFeatures {
         compose = true
-        viewBinding = true
-        dataBinding = true
         buildConfig = true
     }
     packaging {
@@ -83,7 +80,6 @@ dependencies {
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization)
     implementation(libs.gson)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
@@ -117,6 +113,7 @@ dependencies {
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.ui)
+    implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.ui.tooling.preview)
     debugImplementation(libs.androidx.ui.tooling)
     implementation(libs.androidx.material3)
