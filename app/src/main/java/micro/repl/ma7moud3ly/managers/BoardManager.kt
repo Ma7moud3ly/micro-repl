@@ -392,10 +392,9 @@ class BoardManager(
         Log.i(TAG, "connection - $connection")
         port = ports[0]
         Log.i(TAG, "port - $port")
-
-        //select port index = 0, micropython usually has one port
-        port?.open(connection)
         try {
+            //select port index = 0, micropython usually has one port
+            port?.open(connection)
             //Micropython is considered  as CdcAcmSerial port
             //so it requires to enable DTR to exchange data.
             port?.dtr = true
