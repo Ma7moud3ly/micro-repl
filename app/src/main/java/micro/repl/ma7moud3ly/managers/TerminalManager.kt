@@ -35,6 +35,7 @@ class TerminalManager(
      *                    the execution has been terminated.
      */
     fun terminateExecution(onTerminate: (() -> Unit)? = null) {
+        Log.v(TAG, "terminateExecution")
         boardManager.writeCommand(CommandsManager.TERMINATE)
         onTerminate?.invoke()
     }

@@ -2,6 +2,7 @@ package micro.repl.ma7moud3ly.screens.terminal
 
 import  android.app.Activity
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -86,10 +87,10 @@ fun TerminalScreen(
     }
 
     LaunchedEffect(Unit) {
+        viewModel.terminalOutput.value = ""
         if (microScript.hasContent) {
             executeScript()
         } else {
-            viewModel.terminalOutput.value = ""
             boardManager.writeCommand(CommandsManager.REPL_MODE)
         }
     }
@@ -130,11 +131,12 @@ fun TerminalScreen(
             }
 
             TerminalEvents.Back -> {
-                onTerminate()
                 onBack()
             }
         }
     }
+
+    BackHandler(enabled = true, onBack)
 
     ThemeModeDialog(
         isDark = ThemeModeManager.isDark(context as Activity),

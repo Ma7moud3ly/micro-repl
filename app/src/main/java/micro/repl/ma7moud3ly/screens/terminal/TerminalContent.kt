@@ -339,7 +339,7 @@ private fun Title(microScript: () -> MicroScript) {
         else R.string.micro_python
     )
     val name = if (script.isLocal) script.name else script.path
-    val title = "$source:// $name"
+    val title = "$source://$name"
     Text(
         text = title,
         style = MaterialTheme.typography.labelMedium,
