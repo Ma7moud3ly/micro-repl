@@ -8,7 +8,6 @@
 package micro.repl.ma7moud3ly.managers
 
 import android.util.Log
-import com.google.gson.Gson
 import micro.repl.ma7moud3ly.model.MicroDevice
 
 /**
@@ -101,7 +100,6 @@ class TerminalManager(
      *               code has been evaluated.
      */
     fun evalMultiLine(code: String, onEval: (() -> Unit)? = null) {
-        Log.i(TAG, "evalMultiLine - ${Gson().toJson(code)}")
         boardManager.write(code.replace("\n", "\r").trim())
         boardManager.write("\r")
         onEval?.invoke()

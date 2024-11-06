@@ -26,11 +26,11 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.hoho.android.usbserial.driver.UsbSerialPort
 import com.hoho.android.usbserial.driver.UsbSerialProber
 import com.hoho.android.usbserial.util.SerialInputOutputManager
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import micro.repl.ma7moud3ly.managers.CommandsManager.isSilentExecutionDone
 import micro.repl.ma7moud3ly.managers.CommandsManager.trimSilentResult
 import micro.repl.ma7moud3ly.model.ConnectionError
@@ -452,7 +452,7 @@ class BoardManager(
             // the output is echoed directly to onReceiveData callback
             ExecutionMode.INTERACTIVE -> {
                 val response = removeEnding(data)
-                Log.v(TAG, "onNewData - response ${Gson().toJson(response)}")
+                Log.v(TAG, "onNewData - response $response")
                 if (response.isNotEmpty() && response.trim() != ">>>") onReceiveData?.invoke(
                     response
                 )
@@ -509,7 +509,7 @@ class BoardManager(
     private fun removeProduct(productId: Int) {
         supportedProducts.remove(productId)
         supportedManufacturers.clear()
-        val json = Gson().toJson(supportedProducts).orEmpty()
+        val json = Json.encodeToString(supportedProducts)
         val sharedPref = activity.getPreferences(Context.MODE_PRIVATE) ?: return
         with(sharedPref.edit()) {
             putString("products", json)
@@ -520,7 +520,7 @@ class BoardManager(
 
     private fun storeProductId(productId: Int) {
         supportedProducts.add(productId)
-        val json = Gson().toJson(supportedProducts).orEmpty()
+        val json = Json.encodeToString(supportedProducts)
         val sharedPref = activity.getPreferences(Context.MODE_PRIVATE) ?: return
         with(sharedPref.edit()) {
             putString("products", json)
@@ -534,9 +534,8 @@ class BoardManager(
         val json = sharedPref.getString("products", "").orEmpty()
         if (json.isEmpty()) return
         try {
-            val set = object : TypeToken<MutableSet<Int?>?>() {}.type
-            supportedProducts = Gson().fromJson(json, set)
-            Log.w(TAG, "stored products - $json")
+            supportedProducts = Json.decodeFromString<MutableSet<Int>>(json)
+            Log.w(TAG, "stored products - $supportedProducts")
         } catch (e: Exception) {
             e.printStackTrace()
         }

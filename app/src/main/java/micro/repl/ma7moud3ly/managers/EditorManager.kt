@@ -53,7 +53,7 @@ import java.io.InputStreamReader
  * @param afterEdit A callback function that is invoked after an edit operation is performed.
  */
 class EditorManager(
-    coroutineScope: CoroutineScope,
+    private val coroutineScope: CoroutineScope,
     private val context: Context,
     private val editor: CodeEditor,
     private val editorState: EditorState,
@@ -330,7 +330,11 @@ class EditorManager(
                 content = editorState.content,
                 onSave = {
                     anyChanges = false
-                    onDone()
+                    coroutineScope.launch {
+                        withContext(Dispatchers.Main) {
+                            onDone()
+                        }
+                    }
                 }
             )
         }

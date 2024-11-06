@@ -81,7 +81,6 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.kotlinx.serialization)
-    implementation(libs.gson)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 
     /**

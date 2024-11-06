@@ -1,7 +1,8 @@
 package micro.repl.ma7moud3ly.model
 
-import com.google.gson.Gson
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.io.File
 
 @Serializable
@@ -17,12 +18,12 @@ data class MicroScript(
     val name: String get() = file.name
     val isPython: Boolean get() = name.trim().endsWith(".py")
     val isLocal: Boolean get() = editorMode == EditorMode.LOCAL
-    val asJson: String get() = Gson().toJson(this)
+    val asJson: String get() = Json.encodeToString(this)
 }
 
 fun String.asMicroScript(): MicroScript = try {
     if (this.isEmpty()) MicroScript()
-    else Gson().fromJson(this, MicroScript::class.java)
+    else Json.decodeFromString<MicroScript>(this)
 } catch (e: Exception) {
     MicroScript()
 }
