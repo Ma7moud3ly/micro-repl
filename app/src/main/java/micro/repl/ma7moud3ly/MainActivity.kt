@@ -32,11 +32,12 @@ class MainActivity : ComponentActivity() {
         boardManager = BoardManager(
             context = this,
             onStatusChanges = { viewModel.status.value = it },
-            onReceiveData = { data ->
+            onReceiveData = { data: String, clear: Boolean ->
                 runOnUiThread {
+                    if (clear) viewModel.terminalOutput.value = ""
                     // limit terminal output to 10000 chars to avoid app
                     // freeze for very large outputs
-                    if (viewModel.terminalOutput.value.length > 10000)
+                    else if (viewModel.terminalOutput.value.length > 10000)
                         viewModel.terminalOutput.value = data
                     else viewModel.terminalOutput.value += data
                 }

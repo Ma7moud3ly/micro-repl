@@ -76,7 +76,16 @@ fun RootGraph(
                 viewModel = viewModel,
                 terminalManager = terminalManager,
                 boardManager = boardManager,
-                onBack = { navController.popBackStack() }
+                onBack = {
+                    if (microScript.isLocal) navController.popBackStack()
+                    // when user run script from microcontroller, don't back to editor
+                    // script might has been modified but old script is cached
+                    // so back to files exporter until we fix this :3
+                    else navController.popBackStack(
+                        route = AppRoutes.Explorer,
+                        inclusive = false
+                    )
+                }
             )
         }
 

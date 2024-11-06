@@ -100,6 +100,7 @@ class EditorManager(
     private fun initCodeEditor(onTextChanges: () -> Unit) {
 
         editor.setText(editorState.content)
+        editor.setScaleTextSizes(10f,100f)
         editorState.isDark.value = ThemeModeManager.isDark(activity).not()
         editorState.showLines.value = editor.isLineNumberEnabled
 
@@ -368,6 +369,7 @@ class EditorManager(
     private fun setEditorSettings() {
         val sharedPrefEditor = activity.getPreferences(Context.MODE_PRIVATE).edit()
         sharedPrefEditor.putBoolean("show_lines", editor.isLineNumberEnabled)
+        sharedPrefEditor.putFloat("text_size", editor.textSizePx)
         if (editorState.isLocal && editorState.exists) {
             Log.v(TAG, "setEditorSettings - hasScript")
             sharedPrefEditor.putString("script", editorState.path)
@@ -381,6 +383,7 @@ class EditorManager(
     private fun getEditorSettings() {
         val sharedPref = activity.getPreferences(Context.MODE_PRIVATE)
         editor.isLineNumberEnabled = sharedPref.getBoolean("show_lines", true)
+        editor.textSizePx = sharedPref.getFloat("text_size", 20f)
         if (editorState.isBlank.not()) {
             val recentScript = sharedPref.getString("script", "").orEmpty()
             if (recentScript.isNotEmpty()) readRecentScript(recentScript)

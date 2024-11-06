@@ -66,7 +66,7 @@ import micro.repl.ma7moud3ly.model.toMicroDevice
 class BoardManager(
     private val context: Context,
     private val onStatusChanges: ((status: ConnectionStatus) -> Unit)? = null,
-    private val onReceiveData: ((data: String) -> Unit)? = null,
+    private val onReceiveData: ((data: String, clear: Boolean) -> Unit)? = null,
 ) : SerialInputOutputManager.Listener, DefaultLifecycleObserver {
 
     companion object {
@@ -451,10 +451,11 @@ class BoardManager(
             // the output is echoed directly to onReceiveData callback
             ExecutionMode.INTERACTIVE -> {
                 val response = removeEnding(data)
-                Log.v(TAG, "onNewData - response $response")
-                if (response.isNotEmpty() && response.trim() != ">>>") onReceiveData?.invoke(
-                    response
-                )
+                Log.v(TAG, "onNewData - ${Json.encodeToString(response)}")
+                if (response.isNotEmpty() && response.trim() != ">>>") {
+                    val clear = response.contains(CommandsManager.CLEAR)
+                    onReceiveData?.invoke(response, clear)
+                }
             }
         }
     }

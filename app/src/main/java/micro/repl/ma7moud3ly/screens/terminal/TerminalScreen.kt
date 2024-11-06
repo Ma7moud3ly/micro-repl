@@ -65,9 +65,9 @@ fun TerminalScreen(
         }
     }
 
-    fun onTerminate() {
+    fun onTerminate(showMessage: Boolean = false) {
         terminalManager.terminateExecution {
-            Toast.makeText(
+            if (showMessage) Toast.makeText(
                 context,
                 context.getString(R.string.terminal_terminate_msg),
                 Toast.LENGTH_SHORT
@@ -106,7 +106,7 @@ fun TerminalScreen(
         when (event) {
             TerminalEvents.Run -> onRun()
             TerminalEvents.SoftReset -> onSoftReset()
-            TerminalEvents.Terminate -> onTerminate()
+            TerminalEvents.Terminate -> onTerminate(true)
 
             TerminalEvents.Clear -> {
                 terminalInput = ""

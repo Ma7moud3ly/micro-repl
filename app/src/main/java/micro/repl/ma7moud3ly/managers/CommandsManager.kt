@@ -52,7 +52,8 @@ object CommandsManager {
     const val REPL_MODE = "\u0002" //CTRL + B = Start of text (STX)
     const val TERMINATE = "\u0003" //CTRL + C = End of text (ETX)
     const val RESET = "\u0004" //CTRL + D = End of transmission (EOT)
-
+    // https://stackoverflow.com/questions/2084508/clear-the-terminal-in-python
+    const val CLEAR = "\u001b[2J" // clear terminal == print(chr(27) + "[2J")
 
     //////////////////////////
 
