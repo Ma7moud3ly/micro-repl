@@ -18,9 +18,9 @@ private const val TAG = "FilesPicker"
 private val acceptedFiles = arrayOf(
     "text/x-python",
     "text/plain",
+    "text/json",
+    "application/zip",
     "application/octet-stream",
-    "application/x-sh",
-    "text/x-sh"
 )
 
 /**
