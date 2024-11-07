@@ -12,7 +12,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import micro.repl.ma7moud3ly.MainViewModel
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.managers.FilesManager
@@ -27,6 +29,21 @@ import java.io.File
 
 private const val TAG = "FileManagerScreen"
 
+/**
+ * Composable function that displays the Files Explorer screen.
+ *
+ * This screen allows users to browse and manage files on a remote device.
+ * It provides functionalities such as opening folders, editing and running files,
+ * refreshing the file list, navigating up the directory structure,
+ * importing and exporting files, renaming and deleting files, and creating new files.
+ *
+ * @param viewModel The MainViewModel instance providing data for the screen.
+ * @param terminalManager The TerminalManager instance for managing terminal sessions.
+ * @param filesManager The FilesManager instance for interacting with the remote file system.
+ * @param openTerminal A lambda function to open a terminal session with a given MicroScript.
+ * @param openEditor A lambda function to open an editor with a given MicroScript.
+ * @param onBack A lambda function to navigate back to the previous screen.
+ */
 @Composable
 fun FilesExplorerScreen(
     viewModel: MainViewModel,
@@ -45,7 +62,9 @@ fun FilesExplorerScreen(
     var showCreateFileDialog by remember { mutableStateOf(false) }
     var showRenameFileDialog by remember { mutableStateOf(false) }
     val isMicroPython = viewModel.microDevice?.isMicroPython == true
+    val filesPicker = rememberFilesPickerResult()
 
+    // LaunchedEffect to terminate any running execution and list the directory contents
     LaunchedEffect(Unit) {
         terminalManager.terminateExecution {
             filesManager?.path = viewModel.root.value
@@ -53,6 +72,11 @@ fun FilesExplorerScreen(
         }
     }
 
+    /**
+     * Runs the given file on the remote device.
+     *
+     * @param file The MicroFile to run.
+     */
     fun onRun(file: MicroFile) {
         Log.i(TAG, "onRun - $file")
         filesManager?.read(file.fullPath, onRead = { content ->
@@ -68,6 +92,11 @@ fun FilesExplorerScreen(
         })
     }
 
+    /**
+     * Opens the given file in the editor.
+     *
+     * @param file The MicroFile to edit.
+     */
     fun onEdit(file: MicroFile) {
         Log.i(TAG, "onEdit - $file")
         filesManager?.read(file.fullPath, onRead = { content ->
@@ -83,6 +112,33 @@ fun FilesExplorerScreen(
         })
     }
 
+    /**
+     * Imports a file form phone to the remote device.
+     *
+     * @param fileName The name of the file to import.
+     * @param byteArray The content of the file as a byte array.
+     */
+    fun importFile(fileName: String, byteArray: ByteArray) {
+        Log.v(TAG, "fileName - $fileName")
+        filesManager?.writeBinary(
+            path = "$root/$fileName",
+            bytes = byteArray,
+            onSave = {
+                coroutineScope.launch {
+                    filesManager.listDir()
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "saved to $root", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        )
+    }
+
+    /**
+     * Opens the given folder.
+     *
+     * @param file The MicroFile representing the folder to open.
+     */
     fun onOpenFolder(file: MicroFile) {
         Log.i(TAG, "onOpenFolder - $file")
         viewModel.root.value = file.fullPath
@@ -90,6 +146,9 @@ fun FilesExplorerScreen(
         filesManager?.listDir()
     }
 
+    /**
+     * Refreshes the file list.
+     */
     fun onRefresh() {
         Log.i(TAG, "onRefresh")
         val msg = context.getText(R.string.explorer_refresh)
@@ -97,6 +156,9 @@ fun FilesExplorerScreen(
         filesManager?.listDir()
     }
 
+    /**
+     * Navigates up/back one level in the directory structure.
+     */
     fun onUp() {
         if (root.isEmpty()) onBack()
         val newRoot = File(root).parent ?: ""
@@ -162,6 +224,13 @@ fun FilesExplorerScreen(
                 is ExplorerEvents.Run -> onRun(it.file)
                 is ExplorerEvents.Refresh -> onRefresh()
                 is ExplorerEvents.Up -> onUp()
+                is ExplorerEvents.Import -> {
+                    filesPicker.pickFile(::importFile)
+                }
+
+                is ExplorerEvents.Export -> {
+
+                }
 
                 is ExplorerEvents.Rename -> {
                     selectedFile = it.file

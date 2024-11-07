@@ -245,7 +245,8 @@ private fun Header(
             expandedHeight = 75.dp,
             collapsedHeight = 40.dp,
             colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                titleContentColor = MaterialTheme.colorScheme.primary
+                titleContentColor = MaterialTheme.colorScheme.primary,
+                containerColor = Color.Transparent
             ),
             title = {
                 Row(

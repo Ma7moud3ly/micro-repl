@@ -9,6 +9,8 @@ sealed interface ExplorerEvents {
     data class Rename(val file: MicroFile) : ExplorerEvents
     data class Edit(val file: MicroFile) : ExplorerEvents
     data class New(val file: MicroFile) : ExplorerEvents
+    data class Export(val file: MicroFile) : ExplorerEvents
+    data object Import : ExplorerEvents
     data object Refresh : ExplorerEvents
     data object Up : ExplorerEvents
 }

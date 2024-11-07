@@ -11,6 +11,7 @@ data class MicroFile(
         else "$path/$name".replace("//", "/")
 
     val isFile: Boolean get() = type == FILE
+    val isDIRECTORY: Boolean get() = type == DIRECTORY
     val canRun: Boolean get() = ext == ".py"
 
     private val ext: String

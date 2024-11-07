@@ -128,12 +128,28 @@ class FilesManager(
     }
 
     /**
+     * Writes binary content to a file.
+     *
+     * @param path The path to the file to write to.
+     * @param bytes The bytes to write to the file.
+     * @param onSave A callback function that is invoked when the write operation is complete.
+     */
+    fun writeBinary(path: String, bytes: ByteArray, onSave: () -> Unit) {
+        Log.v(TAG, "writeBinary-to: $path")
+        val code = CommandsManager.writeBinaryFile(path, bytes)
+        boardManager.writeInSilentMode(code, onResponse = { result ->
+            Log.i(TAG, "result $result")
+            onSave.invoke()
+        })
+    }
+
+    /**
      * Decodes the JSON response from the board manager into a list of `MicroFile` objects.
      *
      * This method parses the JSON response received from the MicroPython board
      * and creates a list of `MicroFile` objects representing the files and
-     * directories in the current working directory. The list is then passed
-     * to the `onUpdateFiles` callback function if it is set.
+     * directories in the current working directory. objects are sorted to show directories
+     * first then files.Finally the list is passed to the `onUpdateFiles` callback function if it is set.
      *
      * @param json The JSON response string received from the board manager.
      */
@@ -159,7 +175,14 @@ class FilesManager(
                 list.add(MicroFile(name = name, path = this.path, type = type, size = size))
             }
         }
-        Log.i(TAG, list.toString())
-        onUpdateFiles?.invoke(list)
+        val sortedFiles = list.sortedBy { file ->
+            if (file.isDIRECTORY) {
+                0 // Prioritized directories comes first
+            } else {
+                1 // Other files come after
+            }
+        }
+        Log.i(TAG, sortedFiles.toString())
+        onUpdateFiles?.invoke(sortedFiles)
     }
 }

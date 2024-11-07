@@ -52,6 +52,7 @@ object CommandsManager {
     const val REPL_MODE = "\u0002" //CTRL + B = Start of text (STX)
     const val TERMINATE = "\u0003" //CTRL + C = End of text (ETX)
     const val RESET = "\u0004" //CTRL + D = End of transmission (EOT)
+
     // https://stackoverflow.com/questions/2084508/clear-the-terminal-in-python
     const val CLEAR = "\u001b[2J" // clear terminal == print(chr(27) + "[2J")
 
@@ -114,6 +115,19 @@ object CommandsManager {
     fun writeFile(path: String, content: String): String {
         return "content = r'''$content'''\r\nf = open('$path','w',encoding='utf-8');" +
                 "a = f.write(content);f.close();print(a)"
+    }
+
+    /**
+     * Generates a MicroPython command to write binary content to a file.
+     *
+     * @param path The path of the file to write to.
+     * @param byteArray The bytes to write to the file.
+     * @return The MicroPython command string.
+     */
+    fun writeBinaryFile(path: String, byteArray: ByteArray): String {
+        val content = byteArray.toPythonBytes()
+        return "b = bytes($content)\r\nf = open('$path','wb');" +
+                "a = f.write(b);f.close();print(a)"
     }
 
     /**
@@ -206,4 +220,12 @@ object CommandsManager {
         } else data
     }
 
+    private fun ByteArray.toPythonBytes(): String {
+        return this.joinToString(
+            separator = ", ",
+            prefix = "[",
+            postfix = "]",
+            transform = { it.toInt().and(0xFF).toString() }
+        )
+    }
 }

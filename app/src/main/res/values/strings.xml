@@ -53,7 +53,9 @@
     <string name="explorer_delete">Delete</string>
     <string name="explorer_rename">Rename</string>
     <string name="explorer_create">Create</string>
-    <string name="explorer_new_file">New File</string>
+    <string name="explorer_file_new">New File</string>
+    <string name="explorer_file_import">Import File</string>
+    <string name="explorer_file_export">Export File</string>
     <string name="explorer_up">Up</string>
     <string name="explorer_new_folder">New Folder</string>
     <string name="explorer_refresh">Refresh</string>

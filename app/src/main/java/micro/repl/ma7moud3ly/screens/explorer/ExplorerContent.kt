@@ -10,22 +10,26 @@ package micro.repl.ma7moud3ly.screens.explorer
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -143,6 +147,7 @@ internal fun ExplorerScreenContent(
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Header(
     path: () -> String,
@@ -150,63 +155,90 @@ private fun Header(
     uiEvents: (ExplorerEvents) -> Unit
 ) {
     Column {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            IconHeader(title = R.string.explorer_up,
-                icon = R.drawable.arrow_left,
-                tint = MaterialTheme.colorScheme.primary,
-                onClick = { uiEvents(ExplorerEvents.Up) }
-            )
-            Row(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(
-                        id = if (isMicroPython) R.string.micro_python
-                        else R.string.circuit_python
-                    ),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-                Text(
-                    text = "~/${path()}", maxLines = 1,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-            IconHeader(title = R.string.explorer_new_file,
-                icon = R.drawable.new_file,
-                tint = fileColor,
-                onClick = {
-                    val file = MicroFile(
-                        path = path(),
-                        type = MicroFile.FILE
+        MediumTopAppBar(
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = Color.Transparent
+            ),
+            title = {
+                Row(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(
+                        space = 8.dp,
+                        alignment = Alignment.End
                     )
-                    uiEvents(ExplorerEvents.New(file))
-                }
-            )
-            IconHeader(title = R.string.explorer_new_folder,
-                icon = R.drawable.new_folder,
-                tint = folderColor,
-                onClick = {
-                    val file = MicroFile(
-                        path = path(),
-                        type = MicroFile.DIRECTORY
+                ) {
+                    IconHeader(
+                        title = R.string.explorer_file_import,
+                        icon = R.drawable.upload,
+                        tint = MaterialTheme.colorScheme.primary,
+                        onClick = { uiEvents(ExplorerEvents.Import) }
                     )
-                    uiEvents(ExplorerEvents.New(file))
-                }
-            )
+                    IconHeader(
+                        title = R.string.explorer_file_new,
+                        icon = R.drawable.new_file,
+                        tint = fileColor,
+                        onClick = {
+                            val file = MicroFile(
+                                path = path(),
+                                type = MicroFile.FILE
+                            )
+                            uiEvents(ExplorerEvents.New(file))
+                        }
+                    )
+                    IconHeader(title = R.string.explorer_new_folder,
+                        icon = R.drawable.new_folder,
+                        tint = folderColor,
+                        onClick = {
+                            val file = MicroFile(
+                                path = path(),
+                                type = MicroFile.DIRECTORY
+                            )
+                            uiEvents(ExplorerEvents.New(file))
+                        }
+                    )
 
-            IconHeader(title = R.string.explorer_refresh,
-                icon = R.drawable.refresh,
-                tint = MaterialTheme.colorScheme.primary,
-                onClick = { uiEvents(ExplorerEvents.Refresh) }
-            )
-        }
+                    IconHeader(
+                        title = R.string.explorer_refresh,
+                        icon = R.drawable.refresh,
+                        tint = MaterialTheme.colorScheme.primary,
+                        onClick = { uiEvents(ExplorerEvents.Refresh) }
+                    )
+                }
+            },
+            navigationIcon = {
+                IconHeader(
+                    title = R.string.explorer_up,
+                    icon = R.drawable.arrow_left,
+                    tint = MaterialTheme.colorScheme.primary,
+                    onClick = { uiEvents(ExplorerEvents.Up) }
+                )
+            },
+            actions = {
+                Row(Modifier.fillMaxWidth(0.9f)) {
+                    Text(
+                        text = stringResource(
+                            id = if (isMicroPython) R.string.micro_python
+                            else R.string.circuit_python
+                        ),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    Text(
+                        text = "~/${path()}",
+                        maxLines = 1,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
+            },
+            collapsedHeight = 30.dp,
+            expandedHeight = 60.dp
+        )
+        Spacer(Modifier.height(4.dp))
         HorizontalDivider()
     }
 }
@@ -220,7 +252,7 @@ fun IconHeader(
 ) {
     IconButton(
         onClick = onClick,
-        modifier = Modifier.size(30.dp)
+        modifier = Modifier.size(25.dp)
     ) {
         Icon(
             painter = painterResource(id = icon),

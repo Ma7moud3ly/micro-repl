@@ -87,7 +87,7 @@ fun FileCreateDialog(
     val file = microFile() ?: return
     val message = if (file.name.isEmpty()) {
         stringResource(id = R.string.explorer_create) + " " + stringResource(
-            id = if (file.isFile) R.string.explorer_new_file
+            id = if (file.isFile) R.string.explorer_file_new
             else R.string.explorer_new_folder
         ) + "~/" + file.path
     } else stringResource(
