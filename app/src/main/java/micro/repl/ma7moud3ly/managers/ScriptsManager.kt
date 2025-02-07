@@ -8,7 +8,10 @@
 package micro.repl.ma7moud3ly.managers
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.runtime.mutableStateListOf
+import androidx.core.content.FileProvider
 import micro.repl.ma7moud3ly.model.MicroScript
 import java.io.DataInputStream
 import java.io.File
@@ -97,6 +100,32 @@ class ScriptsManager(private val context: Context) {
     fun renameScript(script: MicroScript, newName: String) {
         val b = rename(script, newName)
         if (b) updateScriptsList()
+    }
+
+    /**
+     * Shares a script file with other apps.
+     *
+     * @param script The MicroScript object representing the script to share.
+     */
+    fun shareScript(script: MicroScript) {
+        val file = script.file
+        if (!file.exists()) {
+            // Handle the case where the file doesn't exist
+            return
+        }
+
+        val fileUri: Uri = FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.fileprovider",
+            file
+        )
+
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "*/*"
+            putExtra(Intent.EXTRA_STREAM, fileUri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        context.startActivity(Intent.createChooser(shareIntent, "Share ${script.name}"))
     }
 
     /**

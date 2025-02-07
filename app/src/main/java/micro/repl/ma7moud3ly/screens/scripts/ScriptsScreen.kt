@@ -72,6 +72,7 @@ fun ScriptsScreen(
                 is ScriptsEvents.Back -> onBack()
                 is ScriptsEvents.NewScript -> onNewScript()
                 is ScriptsEvents.Open -> readLocalScript(it.script)
+                is ScriptsEvents.Share -> scriptsManager.shareScript(it.script)
                 is ScriptsEvents.Delete -> {
                     selectedScript = it.script
                     showFileDeleteDialog = true

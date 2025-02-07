@@ -51,6 +51,7 @@
     <string name="explorer_edit">Open in Editor</string>
     <string name="explorer_open">Open Folder</string>
     <string name="explorer_delete">Delete</string>
+    <string name="explorer_share">Share</string>
     <string name="explorer_rename">Rename</string>
     <string name="explorer_create">Create</string>
     <string name="explorer_file_new">New File</string>

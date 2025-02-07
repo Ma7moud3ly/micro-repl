@@ -14,14 +14,14 @@ if (gradle.startParameter.taskRequests.toString().contains("gms", ignoreCase = t
 
 android {
     namespace = "micro.repl.ma7moud3ly"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "micro.repl.ma7moud3ly"
-        minSdk = 24
+        minSdk = 22
         targetSdk = 34
-        versionCode = 13
-        versionName = "1.8"
+        versionCode = 14
+        versionName = "1.9"
         multiDexEnabled = true
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

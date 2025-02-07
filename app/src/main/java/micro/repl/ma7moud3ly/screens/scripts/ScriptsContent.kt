@@ -12,7 +12,6 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -98,6 +97,7 @@ fun ScriptsScreenContent(
                     onOpen = { uiEvents(ScriptsEvents.Open(script)) },
                     onRename = { uiEvents(ScriptsEvents.Rename(script)) },
                     onDelete = { uiEvents(ScriptsEvents.Delete(script)) },
+                    onShare = { uiEvents(ScriptsEvents.Share(script)) },
                     onRun = { uiEvents(ScriptsEvents.Run(script)) }
                 )
             }
@@ -155,6 +155,7 @@ private fun Header(
 private fun ItemScript(
     script: MicroScript,
     onOpen: () -> Unit,
+    onShare: () -> Unit,
     onDelete: () -> Unit,
     onRename: () -> Unit,
     onRun: () -> Unit
@@ -179,6 +180,13 @@ private fun ItemScript(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
+            ScriptIcon(
+                icon = R.drawable.share,
+                modifier = Modifier.size(20.dp),
+                description = R.string.explorer_share,
+                onClick = onShare
+            )
+
             ScriptIcon(
                 icon = R.drawable.edit,
                 description = R.string.explorer_edit,
@@ -206,11 +214,12 @@ private fun ItemScript(
 private fun ScriptIcon(
     @DrawableRes icon: Int,
     @StringRes description: Int,
+    modifier: Modifier = Modifier.size(24.dp),
     onClick: () -> Unit,
 ) {
     IconButton(
         onClick = onClick,
-        modifier = Modifier.size(24.dp)
+        modifier = modifier
     ) {
         Icon(
             painter = painterResource(id = icon),
