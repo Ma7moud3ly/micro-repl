@@ -1,13 +1,11 @@
 package micro.repl.ma7moud3ly.screens.terminal
 
-import  android.app.Activity
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -16,7 +14,6 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import micro.repl.ma7moud3ly.MainViewModel
@@ -24,9 +21,7 @@ import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.managers.BoardManager
 import micro.repl.ma7moud3ly.managers.CommandsManager
 import micro.repl.ma7moud3ly.managers.TerminalManager
-import micro.repl.ma7moud3ly.managers.ThemeModeManager
 import micro.repl.ma7moud3ly.model.MicroScript
-import micro.repl.ma7moud3ly.screens.dialogs.ThemeModeDialog
 
 private const val TAG = "TerminalScreen"
 
@@ -41,7 +36,6 @@ fun TerminalScreen(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    var showThemeModeDialog by remember { mutableStateOf(false) }
     var terminalInput by remember { viewModel.terminalInput }
     var terminalOutput by remember { viewModel.terminalOutput }
 
@@ -114,10 +108,6 @@ fun TerminalScreen(
                 terminalOutput = ""
             }
 
-            TerminalEvents.DarkMode -> {
-                showThemeModeDialog = true
-            }
-
             TerminalEvents.MoveDown -> {
                 viewModel.history.down()?.let {
                     viewModel.terminalInput.value = it
@@ -137,19 +127,6 @@ fun TerminalScreen(
     }
 
     BackHandler(enabled = true, onBack)
-
-    ThemeModeDialog(
-        isDark = ThemeModeManager.isDark(context as Activity),
-        show = { showThemeModeDialog },
-        onDismiss = { showThemeModeDialog = false },
-        onOk = {
-            coroutineScope.launch {
-                showThemeModeDialog = false
-                delay(500)
-                ThemeModeManager.toggleMode(context)
-            }
-        }
-    )
 
     TerminalScreenContent(
         microScript = { microScript },

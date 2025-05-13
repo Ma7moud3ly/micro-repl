@@ -3,6 +3,7 @@ package micro.repl.ma7moud3ly.screens.home
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -48,11 +49,14 @@ private fun SectionApprovePreview() {
 
 
 @Composable
-fun SectionApprove(
+fun ColumnScope.SectionApprove(
     status: ConnectionStatus.Approve,
     uiEvents: (HomeEvents) -> Unit
 ) {
-    Column(Modifier.padding(16.dp)) {
+    Column(Modifier
+        .weight(1f)
+        .padding(16.dp)
+    ) {
         DeviceApproveList(
             modifier = Modifier.weight(1f),
             usbDevices = status.devices,

@@ -32,7 +32,7 @@ fun MyScreen(
         containerColor = background
     ) {
         Box(
-            Modifier
+            modifier = Modifier
                 .padding(it)
                 .fillMaxSize()
         ) {

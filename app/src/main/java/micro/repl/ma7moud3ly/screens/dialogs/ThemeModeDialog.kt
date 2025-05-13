@@ -7,6 +7,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.ui.components.MyDialog
+import micro.repl.ma7moud3ly.ui.components.MyDialogState
+import micro.repl.ma7moud3ly.ui.components.rememberMyDialogState
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 
 @Preview
@@ -16,8 +18,7 @@ private fun ThemeModeDialogPreviewLight() {
     AppTheme(darkTheme = darkMode) {
         ThemeModeDialog(
             isDark = darkMode,
-            show = { true },
-            onDismiss = {},
+            state = rememberMyDialogState(visible = true),
             onOk = {}
         )
     }
@@ -30,8 +31,7 @@ private fun ThemeModeDialogPreviewDark() {
     AppTheme(darkTheme = darkMode) {
         ThemeModeDialog(
             isDark = darkMode,
-            show = { true },
-            onDismiss = {},
+            state = rememberMyDialogState(visible = true),
             onOk = {}
         )
     }
@@ -39,25 +39,21 @@ private fun ThemeModeDialogPreviewDark() {
 
 @Composable
 fun ThemeModeDialog(
+    state: MyDialogState,
     isDark: Boolean,
-    show: () -> Boolean,
-    onDismiss: () -> Unit,
     onOk: () -> Unit
 ) {
-    MyDialog(
-        show = show,
-        onDismiss = onDismiss
-    ) {
+    MyDialog(state = state) {
         val newMode = stringResource(
-            if (isDark) R.string.editor_msg_light
-            else R.string.editor_msg_dark
+            if (isDark) R.string.config_light_mode
+            else R.string.config_light_mode
         )
         ApproveDialogContent(
             style = MaterialTheme.typography.bodySmall,
             textAlign = TextAlign.Justify,
             message = stringResource(R.string.editor_msg_mode, newMode),
             onOk = onOk,
-            onDismiss = onDismiss
+            onDismiss = { state.dismiss() }
         )
     }
 }

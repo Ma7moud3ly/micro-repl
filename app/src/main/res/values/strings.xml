@@ -44,8 +44,6 @@
     <string name="editor_msg_delete">Do you want to delete (%s) ?</string>
     <string name="editor_msg_rename">Please write the new name of (%s)</string>
     <string name="editor_msg_mode">Do you want to change to (%s) ?\nNote: Activity will restart and connection to any port will be lost.</string>
-    <string name="editor_msg_dark">Dark Mode</string>
-    <string name="editor_msg_light">Light Mode</string>
 
     <string name="explorer_run">Run</string>
     <string name="explorer_edit">Open in Editor</string>
@@ -80,5 +78,10 @@
     <string name="scripts_empty">"No scripts saved yet!"</string>
     <string name="scripts_local">Local Scripts</string>
     <string name="scripts_new">New</string>
+
+    <string name="config_dark_mode">Dark Mode</string>
+    <string name="config_light_mode">Light Mode</string>
+    <string name="config_portrait">Portrait</string>
+    <string name="config_landscape">Landscape</string>
 
 </resources>

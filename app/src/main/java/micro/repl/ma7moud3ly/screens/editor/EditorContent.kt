@@ -97,7 +97,6 @@ private fun Header(
 ) {
     val canUndo by remember { editorState.canUndo }
     val canRedo by remember { editorState.canRedo }
-    val isDark by remember { editorState.isDark }
     val showLines by remember { editorState.showLines }
 
     Column {
@@ -147,11 +146,6 @@ private fun Header(
                     EditorIcon(
                         icon = R.drawable.clear,
                         onClick = { uiEvents(EditorEvents.Clear) }
-                    )
-                    EditorIcon(
-                        icon = R.drawable.dark_mode,
-                        selected = { isDark },
-                        onClick = { uiEvents(EditorEvents.Mode) }
                     )
                     EditorIcon(
                         icon = R.drawable.lines,

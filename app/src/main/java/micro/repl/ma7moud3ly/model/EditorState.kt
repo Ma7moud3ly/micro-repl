@@ -69,11 +69,6 @@ data class EditorState(
     val canRun = mutableStateOf(false)
 
     /**
-     * The mutable state of the dark mode status.
-     */
-    val isDark = mutableStateOf(false)
-
-    /**
      * The mutable state of the line numbers visibility.
      */
     val showLines = mutableStateOf(false)

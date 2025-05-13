@@ -101,7 +101,6 @@ class EditorManager(
 
         editor.setText(editorState.content)
         editor.setScaleTextSizes(10f,100f)
-        editorState.isDark.value = ThemeModeManager.isDark(activity).not()
         editorState.showLines.value = editor.isLineNumberEnabled
 
         editor.apply {
@@ -146,7 +145,7 @@ class EditorManager(
         Log.i(TAG, "setEditorLanguage")
         Log.v(TAG, "state - ${editorState.title.value} | ${editorState.isPython}")
         try {
-            val isDark = ThemeModeManager.isDark(activity)
+            val isDark = activity.isDark()
             val theme = if (isDark) "darcula.json" else "QuietLight.tmTheme"
 
             //load a specific theme file from assets/themes
@@ -234,7 +233,7 @@ class EditorManager(
      * Toggles the dark mode of the editor.
      */
     fun toggleDarkMode() {
-        ThemeModeManager.toggleMode(activity)
+        activity.toggleThemeMode()
     }
 
     /**

@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -19,8 +19,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -28,10 +26,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,19 +41,37 @@ import androidx.compose.ui.unit.sp
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.model.ConnectionStatus
 import micro.repl.ma7moud3ly.model.MicroDevice
+import micro.repl.ma7moud3ly.screens.dialogs.DeviceDetailsDialog
+import micro.repl.ma7moud3ly.ui.components.rememberMyDialogState
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.font04b03
-import micro.repl.ma7moud3ly.ui.theme.grey100
 
-@Preview(showBackground = true)
+@Preview
 @Composable
 private fun SectionConnectedPreview() {
-    AppTheme {
-        Column {
-            SectionConnected(
-                status = TestStatus.connected,
-                uiEvents = {}
-            )
+    AppTheme(darkTheme = false) {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            Column {
+                SectionConnected(
+                    status = TestStatus.connected,
+                    uiEvents = {}
+                )
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun SectionConnectedPreviewDark() {
+    AppTheme(darkTheme = true) {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            Column {
+                SectionConnected(
+                    status = TestStatus.connected,
+                    uiEvents = {}
+                )
+            }
         }
     }
 }
@@ -71,16 +83,18 @@ fun SectionConnected(
     uiEvents: (HomeEvents) -> Unit
 ) {
     Column(
-        modifier = Modifier.padding(16.dp),
+        modifier = Modifier
+            .height(IntrinsicSize.Max)
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        var showDeviceDetails by remember { mutableStateOf(false) }
+        val deviceDetailsDialog = rememberMyDialogState()
         DeviceConnected(
             device = status.microDevice,
-            onClick = { showDeviceDetails = showDeviceDetails.not() }
+            onClick = { deviceDetailsDialog.show() }
         )
-        DeviceDetails(
-            visible = { showDeviceDetails },
+        DeviceDetailsDialog(
+            state = deviceDetailsDialog,
             microDevice = status.microDevice,
             onForgetDevice = {
                 uiEvents(HomeEvents.ForgetDevice(status.microDevice))
@@ -92,7 +106,7 @@ fun SectionConnected(
             onSoftReset = { uiEvents(HomeEvents.SoftReset) },
             onTerminate = { uiEvents(HomeEvents.Terminate) }
         )
-
+        Spacer(Modifier.height(32.dp))
         HomeButtons(
             isConnected = true,
             uiEvents = uiEvents
@@ -180,50 +194,6 @@ private fun DeviceConnected(
 
 
 @Composable
-private fun DeviceDetails(
-    visible: () -> Boolean,
-    microDevice: MicroDevice,
-    onDisconnect: () -> Unit,
-    onForgetDevice: () -> Unit
-) {
-    if (visible()) Surface(
-        shape = RoundedCornerShape(8.dp),
-        color = grey100
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-
-        ) {
-            microDevice.details?.let {
-                DeviceDetailsList(details = it)
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(
-                        16.dp,
-                        alignment = Alignment.CenterHorizontally
-                    )
-                ) {
-                    CommandButton(
-                        title = R.string.home_disconnect,
-                        icon = R.drawable.disconnect,
-                        onClick = onDisconnect
-                    )
-                    CommandButton(
-                        title = R.string.home_change_device,
-                        icon = R.drawable.change_device,
-                        onClick = onForgetDevice
-                    )
-                }
-            }
-        }
-    }
-}
-
-
-@Composable
 private fun HomeCommands(
     onReset: () -> Unit,
     onSoftReset: () -> Unit,
@@ -231,25 +201,28 @@ private fun HomeCommands(
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        horizontalArrangement = Arrangement.spacedBy(
+            6.dp,
+            Alignment.CenterHorizontally
+        ),
         modifier = Modifier.fillMaxWidth()
     ) {
         CommandButton(
             title = R.string.terminal_reset,
             icon = R.drawable.refresh,
-            color = grey100,
+            color = MaterialTheme.colorScheme.secondary,
             onClick = onReset
         )
         CommandButton(
             title = R.string.terminal_terminate,
             icon = R.drawable.terminate,
-            color = grey100,
+            color = MaterialTheme.colorScheme.secondary,
             onClick = onTerminate
         )
         CommandButton(
             title = R.string.terminal_soft_reset,
             icon = R.drawable.soft_reset,
-            color = grey100,
+            color = MaterialTheme.colorScheme.secondary,
             onClick = onSoftReset
         )
     }
@@ -273,7 +246,7 @@ private fun CommandButton(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             modifier = Modifier.padding(
-                horizontal = 4.dp,
+                horizontal = 6.dp,
                 vertical = 2.dp
             )
         ) {
@@ -295,40 +268,33 @@ fun ColumnScope.HomeButtons(
     uiEvents: (HomeEvents) -> Unit
 ) {
     Box(
-        modifier = Modifier
-            .weight(1f),
+        modifier = Modifier.weight(1f),
         contentAlignment = if (isConnected) Alignment.Center
         else Alignment.TopCenter
     ) {
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            contentPadding = PaddingValues(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            if (isConnected) {
-                item {
-                    HomeButton(R.drawable.terminal, R.string.home_terminal) {
-                        uiEvents(HomeEvents.OpenTerminal)
-                    }
+        Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
+            if (isConnected) Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
+                HomeButton(R.drawable.terminal, R.string.home_terminal) {
+                    uiEvents(HomeEvents.OpenTerminal)
                 }
-                item {
-                    HomeButton(R.drawable.explorer, R.string.home_explorer) {
-                        uiEvents(HomeEvents.OpenExplorer)
-                    }
+                HomeButton(R.drawable.explorer, R.string.home_explorer) {
+                    uiEvents(HomeEvents.OpenExplorer)
                 }
             }
-            item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
                 HomeButton(R.drawable.editor, R.string.home_editor) {
                     uiEvents(HomeEvents.OpenEditor)
                 }
-            }
-            item {
                 HomeButton(R.drawable.scripts, R.string.home_scripts) {
                     uiEvents(HomeEvents.OpenScripts)
                 }
             }
-
         }
     }
 }
@@ -337,12 +303,13 @@ fun ColumnScope.HomeButtons(
 private fun HomeButton(
     @DrawableRes icon: Int,
     @StringRes title: Int,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
     val buttonTitle = stringResource(id = title)
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.clickable { onClick.invoke() }
+        modifier = modifier.clickable { onClick.invoke() }
     ) {
         Image(
             painter = painterResource(id = icon),

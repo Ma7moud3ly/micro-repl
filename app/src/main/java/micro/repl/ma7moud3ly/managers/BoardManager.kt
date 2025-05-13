@@ -29,7 +29,6 @@ import androidx.lifecycle.LifecycleOwner
 import com.hoho.android.usbserial.driver.UsbSerialPort
 import com.hoho.android.usbserial.driver.UsbSerialProber
 import com.hoho.android.usbserial.util.SerialInputOutputManager
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import micro.repl.ma7moud3ly.managers.CommandsManager.isSilentExecutionDone
 import micro.repl.ma7moud3ly.managers.CommandsManager.trimSilentResult
@@ -134,19 +133,22 @@ class BoardManager(
 
 
     /**
-     * Writes the given code to the serial port and waits for a response.
+     * Writes the given code in silent mode.
      *
-     * This method is used to execute Python code on the microcontroller
-     * and receive the output synchronously.
+     * In silent mode, the output of the code is not displayed in the REPL.
+     * This is useful for executing commands that do not produce output,
+     * or for suppressing unwanted output.
      *
-     * @param code The Python code to execute.
-     * @param onResponse A callback that will be invoked with the response
-     * from the microcontroller.
+     * @param code The code to write.
+     * @param onResponse A callback that will be invoked with the output of
+     * the code, if any.
      */
-    private fun writeSync(
+    fun writeInSilentMode(
         code: String,
         onResponse: ((data: String) -> Unit)? = null
     ) {
+        // start silent mode
+        writeCommand(CommandsManager.SILENT_MODE)
         executionMode = ExecutionMode.SCRIPT
         syncData.clear()
         onReadSync = { result ->
@@ -163,25 +165,6 @@ class BoardManager(
         } catch (e: Exception) {
             e.printStackTrace()
         }
-    }
-
-    /**
-     * Writes the given code in silent mode.
-     *
-     * In silent mode, the output of the code is not displayed in the REPL.
-     * This is useful for executing commands that do not produce output,
-     * or for suppressing unwanted output.
-     *
-     * @param code The code to write.
-     * @param onResponse A callback that will be invoked with the output of
-     * the code, if any.
-     */
-    fun writeInSilentMode(
-        code: String,
-        onResponse: ((data: String) -> Unit)? = null
-    ) {
-        writeCommand(CommandsManager.SILENT_MODE)
-        writeSync(code, onResponse = onResponse)
         writeCommand(CommandsManager.RESET)
     }
 
@@ -442,7 +425,7 @@ class BoardManager(
                 //Log.v(TAG, "syncData - $syncData")
                 //Log.i(TAG, "isDone = $isDone")
                 if (isDone) {
-                    Log.i(TAG, "syncData -\n$syncData")
+                    //Log.i(TAG, "syncData -\n$syncData")
                     val result = trimSilentResult(syncData.toString())
                     onReadSync?.invoke(result)
                 }

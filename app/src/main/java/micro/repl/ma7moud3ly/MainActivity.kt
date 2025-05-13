@@ -7,8 +7,6 @@
 
 package micro.repl.ma7moud3ly
 
-import android.annotation.SuppressLint
-import android.content.pm.ActivityInfo
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -16,7 +14,7 @@ import androidx.activity.viewModels
 import micro.repl.ma7moud3ly.managers.BoardManager
 import micro.repl.ma7moud3ly.managers.FilesManager
 import micro.repl.ma7moud3ly.managers.TerminalManager
-import micro.repl.ma7moud3ly.managers.ThemeModeManager
+import micro.repl.ma7moud3ly.managers.isDark
 import micro.repl.ma7moud3ly.screens.RootGraph
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 
@@ -28,7 +26,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setPortraitOrientation()
         boardManager = BoardManager(
             context = this,
             onStatusChanges = { viewModel.status.value = it },
@@ -50,7 +47,7 @@ class MainActivity : ComponentActivity() {
         )
         setContent {
             AppTheme(
-                darkTheme = ThemeModeManager.isDark(this),
+                darkTheme = this.isDark(),
                 darkStatusBar = true
             ) {
                 RootGraph(
@@ -62,12 +59,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
-    @SuppressLint("SourceLockedOrientationActivity")
-    private fun setPortraitOrientation() {
-        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-    }
-
 }
 
 

@@ -7,6 +7,5 @@ sealed interface TerminalEvents {
     data object Clear : TerminalEvents
     data object MoveUp : TerminalEvents
     data object MoveDown : TerminalEvents
-    data object DarkMode : TerminalEvents
     data object Back : TerminalEvents
 }

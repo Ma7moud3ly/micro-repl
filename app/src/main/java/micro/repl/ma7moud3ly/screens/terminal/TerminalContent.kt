@@ -295,33 +295,32 @@ private fun Header(
                 Row(
                     modifier = Modifier
                         .padding(horizontal = 8.dp, vertical = 4.dp)
-                        .fillMaxWidth(0.95f),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                        .fillMaxWidth(0.90f),
+                    horizontalArrangement = Arrangement.SpaceAround
                 ) {
                     EditorIcon(
                         title = R.string.terminal_down,
                         icon = R.drawable.term_down,
+                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
                         onClick = { uiEvents(TerminalEvents.MoveDown) },
                     )
                     EditorIcon(
                         title = R.string.terminal_up,
                         icon = R.drawable.term_up,
+                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
                         onClick = { uiEvents(TerminalEvents.MoveUp) },
                     )
                     EditorIcon(
                         title = R.string.terminal_zoom_in,
                         icon = R.drawable.zoom_in,
+                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
                         onClick = onZoomIn
                     )
                     EditorIcon(
                         title = R.string.terminal_zoom_out,
                         icon = R.drawable.zoom_out,
+                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
                         onClick = onZoomOut
-                    )
-                    EditorIcon(
-                        title = R.string.terminal_dark_mode,
-                        icon = R.drawable.dark_mode,
-                        onClick = { uiEvents(TerminalEvents.DarkMode) },
                     )
                 }
             }

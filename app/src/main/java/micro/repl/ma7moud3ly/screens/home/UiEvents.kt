@@ -21,6 +21,8 @@ sealed interface HomeEvents {
     data object DisconnectDevice : HomeEvents
     data object DenyDevice : HomeEvents
     data object Help : HomeEvents
+    data object ToggleMode : HomeEvents
+    data object ToggleOrientation : HomeEvents
     data class ApproveDevice(val microDevice: MicroDevice) : HomeEvents
     data class ForgetDevice(val microDevice: MicroDevice) : HomeEvents
 }

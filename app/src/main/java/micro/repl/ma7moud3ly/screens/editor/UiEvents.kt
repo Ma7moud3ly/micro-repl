@@ -10,7 +10,6 @@ sealed interface EditorEvents {
     data object New : EditorEvents
     data object Save : EditorEvents
     data object Clear : EditorEvents
-    data object Mode : EditorEvents
     data object Lines : EditorEvents
     data class Init(val codeEditor: CodeEditor) : EditorEvents
 }

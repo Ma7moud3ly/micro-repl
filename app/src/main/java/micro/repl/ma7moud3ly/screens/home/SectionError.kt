@@ -4,9 +4,11 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -29,15 +31,32 @@ import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.model.ConnectionStatus
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 
-@Preview(showBackground = true)
+@Preview
 @Composable
 private fun SectionErrorPreview() {
-    AppTheme {
-        Column {
-            SectionError(
-                status = TestStatus.error,
-                uiEvents = {}
-            )
+    AppTheme(darkTheme = false) {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            Column {
+                SectionError(
+                    status = TestStatus.error,
+                    uiEvents = {}
+                )
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun SectionErrorPreviewDark() {
+    AppTheme(darkTheme = true) {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            Column {
+                SectionError(
+                    status = TestStatus.error,
+                    uiEvents = {}
+                )
+            }
         }
     }
 }
@@ -48,10 +67,15 @@ fun SectionError(
     status: ConnectionStatus.Error,
     uiEvents: (HomeEvents) -> Unit
 ) {
-    Column(modifier = Modifier.padding(16.dp)) {
+    Column(
+        modifier = Modifier
+            .height(IntrinsicSize.Max)
+            .padding(16.dp)
+    ) {
         DeviceNotConnected(
             onClick = { uiEvents(HomeEvents.FindDevices) }
         )
+        Spacer(modifier = Modifier.height(16.dp))
         HomeButtons(
             isConnected = false,
             uiEvents = uiEvents

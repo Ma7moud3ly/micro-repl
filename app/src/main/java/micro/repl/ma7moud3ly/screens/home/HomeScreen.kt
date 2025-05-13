@@ -1,16 +1,22 @@
 package micro.repl.ma7moud3ly.screens.home
 
+import android.app.Activity
 import android.content.Intent
-import android.net.Uri
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.remember
+import androidx.core.net.toUri
 import micro.repl.ma7moud3ly.MainViewModel
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.managers.BoardManager
 import micro.repl.ma7moud3ly.managers.TerminalManager
+import micro.repl.ma7moud3ly.managers.isDark
+import micro.repl.ma7moud3ly.managers.isPortrait
+import micro.repl.ma7moud3ly.managers.toggleOrientationMode
+import micro.repl.ma7moud3ly.managers.toggleThemeMode
 import micro.repl.ma7moud3ly.model.MicroDevice
 
 private const val TAG = "HomeScreen"
@@ -26,7 +32,9 @@ fun HomeScreen(
     openExplorer: () -> Unit
 ) {
 
-    val context = LocalContext.current
+    val activity = LocalActivity.current as Activity
+    val isDark = remember { activity.isDark() }
+    val isPortrait = remember { activity.isPortrait() }
 
     fun onApproveDevice(microDevice: MicroDevice) {
         Log.i(TAG, "onApproveDevice")
@@ -57,9 +65,9 @@ fun HomeScreen(
         try {
             val browserIntent = Intent(
                 Intent.ACTION_VIEW,
-                Uri.parse(context.getString(R.string.home_help_link))
+                activity.getString(R.string.home_help_link).toUri()
             )
-            context.startActivity(browserIntent)
+            activity.startActivity(browserIntent)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -69,8 +77,8 @@ fun HomeScreen(
         viewModel.microDevice?.let {
             terminalManager?.resetDevice(it) {
                 Toast.makeText(
-                    context,
-                    context.getString(R.string.terminal_reset_msg),
+                    activity,
+                    activity.getString(R.string.terminal_reset_msg),
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -81,8 +89,8 @@ fun HomeScreen(
         viewModel.microDevice?.let {
             terminalManager?.softResetDevice {
                 Toast.makeText(
-                    context,
-                    context.getString(R.string.terminal_soft_reset_msg),
+                    activity,
+                    activity.getString(R.string.terminal_soft_reset_msg),
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -92,8 +100,8 @@ fun HomeScreen(
     fun onTerminate() {
         terminalManager?.terminateExecution {
             Toast.makeText(
-                context,
-                context.getString(R.string.terminal_terminate_msg),
+                activity,
+                activity.getString(R.string.terminal_terminate_msg),
                 Toast.LENGTH_SHORT
             ).show()
         }
@@ -101,6 +109,8 @@ fun HomeScreen(
 
     val status = viewModel.status.collectAsState()
     HomeScreenContent(
+        isDark = isDark,
+        isPortrait = isPortrait,
         connectionStatus = { status.value },
         uiEvents = {
             when (it) {
@@ -117,6 +127,13 @@ fun HomeScreen(
                 is HomeEvents.OpenExplorer -> openExplorer()
                 is HomeEvents.OpenScripts -> openScripts()
                 is HomeEvents.OpenTerminal -> openTerminal()
+                is HomeEvents.ToggleMode -> {
+                    activity.toggleThemeMode()
+                }
+
+                is HomeEvents.ToggleOrientation -> {
+                    activity.toggleOrientationMode()
+                }
             }
         }
     )
