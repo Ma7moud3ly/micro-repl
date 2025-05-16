@@ -19,22 +19,28 @@ Or download the latest APK from the [Releases Section](https://github.com/Ma7mou
 ## Requirements
 - Smartphone with Android 7+ and supports [USB_On-The-Go](https://en.wikipedia.org/wiki/USB_On-The-Go).
 - Microcontroller flashed with [MicroPython](https://micropython.org/download/) firmware 
-> **Note** This version tested with Raspberry Pi Pico & MicroPython v1.19.1  [p2-pico-20220618-v1.19.1.uf2](https://micropython.org/download/rp2-pico/)
+> **Note** This version tested with MicroPython v1.25.0 & [Raspberry Pi Pico](https://micropython.org/download/RPI_PICO) / [ESP32](https://micropython.org/download/ESP32_GENERIC)
 
 ## Screenshots:
 ### >>> Homescreen
 <div>
+<img src = "images/screens/home_disconnected.jpg" width = "250" />
+&nbsp;&nbsp;&nbsp;
+<img src = "images/screens/home_disconnected_dark.jpg" width = "250" />
+</div>
+<br>
+<div>
 <img src = "images/screens/home_connected.jpg" width = "250" />
 &nbsp;&nbsp;&nbsp;
-<img src = "images/screens/home_unconnected.jpg" width = "250" />
+<img src = "images/screens/home_connected_dark.jpg" width = "250" />
 </div>
 <br>
 
 ### >>> Files Manager
 <div>
-<img src = "images/screens/explorer.jpg" width = "250" />
+<img src = "images/screens/files_manager.jpg" width = "250" />
 &nbsp;&nbsp;&nbsp;
-<img src = "images/screens/explorer_dark.jpg" width = "250" />
+<img src = "images/screens/files_manager_dark.jpg" width = "250" />
 </div>
 <br>
 
@@ -51,6 +57,13 @@ Or download the latest APK from the [Releases Section](https://github.com/Ma7mou
 <img src = "images/screens/code_editor.jpg" width = "250" />
 &nbsp;&nbsp;&nbsp;
 <img src = "images/screens/code_editor_dark.jpg" width = "250" />
+</div>
+
+### >>> Local Scripts
+<div>
+<img src = "images/screens/scripts.jpg" width = "250" />
+&nbsp;&nbsp;&nbsp;
+<img src = "images/screens/scripts_dark.jpg" width = "250" />
 </div>
 
 ### References
