@@ -59,6 +59,7 @@
     <string name="explorer_new_folder">New Folder</string>
     <string name="explorer_refresh">Refresh</string>
     <string name="explorer_rename_label">Rename %s</string>
+    <string name="explorer_import_msg">Do you want to import a script from your device ?</string>
 
     <string name="terminal_run">Run</string>
     <string name="terminal_terminate">Terminate</string>

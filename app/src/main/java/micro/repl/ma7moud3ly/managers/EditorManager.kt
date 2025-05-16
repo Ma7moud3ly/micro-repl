@@ -34,6 +34,7 @@ import org.eclipse.tm4e.core.registry.IThemeSource
 import java.io.File
 import java.io.IOException
 import java.io.InputStreamReader
+import androidx.core.content.edit
 
 /**
  * Manages the code editor and its interactions with scripts and files.
@@ -100,7 +101,7 @@ class EditorManager(
     private fun initCodeEditor(onTextChanges: () -> Unit) {
 
         editor.setText(editorState.content)
-        editor.setScaleTextSizes(10f,100f)
+        editor.setScaleTextSizes(10f, 100f)
         editorState.showLines.value = editor.isLineNumberEnabled
 
         editor.apply {
@@ -366,14 +367,14 @@ class EditorManager(
      * Saves the editor settings to shared preferences.
      */
     private fun setEditorSettings() {
-        val sharedPrefEditor = activity.getPreferences(Context.MODE_PRIVATE).edit()
-        sharedPrefEditor.putBoolean("show_lines", editor.isLineNumberEnabled)
-        sharedPrefEditor.putFloat("text_size", editor.textSizePx)
-        if (editorState.isLocal && editorState.exists) {
-            Log.v(TAG, "setEditorSettings - hasScript")
-            sharedPrefEditor.putString("script", editorState.path)
+        activity.getPreferences(Context.MODE_PRIVATE).edit {
+            putBoolean("show_lines", editor.isLineNumberEnabled)
+            putFloat("text_size", editor.textSizePx)
+            if (editorState.isLocal && editorState.exists) {
+                Log.v(TAG, "setEditorSettings - hasScript")
+                putString("script", editorState.path)
+            }
         }
-        sharedPrefEditor.apply()
     }
 
     /**
@@ -395,15 +396,17 @@ class EditorManager(
      * @param path The path to the recent script.
      */
     private fun readRecentScript(path: String) {
-        Log.v(TAG, "path: $path")
+        // read the recent local script
+        // when there is no new script provided to the editor
         if (editorState.isLocal && editorState.exists.not()) {
+            Log.v(TAG, "readRecentScript path: $path")
             val file = File(path)
             if (file.exists()) {
                 try {
                     editorState.apply {
                         this.content = scriptsManager.read(file)
                         this.path = path
-                        this.title.value = file.name
+                        this.title.value = path
                         this.isPython = file.name.endsWith(".py")
                     }
                 } catch (e: IOException) {

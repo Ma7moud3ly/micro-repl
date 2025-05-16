@@ -55,19 +55,28 @@ fun TerminalScreen(
     fun executeScript() {
         coroutineScope.launch {
             withContext(Dispatchers.IO) {
-                terminalManager.executeScript(microScript.content)
+                if (microScript.isLocal) {
+                    terminalManager.executeLocalScript(
+                        microScript = microScript,
+                        onClear = {
+                            terminalInput = ""
+                            terminalOutput = ""
+                        }
+                    )
+                } else {
+                    terminalManager.executeScript(microScript)
+                }
             }
         }
     }
 
     fun onTerminate(showMessage: Boolean = false) {
-        terminalManager.terminateExecution {
-            if (showMessage) Toast.makeText(
-                context,
-                context.getString(R.string.terminal_terminate_msg),
-                Toast.LENGTH_SHORT
-            ).show()
-        }
+        terminalManager.terminateExecution()
+        if (showMessage) Toast.makeText(
+            context,
+            context.getString(R.string.terminal_terminate_msg),
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
     fun onSoftReset() {

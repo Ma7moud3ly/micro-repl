@@ -5,6 +5,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.ui.components.MyDialog
+import micro.repl.ma7moud3ly.ui.components.MyDialogState
+import micro.repl.ma7moud3ly.ui.components.rememberMyDialogState
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 
 @Preview
@@ -13,8 +15,6 @@ private fun FileSaveDialogPreviewLight() {
     AppTheme(darkTheme = false) {
         FileSaveDialog(
             name = { "script.py" },
-            show = { true },
-            onDismiss = {},
             onOk = {}
         )
     }
@@ -26,8 +26,6 @@ private fun FileSaveDialogPreviewDark() {
     AppTheme(darkTheme = true) {
         FileSaveDialog(
             name = { "script.py" },
-            show = { true },
-            onDismiss = {},
             onOk = {}
         )
     }
@@ -39,8 +37,6 @@ private fun FileSaveDialogPreviewLight2() {
     AppTheme(darkTheme = false) {
         FileSaveDialog(
             name = { "" },
-            show = { true },
-            onDismiss = {},
             onOk = {}
         )
     }
@@ -52,8 +48,6 @@ private fun FileSaveDialogPreviewDark2() {
     AppTheme(darkTheme = true) {
         FileSaveDialog(
             name = { "" },
-            show = { true },
-            onDismiss = {},
             onOk = {}
         )
     }
@@ -62,13 +56,12 @@ private fun FileSaveDialogPreviewDark2() {
 @Composable
 fun FileSaveDialog(
     name: () -> String,
-    show: () -> Boolean,
-    onDismiss: () -> Unit,
-    onOk: () -> Unit
+    state: MyDialogState = rememberMyDialogState(visible = true),
+    onOk: () -> Unit,
+    onDismiss: () -> Unit = {}
 ) {
     MyDialog(
-        show = show,
-        onDismiss = onDismiss,
+        state = state,
         dismissOnClickOutside = false
     ) {
         val fileName = name()
@@ -79,8 +72,14 @@ fun FileSaveDialog(
                 R.string.editor_msg_save_changes,
                 fileName
             ),
-            onOk = onOk,
-            onDismiss = onDismiss
+            onOk = {
+                state.dismiss()
+                onOk()
+            },
+            onDismiss = {
+                state.dismiss()
+                onDismiss()
+            }
         )
     }
 }

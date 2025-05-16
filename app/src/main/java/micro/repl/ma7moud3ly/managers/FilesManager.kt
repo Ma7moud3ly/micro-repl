@@ -36,14 +36,14 @@ class FilesManager(
 ) {
 
     companion object {
-        private const val TAG = "FileManager"
+        private const val TAG = "FilesManager"
     }
 
 
     /**
      * The current working directory path on the MicroPython board.
      */
-    var path = ""
+    private var path = ""
 
     /**
      * Lists the files and directories in the current working directory.
@@ -53,11 +53,21 @@ class FilesManager(
      * decoded into a list of `MicroFile` objects, which is then passed to the
      * `onUpdateFiles` callback function if it is set.
      */
-    fun listDir() {
-        val code = CommandsManager.iListDir(path)
+    fun listDir(path: String) {
+        Log.v(TAG, "path: $path")
+        this.path = path
+        val code = CommandsManager.listDir(path)
         boardManager.writeInSilentMode(code, onResponse = { result ->
             decodeFiles(result)
         })
+    }
+
+    /**
+     * Lists the files and directories in the current working directory.
+     * This method calls the overloaded `listDir` method with the current path.
+     */
+    fun listDir() {
+        listDir(this.path)
     }
 
     /**

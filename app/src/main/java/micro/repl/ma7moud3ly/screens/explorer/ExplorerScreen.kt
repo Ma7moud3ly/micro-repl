@@ -25,6 +25,8 @@ import micro.repl.ma7moud3ly.model.MicroScript
 import micro.repl.ma7moud3ly.screens.dialogs.FileDeleteDialog
 import micro.repl.ma7moud3ly.screens.dialogs.FileCreateDialog
 import micro.repl.ma7moud3ly.screens.dialogs.FileRenameDialog
+import micro.repl.ma7moud3ly.screens.dialogs.ImportScriptDialog
+import micro.repl.ma7moud3ly.ui.components.rememberMyDialogState
 import java.io.File
 
 private const val TAG = "FileManagerScreen"
@@ -58,19 +60,34 @@ fun FilesExplorerScreen(
     val coroutineScope = rememberCoroutineScope()
     val files = viewModel.files.collectAsState()
     var selectedFile by remember { mutableStateOf<MicroFile?>(null) }
-    var showDeleteFileDialog by remember { mutableStateOf(false) }
-    var showCreateFileDialog by remember { mutableStateOf(false) }
-    var showRenameFileDialog by remember { mutableStateOf(false) }
+    val importScriptDialog = rememberMyDialogState()
+    val deleteFileDialog = rememberMyDialogState()
+    val createFileDialog = rememberMyDialogState()
+    val renameFileDialog = rememberMyDialogState()
     val isMicroPython = viewModel.microDevice?.isMicroPython == true
     val filesPicker = rememberFilesPickerResult()
 
     // LaunchedEffect to terminate any running execution and list the directory contents
     LaunchedEffect(Unit) {
-        terminalManager.terminateExecution {
-            filesManager?.path = viewModel.root.value
-            filesManager?.listDir()
-        }
+        terminalManager.terminateExecution()
+        filesManager?.listDir(viewModel.root.value)
     }
+
+    /**
+     * Navigates up/back one level in the directory structure.
+     */
+    fun onUp() {
+        if (root.isEmpty() || root == "/") {
+            onBack()
+            return
+        }
+        val newRoot = File(root).parent ?: "/"
+        Log.i(TAG, "onUp from $root to $newRoot")
+        viewModel.root.value = newRoot
+        filesManager?.listDir(newRoot)
+    }
+
+    BackHandler { onUp() }
 
     /**
      * Runs the given file on the remote device.
@@ -140,10 +157,9 @@ fun FilesExplorerScreen(
      * @param file The MicroFile representing the folder to open.
      */
     fun onOpenFolder(file: MicroFile) {
-        Log.i(TAG, "onOpenFolder - $file")
+        Log.i(TAG, "onOpenFolder - ${file.fullPath}")
         viewModel.root.value = file.fullPath
-        filesManager?.path = file.fullPath
-        filesManager?.listDir()
+        filesManager?.listDir(file.fullPath)
     }
 
     /**
@@ -156,46 +172,28 @@ fun FilesExplorerScreen(
         filesManager?.listDir()
     }
 
-    /**
-     * Navigates up/back one level in the directory structure.
-     */
-    fun onUp() {
-        if (root.isEmpty()) onBack()
-        val newRoot = File(root).parent ?: ""
-        Log.i(TAG, "onUp from $root to $newRoot")
-        viewModel.root.value = newRoot
-        filesManager?.path = newRoot
-        filesManager?.listDir()
-    }
-
-    BackHandler { onUp() }
-
     FileDeleteDialog(
+        state = deleteFileDialog,
         name = { selectedFile?.name.orEmpty() },
-        show = { showDeleteFileDialog && selectedFile != null },
         onOk = {
-            showDeleteFileDialog = false
             Log.i(TAG, "onRemove - $selectedFile")
             filesManager?.remove(selectedFile!!)
-        },
-        onDismiss = { showDeleteFileDialog = false }
+        }
     )
 
     FileCreateDialog(
+        state = createFileDialog,
         microFile = { selectedFile },
-        show = { showCreateFileDialog && selectedFile != null },
         onOk = { file ->
             Log.i(TAG, "onNew - $file")
             filesManager?.new(file)
-            showCreateFileDialog = false
-        },
-        onDismiss = { showCreateFileDialog = false }
+        }
     )
 
     //rename dialog
     FileRenameDialog(
+        state = renameFileDialog,
         name = { selectedFile?.name.orEmpty() },
-        show = { showRenameFileDialog && selectedFile != null },
         onOk = { newName ->
             val dst = MicroFile(
                 name = newName,
@@ -208,9 +206,13 @@ fun FilesExplorerScreen(
                 src = selectedFile!!,
                 dst = dst
             )
-            showRenameFileDialog = false
-        },
-        onDismiss = { showRenameFileDialog = false }
+        }
+    )
+
+    // import file dialog
+    ImportScriptDialog(
+        state = importScriptDialog,
+        onOk = { filesPicker.pickFile(::importFile) }
     )
 
     ExplorerScreenContent(
@@ -225,7 +227,7 @@ fun FilesExplorerScreen(
                 is ExplorerEvents.Refresh -> onRefresh()
                 is ExplorerEvents.Up -> onUp()
                 is ExplorerEvents.Import -> {
-                    filesPicker.pickFile(::importFile)
+                    importScriptDialog.show()
                 }
 
                 is ExplorerEvents.Export -> {
@@ -234,17 +236,17 @@ fun FilesExplorerScreen(
 
                 is ExplorerEvents.Rename -> {
                     selectedFile = it.file
-                    showRenameFileDialog = true
+                    renameFileDialog.show()
                 }
 
                 is ExplorerEvents.Remove -> {
                     selectedFile = it.file
-                    showDeleteFileDialog = true
+                    deleteFileDialog.show()
                 }
 
                 is ExplorerEvents.New -> {
                     selectedFile = it.file
-                    showCreateFileDialog = true
+                    createFileDialog.show()
                 }
             }
         }

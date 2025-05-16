@@ -41,7 +41,6 @@ private val microDevice = MicroDevice(
 private fun DeviceDetailsDialogPreviewLight() {
     AppTheme(darkTheme = false) {
         DeviceDetailsDialog(
-            state = rememberMyDialogState(visible = true),
             microDevice = microDevice,
             onForgetDevice = {},
             onDisconnect = {}
@@ -54,7 +53,6 @@ private fun DeviceDetailsDialogPreviewLight() {
 private fun DeviceDetailsDialogPreviewDark() {
     AppTheme(darkTheme = true) {
         DeviceDetailsDialog(
-            state = rememberMyDialogState(visible = true),
             microDevice = microDevice,
             onForgetDevice = {},
             onDisconnect = {}
@@ -64,7 +62,7 @@ private fun DeviceDetailsDialogPreviewDark() {
 
 @Composable
 fun DeviceDetailsDialog(
-    state: MyDialogState = rememberMyDialogState(),
+    state: MyDialogState = rememberMyDialogState(visible = true),
     microDevice: MicroDevice,
     onDisconnect: () -> Unit,
     onForgetDevice: () -> Unit

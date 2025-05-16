@@ -8,7 +8,9 @@
 package micro.repl.ma7moud3ly.managers
 
 import android.util.Log
+import kotlinx.coroutines.delay
 import micro.repl.ma7moud3ly.model.MicroDevice
+import micro.repl.ma7moud3ly.model.MicroScript
 
 /**
  * Manages terminal commands for interacting with a MicroPython board.
@@ -30,14 +32,10 @@ class TerminalManager(
      *
      * This method sends a termination command (CTRL+C) to the board, effectively
      * stopping any ongoing code execution.
-     *
-     * @param onTerminate An optional callback function that is invoked after
-     *                    the execution has been terminated.
      */
-    fun terminateExecution(onTerminate: (() -> Unit)? = null) {
+    fun terminateExecution() {
         Log.v(TAG, "terminateExecution")
         boardManager.writeCommand(CommandsManager.TERMINATE)
-        onTerminate?.invoke()
     }
 
     /**
@@ -114,28 +112,41 @@ class TerminalManager(
      * on the board's console.
      *
      * @param code The MicroPython script to execute.
-     * @param onExecute An optional callback function that is invoked after the
-     *                  script has been executed.
      */
-    fun executeScript(
-        code: String,
-        onExecute: (() -> Unit)? = null
+    suspend fun executeLocalScript(
+        microScript: MicroScript,
+        onClear: () -> Unit
     ) {
+        // reset the device to clear previously imported modules
+        boardManager.writeCommand(CommandsManager.RESET)
+        delay(100)
+        onClear()
         // Start silent mode.
         boardManager.writeCommand(CommandsManager.SILENT_MODE)
-
         // Print a new line to separate the silent mode message from the output.
         // And write the code to interpreter to execute it
-        boardManager.writeCommand("print()\r\n$code")
-
+        boardManager.writeCommand("print()\r\n${microScript.content}")
         // Exit silent mode.
         boardManager.writeCommand(CommandsManager.RESET)
-
         // Back to REPL mode.
         boardManager.writeCommand(CommandsManager.REPL_MODE)
-
-        onExecute?.invoke()
     }
+
+    fun executeScript(microScript: MicroScript) {
+        // reset the device to clear previously imported modules
+        boardManager.writeCommand(CommandsManager.RESET)
+        // Start silent mode.
+        //boardManager.writeCommand(CommandsManager.SILENT_MODE)
+        // Locate the working directory to the script
+        boardManager.write(CommandsManager.chDir(microScript.scriptDir))
+        // Run the script
+        boardManager.write("import ${microScript.nameWithoutExt}")
+        // Exit silent mode.
+        boardManager.writeCommand(CommandsManager.RESET)
+        // Back to REPL mode.
+        boardManager.writeCommand(CommandsManager.REPL_MODE)
+    }
+
 
     companion object {
         private const val TAG = "TerminalManager"

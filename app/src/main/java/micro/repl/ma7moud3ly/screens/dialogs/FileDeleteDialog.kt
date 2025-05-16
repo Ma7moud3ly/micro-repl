@@ -13,12 +13,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.ui.components.MyButton
 import micro.repl.ma7moud3ly.ui.components.MyDialog
+import micro.repl.ma7moud3ly.ui.components.MyDialogState
+import micro.repl.ma7moud3ly.ui.components.rememberMyDialogState
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 
 @Preview
@@ -27,8 +28,6 @@ private fun FileDeleteDialogPreviewLight() {
     AppTheme(darkTheme = false) {
         FileDeleteDialog(
             name = { "script.py" },
-            show = { true },
-            onDismiss = {},
             onOk = {}
         )
     }
@@ -40,8 +39,6 @@ private fun FileDeleteDialogPreviewDark() {
     AppTheme(darkTheme = true) {
         FileDeleteDialog(
             name = { "script.py" },
-            show = { true },
-            onDismiss = {},
             onOk = {}
         )
     }
@@ -50,18 +47,17 @@ private fun FileDeleteDialogPreviewDark() {
 @Composable
 fun FileDeleteDialog(
     name: () -> String,
-    show: () -> Boolean,
-    onDismiss: () -> Unit,
+    state: MyDialogState = rememberMyDialogState(visible = true),
     onOk: () -> Unit
 ) {
-    MyDialog(
-        show = show,
-        onDismiss = onDismiss
-    ) {
+    MyDialog(state) {
         ApproveDialogContent(
             message = stringResource(R.string.editor_msg_delete, name()),
-            onOk = onOk,
-            onDismiss = onDismiss
+            onOk = {
+                state.dismiss()
+                onOk()
+            },
+            onDismiss = { state.dismiss() }
         )
     }
 }

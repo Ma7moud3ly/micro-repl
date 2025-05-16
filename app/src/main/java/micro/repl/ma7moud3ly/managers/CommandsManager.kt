@@ -83,6 +83,20 @@ object CommandsManager {
         return "import os;" + responseStatement(path)
     }
 
+    fun listDir(path: String): String {
+        return "import os;os.chdir('$path');" + responseStatement("")
+    }
+
+    /**
+     * Generates a MicroPython command to change the current working directory.
+     *
+     * @param path The path of the directory to change to.
+     * @return The MicroPython command string.
+     */
+    fun chDir(path: String): String {
+        return "import os;os.chdir('$path');print()"
+    }
+
     /**
      * Generates a MicroPython command to read the content of a file.
      *

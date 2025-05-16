@@ -10,6 +10,8 @@ import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.components.MyDialog
 import micro.repl.ma7moud3ly.model.MicroFile
+import micro.repl.ma7moud3ly.ui.components.MyDialogState
+import micro.repl.ma7moud3ly.ui.components.rememberMyDialogState
 
 private val microFile = MicroFile(
     name = "",
@@ -30,9 +32,7 @@ private val microDir = MicroFile(
 private fun FileCreateDialogPreviewLight() {
     AppTheme(darkTheme = false) {
         FileCreateDialog(
-            show = { true },
             microFile = { microFile },
-            onDismiss = {},
             onOk = {}
         )
     }
@@ -43,9 +43,7 @@ private fun FileCreateDialogPreviewLight() {
 private fun FileCreateDialogPreviewDark() {
     AppTheme(darkTheme = true) {
         FileCreateDialog(
-            show = { true },
             microFile = { microFile },
-            onDismiss = {},
             onOk = {}
         )
     }
@@ -56,9 +54,7 @@ private fun FileCreateDialogPreviewDark() {
 private fun FileCreateDialogPreviewLight2() {
     AppTheme(darkTheme = false) {
         FileCreateDialog(
-            show = { true },
             microFile = { microDir },
-            onDismiss = {},
             onOk = {}
         )
     }
@@ -69,9 +65,7 @@ private fun FileCreateDialogPreviewLight2() {
 private fun FileCreateDialogPreviewDark2() {
     AppTheme(darkTheme = true) {
         FileCreateDialog(
-            show = { true },
             microFile = { microDir },
-            onDismiss = {},
             onOk = {}
         )
     }
@@ -79,8 +73,7 @@ private fun FileCreateDialogPreviewDark2() {
 
 @Composable
 fun FileCreateDialog(
-    show: () -> Boolean,
-    onDismiss: () -> Unit,
+    state: MyDialogState = rememberMyDialogState(visible = true),
     microFile: () -> MicroFile?,
     onOk: (file: MicroFile) -> Unit
 ) {
@@ -97,20 +90,19 @@ fun FileCreateDialog(
     val name by remember(file) {
         derivedStateOf {
             if (file.name.isNotEmpty()) file.name
-            else if (file.isFile) "file.txt"
+            else if (file.isFile) "main.py"
             else "folder"
         }
     }
 
     MyDialog(
-        show = show,
-        onDismiss = onDismiss,
+        state = state,
         dismissOnClickOutside = false
     ) {
         InputDialogContent(
             name = name,
             message = message,
-            onDismiss = onDismiss,
+            onDismiss = { state.dismiss() },
             onOk = { fileName ->
                 val newFile = MicroFile(
                     name = fileName,
@@ -118,7 +110,8 @@ fun FileCreateDialog(
                     type = if (file.isFile) MicroFile.FILE
                     else MicroFile.DIRECTORY
                 )
-                onOk.invoke(newFile)
+                state.dismiss()
+                onOk(newFile)
             }
         )
     }

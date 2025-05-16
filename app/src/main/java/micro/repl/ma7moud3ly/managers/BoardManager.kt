@@ -109,7 +109,6 @@ class BoardManager(
     }
 
     override fun onCreate(owner: LifecycleOwner) {
-        Log.i(TAG, "onCreate")
         super.onCreate(owner)
         detectUsbDevices()
     }
@@ -147,7 +146,7 @@ class BoardManager(
         code: String,
         onResponse: ((data: String) -> Unit)? = null
     ) {
-        // start silent mode
+        Log.i(TAG, "writeInSilentMode - $code")
         writeCommand(CommandsManager.SILENT_MODE)
         executionMode = ExecutionMode.SCRIPT
         syncData.clear()
@@ -176,10 +175,8 @@ class BoardManager(
      * will be received asynchronously through the `onReceiveData` callback.
      *
      * @param code The Python code to write.
-     * @param onWrite An optional callback that will be invoked after the code
-     * has been written to the serial port.
      */
-    fun write(code: String, onWrite: (() -> Unit)? = null) {
+    fun write(code: String) {
         try {
             /**
              *  - \u000D == \r
@@ -189,7 +186,6 @@ class BoardManager(
             Log.v(TAG, "write: $code")
             val cmd = "\u000D" + code + "\u000D"
             port?.write(cmd.toByteArray(Charsets.UTF_8), WRITING_TIMEOUT)
-            onWrite?.invoke()
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -203,13 +199,12 @@ class BoardManager(
      * response.
      *
      * @param code The REPL command to write.
-     * @param onWrite An optional callback that will be invoked after the
      * command has been written to the serial port.
      */
-    fun writeCommand(code: String, onWrite: (() -> Unit)? = null) {
+    fun writeCommand(code: String) {
+        Log.i(TAG, "writeCommand - ${Json.encodeToString(code)}")
         try {
             port?.write(code.toByteArray(Charsets.UTF_8), WRITING_TIMEOUT)
-            onWrite?.invoke()
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -254,7 +249,7 @@ class BoardManager(
      */
     fun approveDevice(usbDevice: UsbDevice) {
         try {
-            Log.i(TAG, "supportedDevice - $usbDevice")
+            Log.v(TAG, "supportedDevice - ${usbDevice.deviceName}")
             if (usbManager.hasPermission(usbDevice)) connectToSerial(usbDevice)
             else requestUsbPermission(usbDevice)
         } catch (e: Exception) {
@@ -372,9 +367,9 @@ class BoardManager(
         val ports = allDrivers[0].ports
         if (ports.isEmpty()) return
         val connection = usbManager.openDevice(usbDevice) ?: return
-        Log.i(TAG, "connection - $connection")
+        Log.v(TAG, "connection - $connection")
         port = ports[0]
-        Log.i(TAG, "port - $port")
+        Log.v(TAG, "port - $port")
         try {
             //select port index = 0, micropython usually has one port
             port?.open(connection)
@@ -498,10 +493,11 @@ class BoardManager(
             putString("products", json)
             apply()
         }
-        Log.i(TAG, "remove ProductId ---> $productId")
+        Log.v(TAG, "remove ProductId ---> $productId")
     }
 
     private fun storeProductId(productId: Int) {
+        if (supportedProducts.contains(productId)) return
         supportedProducts.add(productId)
         val json = Json.encodeToString(supportedProducts)
         val sharedPref = activity.getPreferences(Context.MODE_PRIVATE) ?: return
@@ -518,7 +514,7 @@ class BoardManager(
         if (json.isEmpty()) return
         try {
             supportedProducts = Json.decodeFromString<MutableSet<Int>>(json)
-            Log.w(TAG, "stored products - $supportedProducts")
+            //Log.w(TAG, "stored products - $supportedProducts")
         } catch (e: Exception) {
             e.printStackTrace()
         }

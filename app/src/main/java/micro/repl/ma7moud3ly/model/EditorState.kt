@@ -35,7 +35,7 @@ data class EditorState(
     /**
      * The mutable state of the editor's title.
      */
-    val title = mutableStateOf(microScript.name)
+    val title = mutableStateOf(microScript.path)
 
     /**
      * The file path of the current script.

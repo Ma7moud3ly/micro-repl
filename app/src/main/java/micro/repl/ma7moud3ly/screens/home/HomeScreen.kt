@@ -98,13 +98,12 @@ fun HomeScreen(
     }
 
     fun onTerminate() {
-        terminalManager?.terminateExecution {
-            Toast.makeText(
-                activity,
-                activity.getString(R.string.terminal_terminate_msg),
-                Toast.LENGTH_SHORT
-            ).show()
-        }
+        terminalManager?.terminateExecution()
+        Toast.makeText(
+            activity,
+            activity.getString(R.string.terminal_terminate_msg),
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
     val status = viewModel.status.collectAsState()

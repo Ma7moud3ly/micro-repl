@@ -1,7 +1,6 @@
 package micro.repl.ma7moud3ly.model
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
 
@@ -15,6 +14,8 @@ data class MicroScript(
     val exists: Boolean get() = path.isEmpty().not()
     val hasContent: Boolean get() = exists && content.isEmpty().not()
     val file: File get() = File(path)
+    val scriptDir: String get() = file.parent.orEmpty()
+    val nameWithoutExt: String get() = file.name.replace(".py", "")
     val name: String get() = file.name
     val isPython: Boolean get() = name.trim().endsWith(".py")
     val isLocal: Boolean get() = editorMode == EditorMode.LOCAL

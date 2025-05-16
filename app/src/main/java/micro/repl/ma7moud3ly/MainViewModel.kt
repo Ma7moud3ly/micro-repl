@@ -53,7 +53,7 @@ class MainViewModel : ViewModel() {
     /**
      * The current path being displayed in the files explorer.
      */
-    val root = mutableStateOf("")
+    val root = mutableStateOf("/")
 
     /**
      * The list of files and directories in the current path of the files explorer.

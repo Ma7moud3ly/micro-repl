@@ -45,8 +45,8 @@ import micro.repl.ma7moud3ly.ui.theme.AppTheme
 
 private val editorState = EditorState(
     MicroScript(
-        path = "main.py",
-        editorMode = EditorMode.LOCAL,
+        path = "lib/path/path/path/path/path/main.py",
+        editorMode = EditorMode.REMOTE,
         microPython = true
     )
 )
@@ -185,17 +185,17 @@ private fun ScriptTitle(
             Spacer(Modifier.width(4.dp))
         }
         Text(
-            text = stringResource(scriptSource) + "://",
-            style = MaterialTheme.typography.bodyLarge,
+            text = stringResource(scriptSource) + "~",
+            style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.primary,
             fontWeight = FontWeight.Bold
         )
         Text(
             text = title.ifEmpty { "untitled" },
-            style = MaterialTheme.typography.bodyLarge,
+            style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.primary,
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.StartEllipsis
         )
         Spacer(Modifier.weight(1f))
     }

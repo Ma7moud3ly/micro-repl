@@ -21,6 +21,7 @@ import micro.repl.ma7moud3ly.model.EditorState
 import micro.repl.ma7moud3ly.model.MicroScript
 import micro.repl.ma7moud3ly.screens.dialogs.FileSaveAsDialog
 import micro.repl.ma7moud3ly.screens.dialogs.FileSaveDialog
+import micro.repl.ma7moud3ly.ui.components.rememberMyDialogState
 
 private const val TAG = "EditorScreen"
 
@@ -35,8 +36,8 @@ fun EditorScreen(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     var editorManager by remember { mutableStateOf<EditorManager?>(null) }
-    var showSaveDialog by remember { mutableStateOf(false) }
-    var showSaveNewDialog by remember { mutableStateOf(false) }
+    val saveDialog = rememberMyDialogState()
+    val saveAsNewDialog = rememberMyDialogState()
 
     LaunchedEffect(canRun()) {
         if (canRun()) editorState.canRun.value = true
@@ -62,10 +63,10 @@ fun EditorScreen(
             if (action == EditorAction.SaveScript) editorManager?.save {
                 Toast.makeText(context, "Saved...", Toast.LENGTH_SHORT).show()
             } else {
-                showSaveDialog = true
+                saveDialog.show()
             }
         } else if (editorManager?.saveNew() == true) {
-            showSaveNewDialog = true
+            saveAsNewDialog.show()
         } else {
             editorManager?.actionAfterSave()
         }
@@ -82,31 +83,27 @@ fun EditorScreen(
     }
 
     FileSaveDialog(
+        state = saveDialog,
         name = { editorState.title.value },
-        show = { showSaveDialog },
         onOk = {
-            showSaveDialog = false
             editorManager?.save {
                 editorManager?.actionAfterSave()
             }
         },
         onDismiss = {
-            showSaveDialog = false
             editorManager?.actionAfterSave()
         }
     )
 
     FileSaveAsDialog(
+        state = saveAsNewDialog,
         name = { "main.py" },
-        show = { showSaveNewDialog },
         onOk = { name ->
-            showSaveNewDialog = false
             editorManager?.saveFileAs(name) {
                 editorManager?.actionAfterSave()
             }
         },
         onDismiss = {
-            showSaveNewDialog = false
             editorManager?.actionAfterSave()
         }
     )

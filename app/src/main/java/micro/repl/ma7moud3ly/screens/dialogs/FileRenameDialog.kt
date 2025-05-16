@@ -26,6 +26,8 @@ import androidx.compose.ui.unit.dp
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.ui.components.MyButton
 import micro.repl.ma7moud3ly.ui.components.MyDialog
+import micro.repl.ma7moud3ly.ui.components.MyDialogState
+import micro.repl.ma7moud3ly.ui.components.rememberMyDialogState
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 
 
@@ -35,8 +37,6 @@ private fun FileRenameDialogPreviewLight() {
     AppTheme(darkTheme = false) {
         FileRenameDialog(
             name = { "main.py" },
-            show = { true },
-            onDismiss = {},
             onOk = {}
         )
     }
@@ -48,8 +48,6 @@ private fun FileRenameDialogPreviewDark() {
     AppTheme(darkTheme = true) {
         FileRenameDialog(
             name = { "main.py" },
-            show = { true },
-            onDismiss = {},
             onOk = {}
         )
     }
@@ -58,19 +56,18 @@ private fun FileRenameDialogPreviewDark() {
 @Composable
 fun FileRenameDialog(
     name: () -> String,
-    show: () -> Boolean,
-    onDismiss: () -> Unit,
+    state: MyDialogState = rememberMyDialogState(visible = true),
     onOk: (String) -> Unit
 ) {
-    MyDialog(
-        show = show,
-        onDismiss = onDismiss,
-    ) {
+    MyDialog(state) {
         InputDialogContent(
             name = name(),
             message = stringResource(R.string.explorer_rename_label, name()),
-            onDismiss = onDismiss,
-            onOk = onOk
+            onDismiss = { state.dismiss() },
+            onOk = {
+                state.dismiss()
+                onOk(it)
+            }
         )
     }
 }

@@ -18,6 +18,7 @@ import micro.repl.ma7moud3ly.managers.ScriptsManager
 import micro.repl.ma7moud3ly.screens.dialogs.FileDeleteDialog
 import micro.repl.ma7moud3ly.screens.dialogs.FileRenameDialog
 import micro.repl.ma7moud3ly.model.MicroScript
+import micro.repl.ma7moud3ly.ui.components.rememberMyDialogState
 
 private const val TAG = "ScriptsScreen"
 
@@ -29,29 +30,25 @@ fun ScriptsScreen(
 ) {
     val context = LocalContext.current
     val scriptsManager = remember { ScriptsManager(context) }
-    var showFileRenameDialog by remember { mutableStateOf(false) }
-    var showFileDeleteDialog by remember { mutableStateOf(false) }
+    val renameFileDialog = rememberMyDialogState()
+    val deleteFileDialog = rememberMyDialogState()
     var selectedScript by remember { mutableStateOf<MicroScript?>(null) }
     val scripts = remember { scriptsManager.scripts }
 
     FileRenameDialog(
+        state = renameFileDialog,
         name = { selectedScript?.name.orEmpty() },
-        show = { showFileRenameDialog && selectedScript != null },
         onOk = { newName ->
-            showFileRenameDialog = false
             scriptsManager.renameScript(selectedScript!!, newName)
-        },
-        onDismiss = { showFileRenameDialog = false }
+        }
     )
 
     FileDeleteDialog(
+        state = deleteFileDialog,
         name = { selectedScript?.name.orEmpty() },
-        show = { showFileDeleteDialog && selectedScript != null },
         onOk = {
-            showFileDeleteDialog = false
             scriptsManager.deleteScript(selectedScript!!)
-        },
-        onDismiss = { showFileDeleteDialog = false }
+        }
     )
 
     fun readLocalScript(script: MicroScript) {
@@ -75,12 +72,12 @@ fun ScriptsScreen(
                 is ScriptsEvents.Share -> scriptsManager.shareScript(it.script)
                 is ScriptsEvents.Delete -> {
                     selectedScript = it.script
-                    showFileDeleteDialog = true
+                    deleteFileDialog.show()
                 }
 
                 is ScriptsEvents.Rename -> {
                     selectedScript = it.script
-                    showFileRenameDialog = true
+                    renameFileDialog.show()
                 }
 
                 is ScriptsEvents.Run -> {}

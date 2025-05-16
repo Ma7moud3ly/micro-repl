@@ -226,7 +226,7 @@ private fun Header(
                         color = MaterialTheme.colorScheme.primary,
                     )
                     Text(
-                        text = "~/${path()}",
+                        text = "~${path()}",
                         maxLines = 1,
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary,
