@@ -1,16 +1,14 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlin.serialization)
 }
 
 // apply gms & firebase plugin only for gms build flavour
-if (gradle.startParameter.taskRequests.toString().contains("gms", ignoreCase = true)) {
+if (gradle.startParameter.taskNames.any { it.contains("gms", ignoreCase = true) }) {
     apply(plugin = libs.plugins.google.services.get().pluginId)
     apply(plugin = libs.plugins.firebase.crashlytics.get().pluginId)
 }
-
 
 android {
     namespace = "micro.repl.ma7moud3ly"
@@ -94,8 +92,8 @@ dependencies {
      */
 
     "gmsImplementation"(platform(libs.firebase.bom))
-    "gmsImplementation"(libs.firebase.crashlytics.ktx)
-    "gmsImplementation"(libs.firebase.analytics.ktx)
+    "gmsImplementation"(libs.firebase.crashlytics)
+    "gmsImplementation"(libs.firebase.analytics)
 
     /**
      * Serial communication
