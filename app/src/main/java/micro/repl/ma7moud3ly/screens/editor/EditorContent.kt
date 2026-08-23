@@ -17,9 +17,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -43,18 +43,19 @@ import micro.repl.ma7moud3ly.model.MicroScript
 import micro.repl.ma7moud3ly.ui.components.MyScreen
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 
-private val editorState = EditorState(
-    MicroScript(
-        path = "lib/path/path/path/path/path/main.py",
-        editorMode = EditorMode.REMOTE,
-        microPython = true
-    )
-)
-
 @Preview
 @Composable
 private fun EditorScreenPreviewLight() {
-    editorState.canRun.value = true
+    val editorState = remember {
+        EditorState(
+            MicroScript(
+                path = "lib/path/path/path/path/path/main.py",
+                content = "Hello World",
+                editorMode = EditorMode.REMOTE,
+                microPython = true
+            )
+        ).apply { canRun.value = true }
+    }
     AppTheme(darkTheme = false) {
         EditorScreenContent(
             editorState = editorState,
@@ -100,18 +101,12 @@ private fun Header(
     val showLines by remember { editorState.showLines }
 
     Column {
-        MediumTopAppBar(
-            expandedHeight = 80.dp,
-            collapsedHeight = 40.dp,
-            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+        TopAppBar(
+            expandedHeight = 40.dp,
+            colors = TopAppBarDefaults.topAppBarColors(
                 titleContentColor = MaterialTheme.colorScheme.primary
             ),
-            title = {
-                ScriptTitle(
-                    editorState = editorState,
-                    onRun = { uiEvents(EditorEvents.Run) }
-                )
-            },
+            title = {},
             navigationIcon = {
                 EditorIcon(
                     icon = R.drawable.arrow_left,
@@ -154,6 +149,10 @@ private fun Header(
                     )
                 }
             }
+        )
+        ScriptTitle(
+            editorState = editorState,
+            onRun = { uiEvents(EditorEvents.Run) }
         )
         HorizontalDivider()
     }
@@ -205,8 +204,8 @@ private fun ScriptTitle(
 fun EditorButton(
     @StringRes text: Int,
     onClick: () -> Unit,
-    color: Color = Color.White,
     modifier: Modifier = Modifier,
+    color: Color = Color.White,
     background: Color = MaterialTheme.colorScheme.tertiary
 ) {
     SmallFloatingActionButton(

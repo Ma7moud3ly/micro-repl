@@ -12,12 +12,11 @@ if (gradle.startParameter.taskNames.any { it.contains("gms", ignoreCase = true) 
 
 android {
     namespace = "micro.repl.ma7moud3ly"
-    compileSdk = 35
-
+    compileSdk = 37
     defaultConfig {
         applicationId = "micro.repl.ma7moud3ly"
-        minSdk = 22
-        targetSdk = 34
+        minSdk = 23
+        targetSdk = 37
         versionCode = 15
         versionName = "2.0"
         multiDexEnabled = true
