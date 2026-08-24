@@ -17,8 +17,8 @@ composeUi = "1.12.0"
 firebaseBom = "34.18.0"
 googleServices = "4.5.0"
 
+nemoEditor = "1.0.2"
 usbSerialForAndroid = "3.9.0"
-soraEditorBom = "0.23.6"
 serialization = "1.11.0"
 
 espressoCore = "3.7.0"
@@ -51,11 +51,9 @@ firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 
 kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
+nemo-editor = { module = "io.github.ma7moud3ly:nemo-editor", version.ref = "nemoEditor" }
 usb-serial-forandroid = { module = "com.github.mik3y:usb-serial-for-android", version.ref = "usbSerialForAndroid" }
 
-soraEditorBom = { module = "io.github.Rosemoe.sora-editor:bom", version.ref = "soraEditorBom" }
-soreEditor = { module = "io.github.Rosemoe.sora-editor:editor" }
-language-textmate = { module = "io.github.Rosemoe.sora-editor:language-textmate" }
 desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugarJdk" }
 
 androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espressoCore" }

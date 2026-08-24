@@ -4,10 +4,10 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
-// apply gms & firebase plugin only for gms build flavour
+// apply gms & firebase plugin only for gms build flavor
 if (gradle.startParameter.taskNames.any { it.contains("gms", ignoreCase = true) }) {
-    apply(plugin = libs.plugins.google.services.get().pluginId)
-    apply(plugin = libs.plugins.firebase.crashlytics.get().pluginId)
+    pluginManager.apply(libs.plugins.google.services.get().pluginId)
+    pluginManager.apply(libs.plugins.firebase.crashlytics.get().pluginId)
 }
 
 android {
@@ -15,7 +15,7 @@ android {
     compileSdk = 37
     defaultConfig {
         applicationId = "micro.repl.ma7moud3ly"
-        minSdk = 23
+        minSdk = 24
         targetSdk = 37
         versionCode = 15
         versionName = "2.0"
@@ -64,10 +64,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlin {
-        jvmToolchain(17)
-    }
-
     buildFeatures {
         compose = true
         buildConfig = true
@@ -77,6 +73,10 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+}
+
+kotlin {
+    jvmToolchain(17)
 }
 
 dependencies {
@@ -100,18 +100,15 @@ dependencies {
     implementation(libs.usb.serial.forandroid)
 
     /**
-     * Sora Code Editor - https://github.com/Rosemoe/sora-editor
+     * Nemo Code Editor - https://github.com/Ma7moud3ly/nemo-editor
      */
+    implementation(libs.nemo.editor)
 
-    implementation(platform(libs.soraEditorBom))
-    implementation(libs.soreEditor)
-    implementation(libs.language.textmate)
 
     /**
      * Compose Dependencies
      */
     implementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(platform(libs.androidx.compose.bom))
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.ui)
