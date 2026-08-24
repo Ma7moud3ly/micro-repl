@@ -10,25 +10,57 @@
     <string name="micro_python">MicroPython</string>
     <string name="circuit_python">Circuit Python</string>
 
-    <string name="home_terminal">Terminal</string>
-    <string name="home_editor">Editor</string>
-    <string name="home_scripts">Scripts</string>
-    <string name="home_explorer">Explorer</string>
+    <!-- Home -->
+    <string name="home_wordmark">&gt;&gt;&gt; Micro REPL</string>
+
+    <!-- connection status line -->
+    <string name="home_status_connected">connected</string>
+    <string name="home_status_connecting">connecting…</string>
+    <string name="home_status_connection_lost">connection lost</string>
+    <string name="home_status_cant_connect">can\'t connect</string>
+    <string name="home_status_waiting">waiting for device</string>
+
+    <!-- connection -->
     <string name="home_connect">Connect</string>
     <string name="home_disconnect">Disconnect</string>
     <string name="home_change_device">Change device</string>
-    <string name="home_connection_msg">Please connect your device and click Connect. Or restart the app.</string>
     <string name="home_connected">Connected</string>
     <string name="home_disconnected">Disconnected</string>
     <string name="home_connecting">Connecting</string>
     <string name="home_details">Details</string>
-    <string name="home_help">for support or bugs reporting 🐞</string>
-    <string name="home_help_link">https://github.com/Ma7moud3ly/micro-repl</string>
+    <string name="home_connection_msg">Please connect your device and click Connect. Or restart the app.</string>
+
+    <!-- empty state -->
+    <string name="home_no_device">No device connected</string>
+    <string name="home_no_device_msg">Connect your board over USB and tap Connect. If it isn\'t detected, restart the app.</string>
+    <string name="home_connect_device">Connect device</string>
+    <string name="home_restart">Restart app</string>
+
+    <!-- workspace tiles -->
+    <string name="home_workspace">Workspace</string>
+    <string name="home_terminal">Terminal</string>
+    <string name="home_explorer">Explorer</string>
+    <string name="home_editor">Editor</string>
+    <string name="home_scripts">Scripts</string>
+    <string name="home_needs_device">Needs device</string>
+    <string name="home_sub_local_files">Local files</string>
+    <string name="home_sub_live_repl">Live REPL</string>
+    <string name="home_sub_device_files">Device files</string>
+    <string name="home_sub_editor_open">main.py open</string>
+    <string name="home_sub_scripts">Saved scripts</string>
+
+    <!-- device details -->
     <string name="home_device_is_flashed">Are you sure that one of the connected devices is a supported port flashed with MicroPython firmware?</string>
     <string name="home_device_product_name">Product Name</string>
     <string name="home_device_manufacturer">Manufacturer</string>
     <string name="home_device_vendor_id">Vendor Id</string>
     <string name="home_device_product_id">Product Id</string>
+
+    <!-- footer / help -->
+    <string name="home_footer">Micro REPL 2.0</string>
+    <string name="home_report_bug">Feedback or a bug? 🐞</string>
+    <string name="home_help">for support or bugs reporting 🐞</string>
+    <string name="home_help_link">https://github.com/Ma7moud3ly/micro-repl</string>
 
     <string name="error_no_devices">No devices connected!</string>
     <string name="error_not_supported">This device is not supported!</string>

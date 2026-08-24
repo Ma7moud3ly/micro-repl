@@ -8,67 +8,57 @@
 package micro.repl.ma7moud3ly.screens.home
 
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.model.ConnectionStatus
 import micro.repl.ma7moud3ly.ui.components.MyScreen
 import micro.repl.ma7moud3ly.ui.components.ProgressView
-import micro.repl.ma7moud3ly.ui.theme.AppTheme
+import micro.repl.ma7moud3ly.ui.theme.NewHomeTheme
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
-import micro.repl.ma7moud3ly.ui.theme.terminalGreen
-
-private const val TAG = "HomeScreen"
 
 @Preview
 @Composable
-private fun ApprovedHomeScreenPreview() {
-    AppTheme(darkTheme = false) {
+private fun HomeConnectedPreview() {
+    NewHomeTheme(darkTheme = true) {
         HomeScreenContent(
-            connectionStatus = { TestStatus.approve },
-            isDark = false,
-            uiEvents = {}
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun ApprovedHomeScreenPreviewDark() {
-    AppTheme(darkTheme = true) {
-        HomeScreenContent(
-            connectionStatus = { TestStatus.approve },
+            connectionStatus = { TestHome.connected },
             isDark = true,
             uiEvents = {}
         )
@@ -77,10 +67,10 @@ private fun ApprovedHomeScreenPreviewDark() {
 
 @Preview
 @Composable
-private fun ConnectedHomeScreenPreview() {
-    AppTheme(darkTheme = false) {
+private fun HomeConnectedPreviewLight() {
+    NewHomeTheme(darkTheme = false) {
         HomeScreenContent(
-            connectionStatus = { TestStatus.connected },
+            connectionStatus = { TestHome.connected },
             isDark = false,
             uiEvents = {}
         )
@@ -89,36 +79,23 @@ private fun ConnectedHomeScreenPreview() {
 
 @Preview
 @Composable
-private fun ConnectedHomeScreenPreviewDark() {
-    AppTheme(darkTheme = true) {
+private fun HomeDisconnectedPreview() {
+    NewHomeTheme(darkTheme = true) {
         HomeScreenContent(
-            connectionStatus = { TestStatus.connected },
+            connectionStatus = { TestHome.disconnected },
             isDark = true,
             uiEvents = {}
         )
     }
 }
 
-
 @Preview
 @Composable
-private fun ErrorHomeScreenPreview() {
-    AppTheme(darkTheme = false) {
+private fun HomeDisconnectedPreviewLight() {
+    NewHomeTheme(darkTheme = false) {
         HomeScreenContent(
-            connectionStatus = { TestStatus.error },
+            connectionStatus = { TestHome.disconnected },
             isDark = false,
-            uiEvents = {}
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun ErrorHomeScreenPreviewDark() {
-    AppTheme(darkTheme = true) {
-        HomeScreenContent(
-            connectionStatus = { TestStatus.error },
-            isDark = true,
             uiEvents = {}
         )
     }
@@ -133,111 +110,258 @@ internal fun HomeScreenContent(
     uiEvents: (HomeEvents) -> Unit
 ) {
     MyScreen(
-        header = { HomeHeader(connectionStatus) },
-        footer = {
-            Footer(
-                isDark = isDark,
-                isPortrait = isPortrait,
-                uiEvents = uiEvents
-            )
+        header = {
+            Column {
+                HomeAppBar(connectionStatus)
+                ControlStrip(
+                    isDark = isDark,
+                    isPortrait = isPortrait,
+                    uiEvents = uiEvents
+                )
+            }
         },
+        footer = { Footer(uiEvents = uiEvents) },
         modifier = Modifier
             .padding(0.dp)
             .verticalScroll(rememberScrollState()),
         spacedBy = 0.dp
     ) {
         when (val status = connectionStatus()) {
-            is ConnectionStatus.Error -> {
-                SectionError(status, uiEvents)
-            }
+            is ConnectionStatus.Connected ->
+                SectionConnected(device = status.microDevice, uiEvents = uiEvents)
 
-            is ConnectionStatus.Approve -> {
-                SectionApprove(status, uiEvents)
-            }
+            is ConnectionStatus.Error ->
+                SectionDisconnected(uiEvents = uiEvents)
 
-            is ConnectionStatus.Connected -> {
-                SectionConnected(status, uiEvents)
-            }
+            is ConnectionStatus.Approve ->
+                SectionApprove(devices = status.devices, uiEvents = uiEvents)
 
-            is ConnectionStatus.Connecting -> {
+            is ConnectionStatus.Connecting ->
                 ProgressView()
-            }
         }
     }
 }
 
+/* ----------------------------- app bar ----------------------------- */
 
 @Composable
-private fun HomeHeader(status: () -> ConnectionStatus) {
-    val context = LocalContext.current
-    var message by remember { mutableStateOf("$ Connected") }
-    LaunchedEffect(status()) {
-        val msgId = status().responseMessage()
-        if (msgId != null) {
-            message = "$ " + context.getString(msgId)
-            delay(4000)
-            message = ""
-        } else message = ""
-    }
+private fun HomeAppBar(connectionStatus: () -> ConnectionStatus) {
+    val status = connectionStatus()
     Column {
-        Surface(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .statusBarsPadding(),
-            color = Color.Black
+                .statusBarsPadding()
+                .padding(start = 20.dp, top = 18.dp, end = 20.dp, bottom = 14.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Top
         ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.Bottom
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.logo_white),
-                    contentDescription = "",
-                    modifier = Modifier.height(45.dp)
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    text = stringResource(R.string.home_wordmark),
+                    fontFamily = fontConsolas,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
-                Column(
-                    modifier = Modifier.weight(1f),
-                    horizontalAlignment = Alignment.End
-                ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        RoundImage(R.drawable.python)
-                        RoundImage(R.drawable.micro_python)
-                        RoundImage(R.drawable.circuit_python)
-                    }
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        text = message,
-                        color = terminalGreen,
-                        modifier = Modifier.fillMaxWidth(),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        fontFamily = fontConsolas,
-                        style = MaterialTheme.typography.bodySmall,
-                        fontSize = 10.sp
-                    )
-                }
+                StatusLineView(status)
             }
+            RuntimeBadges(active = status.activeRuntime())
         }
-        HorizontalDivider()
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
     }
 }
 
+@Composable
+private fun StatusLineView(status: ConnectionStatus) {
+    val line = status.statusLine()
+    val color = line.tone.color()
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = "$ ",
+            fontFamily = fontConsolas,
+            fontSize = 11.5.sp,
+            color = color.copy(alpha = 0.6f)
+        )
+        Text(
+            text = stringResource(line.text),
+            fontFamily = fontConsolas,
+            fontSize = 11.5.sp,
+            color = color,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
 
 @Composable
-private fun RoundImage(@DrawableRes src: Int) {
+private fun RuntimeBadges(active: RuntimeBadge?) {
+    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        RuntimeLogo(R.drawable.python, active == RuntimeBadge.PY)
+        RuntimeLogo(R.drawable.micro_python, active == RuntimeBadge.MICRO_PYTHON)
+        RuntimeLogo(R.drawable.circuit_python, active == RuntimeBadge.CIRCUIT_PYTHON)
+    }
+}
+
+@Composable
+private fun RuntimeLogo(@DrawableRes src: Int, isActive: Boolean) {
     Surface(
         shape = CircleShape,
         color = Color.White,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        modifier = Modifier
+            .size(28.dp)
+            .alpha(if (isActive) 1f else 0.38f)
     ) {
         Image(
             painter = painterResource(src),
-            contentDescription = "",
-            modifier = Modifier
-                .size(30.dp)
-                .padding(4.dp)
+            contentDescription = null,
+            modifier = Modifier.padding(5.dp)
         )
+    }
+}
+
+/* -------------------------- control strip -------------------------- */
+
+@Composable
+private fun ControlStrip(
+    isDark: Boolean,
+    isPortrait: Boolean,
+    uiEvents: (HomeEvents) -> Unit
+) {
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 10.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // theme: dark / light
+            TwoWaySegment(
+                startSelected = isDark,
+                onToggle = { uiEvents(HomeEvents.ToggleTheme) },
+                start = { selected -> SegmentIcon(R.drawable.dark_mode, selected) },
+                end = { selected -> SegmentIcon(R.drawable.light_mode, selected) }
+            )
+            // orientation: portrait / landscape
+            TwoWaySegment(
+                startSelected = isPortrait,
+                onToggle = { uiEvents(HomeEvents.ToggleOrientation) },
+                start = { selected -> OrientationGlyph(portrait = true, selected = selected) },
+                end = { selected -> OrientationGlyph(portrait = false, selected = selected) }
+            )
+        }
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+    }
+}
+
+/** A two-cell segmented toggle; [startSelected] picks which cell is filled. */
+@Composable
+private fun TwoWaySegment(
+    startSelected: Boolean,
+    onToggle: () -> Unit,
+    start: @Composable (selected: Boolean) -> Unit,
+    end: @Composable (selected: Boolean) -> Unit
+) {
+    Surface(
+        shape = RoundedCornerShape(9.dp),
+        color = Color.Transparent,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+    ) {
+        Row(modifier = Modifier.height(28.dp)) {
+            SegmentCell(
+                selected = startSelected,
+                onClick = { if (!startSelected) onToggle() }
+            ) { start(startSelected) }
+            VerticalDivider(
+                modifier = Modifier.height(28.dp),
+                color = MaterialTheme.colorScheme.outline
+            )
+            SegmentCell(
+                selected = !startSelected,
+                onClick = { if (startSelected) onToggle() }
+            ) { end(!startSelected) }
+        }
+    }
+}
+
+@Composable
+private fun SegmentCell(
+    selected: Boolean,
+    onClick: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .size(width = 34.dp, height = 28.dp)
+            .background(
+                if (selected) MaterialTheme.colorScheme.surfaceVariant
+                else Color.Transparent
+            )
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) { content() }
+}
+
+@Composable
+private fun SegmentIcon(@DrawableRes icon: Int, selected: Boolean) {
+    Icon(
+        painter = painterResource(icon),
+        contentDescription = null,
+        tint = if (selected) MaterialTheme.colorScheme.onSurface
+        else MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.size(15.dp)
+    )
+}
+
+/** An outlined rectangle: tall for portrait, wide for landscape. */
+@Composable
+private fun OrientationGlyph(portrait: Boolean, selected: Boolean) {
+    val color = if (selected) MaterialTheme.colorScheme.onSurface
+    else MaterialTheme.colorScheme.onSurfaceVariant
+    Box(
+        modifier = Modifier
+            .size(
+                width = if (portrait) 9.dp else 13.dp,
+                height = if (portrait) 13.dp else 9.dp
+            )
+            .border(1.dp, color, RoundedCornerShape(2.dp))
+    )
+}
+
+/* ------------------------------ footer ----------------------------- */
+
+@Composable
+private fun Footer(uiEvents: (HomeEvents) -> Unit) {
+    Column(modifier = Modifier.navigationBarsPadding()) {
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 20.dp, top = 14.dp, end = 20.dp, bottom = 18.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(R.string.home_footer),
+                fontFamily = fontConsolas,
+                fontSize = 10.5.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = " · ",
+                fontFamily = fontConsolas,
+                fontSize = 10.5.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = stringResource(R.string.home_report_bug),
+                fontFamily = fontConsolas,
+                fontSize = 10.5.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textDecoration = TextDecoration.Underline,
+                modifier = Modifier.clickable { uiEvents(HomeEvents.Help) }
+            )
+        }
     }
 }

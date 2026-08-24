@@ -11,12 +11,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.runtime.CompositionLocalProvider
 import micro.repl.ma7moud3ly.managers.BoardManager
 import micro.repl.ma7moud3ly.managers.FilesManager
 import micro.repl.ma7moud3ly.managers.TerminalManager
-import micro.repl.ma7moud3ly.managers.isDark
 import micro.repl.ma7moud3ly.screens.RootGraph
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
+import micro.repl.ma7moud3ly.ui.theme.LocalThemeController
+import micro.repl.ma7moud3ly.ui.theme.rememberThemeController
 
 class MainActivity : ComponentActivity() {
     private lateinit var boardManager: BoardManager
@@ -26,6 +28,26 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        initManagers()
+        setContent {
+            val themeController = rememberThemeController(this)
+            CompositionLocalProvider(LocalThemeController provides themeController) {
+                AppTheme(
+                    darkTheme = themeController.isDark,
+                    darkStatusBar = true
+                ) {
+                    RootGraph(
+                        viewModel = viewModel,
+                        boardManager = boardManager,
+                        terminalManager = terminalManager,
+                        filesManager = filesManager
+                    )
+                }
+            }
+        }
+    }
+
+    private fun initManagers() {
         boardManager = BoardManager(
             context = this,
             onStatusChanges = { viewModel.status.value = it },
@@ -45,19 +67,6 @@ class MainActivity : ComponentActivity() {
             boardManager = boardManager,
             onUpdateFiles = { viewModel.files.value = it }
         )
-        setContent {
-            AppTheme(
-                darkTheme = this.isDark(),
-                darkStatusBar = true
-            ) {
-                RootGraph(
-                    viewModel = viewModel,
-                    boardManager = boardManager,
-                    terminalManager = terminalManager,
-                    filesManager = filesManager
-                )
-            }
-        }
     }
 }
 
