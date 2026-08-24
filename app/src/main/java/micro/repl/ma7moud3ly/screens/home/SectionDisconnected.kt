@@ -33,12 +33,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import micro.repl.ma7moud3ly.R
-import micro.repl.ma7moud3ly.ui.theme.NewHomeTheme
+import micro.repl.ma7moud3ly.ui.theme.AppTheme
 
 @Preview
 @Composable
 private fun SectionDisconnectedPreview() {
-    NewHomeTheme(darkTheme = true) {
+    AppTheme(darkTheme = true) {
         SectionDisconnected(uiEvents = {})
     }
 }
@@ -46,7 +46,7 @@ private fun SectionDisconnectedPreview() {
 @Preview
 @Composable
 private fun SectionDisconnectedPreviewLight() {
-    NewHomeTheme(darkTheme = false) {
+    AppTheme(darkTheme = false) {
         SectionDisconnected(uiEvents = {})
     }
 }

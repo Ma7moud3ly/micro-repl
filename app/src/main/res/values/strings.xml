@@ -46,7 +46,7 @@
     <string name="home_sub_local_files">Local files</string>
     <string name="home_sub_live_repl">Live REPL</string>
     <string name="home_sub_device_files">Device files</string>
-    <string name="home_sub_editor_open">main.py open</string>
+    <string name="home_sub_editor_open">Edit files</string>
     <string name="home_sub_scripts">Saved scripts</string>
 
     <!-- device details -->
@@ -57,7 +57,7 @@
     <string name="home_device_product_id">Product Id</string>
 
     <!-- footer / help -->
-    <string name="home_footer">Micro REPL 2.0</string>
+    <string name="home_footer">Micro REPL %s</string>
     <string name="home_report_bug">Feedback or a bug? 🐞</string>
     <string name="home_help">for support or bugs reporting 🐞</string>
     <string name="home_help_link">https://github.com/Ma7moud3ly/micro-repl</string>
@@ -70,6 +70,8 @@
     <string name="error_unknown">Unknown error!</string>
 
     <string name="editor_untitled">untitled</string>
+    <string name="editor_save">Save</string>
+    <string name="editor_new">New</string>
     <string name="editor_wait">Wait !</string>
     <string name="editor_msg_save">Do you want to save this file ?</string>
     <string name="editor_msg_save_changes">Do you want to save changes to (%s) ?</string>

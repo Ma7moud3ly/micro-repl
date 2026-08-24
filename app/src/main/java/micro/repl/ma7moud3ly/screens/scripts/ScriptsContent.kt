@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -40,10 +39,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.model.MicroScript
-import micro.repl.ma7moud3ly.screens.editor.EditorButton
+import micro.repl.ma7moud3ly.ui.components.ActionButton
+import micro.repl.ma7moud3ly.ui.components.BackButton
 import micro.repl.ma7moud3ly.ui.components.MyScreen
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
-import micro.repl.ma7moud3ly.ui.theme.editorIconSize
 
 
 private val scripts = listOf(
@@ -122,28 +121,23 @@ private fun Header(
                 containerColor = Color.Transparent
             ),
             navigationIcon = {
-                IconButton(
-                    onClick = onBack,
-                    modifier = Modifier.size(24.dp)
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.arrow_left),
-                        contentDescription = ""
-                    )
-                }
+                BackButton(
+                    modifier = Modifier.padding(start = 8.dp),
+                    onClick = onBack
+                )
             },
             title = {
                 Text(
                     text = stringResource(R.string.scripts_local),
-                    style = MaterialTheme.typography.titleSmall,
+                    style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
             },
             actions = {
-                EditorButton(
+                ActionButton(
                     text = R.string.scripts_new,
-                    onClick = onNewScript,
-                    modifier = Modifier.height(30.dp)
+                    textModifier = Modifier.padding(horizontal = 8.dp),
+                    onClick = onNewScript
                 )
             }
         )
@@ -169,7 +163,7 @@ private fun ItemScript(
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .padding(horizontal = 16.dp, vertical = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -182,7 +176,7 @@ private fun ItemScript(
             )
             ScriptIcon(
                 icon = R.drawable.share,
-                modifier = Modifier.size(20.dp),
+                modifier = Modifier.size(18.dp),
                 description = R.string.explorer_share,
                 onClick = onShare
             )
@@ -214,7 +208,7 @@ private fun ItemScript(
 private fun ScriptIcon(
     @DrawableRes icon: Int,
     @StringRes description: Int,
-    modifier: Modifier = Modifier.size(24.dp),
+    modifier: Modifier = Modifier.size(20.dp),
     onClick: () -> Unit,
 ) {
     IconButton(
@@ -225,7 +219,7 @@ private fun ScriptIcon(
             painter = painterResource(id = icon),
             contentDescription = stringResource(id = description),
             tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(editorIconSize)
+            modifier = Modifier.size(24.dp)
         )
     }
 }

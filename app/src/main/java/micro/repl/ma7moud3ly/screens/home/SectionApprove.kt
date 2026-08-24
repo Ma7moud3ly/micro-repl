@@ -31,14 +31,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.model.MicroDevice
-import micro.repl.ma7moud3ly.model.MicroDeviceDetails
-import micro.repl.ma7moud3ly.ui.theme.NewHomeTheme
+import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
 
 @Preview
 @Composable
 private fun SectionApprovePreview() {
-    NewHomeTheme(darkTheme = true) {
+    AppTheme(darkTheme = true) {
         Surface(color = MaterialTheme.colorScheme.background) {
             SectionApprove(
                 devices = listOf(TestHome.connectedDevice),

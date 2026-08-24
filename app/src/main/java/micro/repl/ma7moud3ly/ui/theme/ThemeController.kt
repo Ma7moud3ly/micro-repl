@@ -42,9 +42,9 @@ class ThemeController(
     }
 }
 
-val LocalThemeController = staticCompositionLocalOf<ThemeController> {
-    error("LocalThemeController not provided")
-}
+// Falls back to a non-persisting light controller when unprovided (e.g. @Preview),
+// so reads never crash outside the root.
+val LocalThemeController = staticCompositionLocalOf { ThemeController(initialDark = false) {} }
 
 @Composable
 fun rememberThemeController(activity: Activity): ThemeController = remember {

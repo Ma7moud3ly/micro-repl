@@ -1,29 +1,11 @@
-/*
- * Created by Mahmoud Aly - engma7moud3ly@gmail.com
- * Project Micro REPL - https://github.com/Ma7moud3ly/micro-repl
- * Copyright (c) 2023 . MIT license.
- *
- */
-
 package micro.repl.ma7moud3ly.ui.theme
 
-import android.app.Activity
-import android.view.View
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalView
-import androidx.core.view.WindowCompat
 
-
-private val NewHomeDarkScheme = darkColorScheme(
+internal val NewHomeDarkScheme = darkColorScheme(
     primary = Color(0xFFE8EAED),
     onPrimary = Color(0xFF14161A),
     background = Color(0xFF14161A),
@@ -38,7 +20,7 @@ private val NewHomeDarkScheme = darkColorScheme(
     inverseOnSurface = Color(0xFF1B1D22)
 )
 
-private val NewHomeLightScheme = lightColorScheme(
+internal val NewHomeLightScheme = lightColorScheme(
     primary = Color(0xFF17181A),
     onPrimary = Color(0xFFFFFFFF),
     background = Color(0xFFFBFBFA),
@@ -65,7 +47,7 @@ data class StatusColors(
     val selected: Color
 )
 
-private val DarkStatusColors = StatusColors(
+internal val DarkStatusColors = StatusColors(
     ok = Color(0xFF3ADB8B),
     warn = Color(0xFFE8A93B),
     error = Color(0xFFEC7C63),
@@ -73,7 +55,7 @@ private val DarkStatusColors = StatusColors(
     selected = Color(0xFF2A2F36)
 )
 
-private val LightStatusColors = StatusColors(
+internal val LightStatusColors = StatusColors(
     ok = Color(0xFF12804E),
     warn = Color(0xFF9A6A0B),
     error = Color(0xFFB3402A),
@@ -84,40 +66,14 @@ private val LightStatusColors = StatusColors(
 /** Read the current status accents: `LocalStatusColors.current`. */
 val LocalStatusColors = staticCompositionLocalOf { LightStatusColors }
 
+data class ExplorerColors(
+    val file: Color,
+    val folder: Color,
+    val new: Color,
+)
 
-@Composable
-fun NewHomeTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit
-) {
-    val colorScheme = if (darkTheme) NewHomeDarkScheme else NewHomeLightScheme
-    val statusColors = if (darkTheme) DarkStatusColors else LightStatusColors
-
-    ConfigureNewHomeStatusBar(LocalView.current, darkTheme, colorScheme.background)
-
-    CompositionLocalProvider(LocalStatusColors provides statusColors) {
-        MaterialTheme(
-            colorScheme = colorScheme,
-            typography = Typography,
-            content = content
-        )
-    }
-}
-
-@Composable
-private fun ConfigureNewHomeStatusBar(
-    view: View,
-    darkTheme: Boolean,
-    background: Color
-) {
-    if (!view.isInEditMode) {
-        val activity = view.context as Activity
-        SideEffect {
-            @Suppress("DEPRECATION")
-            activity.window.statusBarColor = background.toArgb()
-            WindowCompat
-                .getInsetsController(activity.window, view)
-                .isAppearanceLightStatusBars = darkTheme.not()
-        }
-    }
-}
+val explorerColors = ExplorerColors(
+    folder = Color(0xFFFFE69A),
+    file = Color(0xFFE8E8E8),
+    new = Color(0xFFE8E8E8)
+)

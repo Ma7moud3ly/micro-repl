@@ -12,9 +12,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
@@ -22,13 +25,11 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -45,7 +46,9 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -53,11 +56,13 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.model.MicroScript
-import micro.repl.ma7moud3ly.screens.editor.EditorButton
-import micro.repl.ma7moud3ly.screens.editor.EditorIcon
+import micro.repl.ma7moud3ly.ui.components.ActionButton
+import micro.repl.ma7moud3ly.ui.components.BackButton
 import micro.repl.ma7moud3ly.ui.components.MyScreen
+import micro.repl.ma7moud3ly.ui.components.SegmentIcon
+import micro.repl.ma7moud3ly.ui.components.SegmentLabel
+import micro.repl.ma7moud3ly.ui.components.SegmentPair
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
-import micro.repl.ma7moud3ly.ui.theme.dividerColor
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -233,7 +238,6 @@ private fun TerminalInputFiled(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Header(
     microScript: () -> MicroScript,
@@ -241,110 +245,158 @@ private fun Header(
     onZoomOut: () -> Unit,
     uiEvents: (TerminalEvents) -> Unit
 ) {
-    Column {
-        TopAppBar(
-            expandedHeight = 40.dp,
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = Color.Transparent,
-                titleContentColor = MaterialTheme.colorScheme.primary
-            ),
-            title = {},
-            navigationIcon = {
-                EditorIcon(
-                    icon = R.drawable.arrow_left,
-                    onClick = { uiEvents(TerminalEvents.Back) }
-                )
-            },
-            actions = {
-                Row(
-                    modifier = Modifier
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                        .fillMaxWidth(0.90f),
-                    horizontalArrangement = Arrangement.SpaceAround
-                ) {
-                    EditorIcon(
-                        title = R.string.terminal_down,
-                        icon = R.drawable.term_down,
-                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
-                        onClick = { uiEvents(TerminalEvents.MoveDown) },
-                    )
-                    EditorIcon(
-                        title = R.string.terminal_up,
-                        icon = R.drawable.term_up,
-                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
-                        onClick = { uiEvents(TerminalEvents.MoveUp) },
-                    )
-                    EditorIcon(
-                        title = R.string.terminal_zoom_in,
-                        icon = R.drawable.zoom_in,
-                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
-                        onClick = onZoomIn
-                    )
-                    EditorIcon(
-                        title = R.string.terminal_zoom_out,
-                        icon = R.drawable.zoom_out,
-                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
-                        onClick = onZoomOut
-                    )
-                }
-            }
-        )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(
-                8.dp,
-                alignment = Alignment.Start
-            ),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            EditorButton(
-                text = R.string.terminal_run,
-                background = MaterialTheme.colorScheme.primary,
-                color = MaterialTheme.colorScheme.onPrimary,
-                onClick = { uiEvents(TerminalEvents.Run) }
+    Surface(color = MaterialTheme.colorScheme.surface) {
+        Column(Modifier.statusBarsPadding()) {
+            TerminalAppBar(
+                microScript = microScript,
+                onZoomIn = onZoomIn,
+                onZoomOut = onZoomOut,
+                uiEvents = uiEvents
             )
-            EditorButton(
-                text = R.string.terminal_reset,
-                background = MaterialTheme.colorScheme.primary,
-                color = MaterialTheme.colorScheme.onPrimary,
-                onClick = { uiEvents(TerminalEvents.SoftReset) }
-            )
-            EditorButton(
-                text = R.string.terminal_terminate,
-                background = MaterialTheme.colorScheme.primary,
-                color = MaterialTheme.colorScheme.onPrimary,
-                onClick = { uiEvents(TerminalEvents.Terminate) }
-            )
-            EditorButton(
-                text = R.string.terminal_clear,
-                background = MaterialTheme.colorScheme.primary,
-                color = MaterialTheme.colorScheme.onPrimary,
-                onClick = { uiEvents(TerminalEvents.Clear) }
-            )
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            TerminalActions(uiEvents = uiEvents)
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         }
-        HorizontalDivider()
-        Title(microScript)
     }
 }
 
 @Composable
-private fun Title(microScript: () -> MicroScript) {
-    val script = microScript()
-    if (script.exists.not()) return
-    val source = stringResource(
-        id = if (script.isLocal) R.string.this_device
-        else R.string.micro_python
-    )
-    val name = if (script.isLocal) "/${script.name}" else script.path
-    val title = "$source:$name"
-    Text(
-        text = title,
-        style = MaterialTheme.typography.labelMedium,
+private fun TerminalAppBar(
+    microScript: () -> MicroScript,
+    onZoomIn: () -> Unit,
+    onZoomOut: () -> Unit,
+    uiEvents: (TerminalEvents) -> Unit
+) {
+    Row(
         modifier = Modifier
-            .padding(horizontal = 8.dp, vertical = 4.dp)
             .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(
+            modifier = Modifier.weight(1f),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            BackButton { uiEvents(TerminalEvents.Back) }
+            ScriptTitle(
+                modifier = Modifier.weight(1f, fill = false),
+                microScript = microScript
+            )
+        }
+        Spacer(Modifier.width(8.dp))
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // text size
+            SegmentPair(
+                cellWidth = 28.dp, cellHeight = 24.dp,
+                onStart = onZoomOut, onEnd = onZoomIn,
+                start = { SegmentLabel("A−", MaterialTheme.colorScheme.onSurfaceVariant) },
+                end = { SegmentLabel("A+", MaterialTheme.colorScheme.onSurfaceVariant) }
+            )
+            // scroll: jump to top / latest
+            SegmentPair(
+                cellWidth = 26.dp, cellHeight = 24.dp,
+                onStart = { uiEvents(TerminalEvents.MoveUp) },
+                onEnd = { uiEvents(TerminalEvents.MoveDown) },
+                start = {
+                    SegmentIcon(
+                        R.drawable.term_up,
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                end = {
+                    SegmentIcon(
+                        R.drawable.term_down,
+                        MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun ScriptTitle(
+    microScript: () -> MicroScript,
+    modifier: Modifier = Modifier
+) {
+    val script = microScript()
+    val source = stringResource(
+        id = if (script.isLocal) R.string.this_device else R.string.micro_python
     )
-    HorizontalDivider(color = dividerColor)
+    val name = when {
+        script.exists.not() -> ""
+        script.isLocal -> script.name
+        else -> script.path.substringAfterLast('/')
+    }
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(3.dp),
+        verticalAlignment = Alignment.Bottom
+    ) {
+        Text(
+            text = source,
+            fontFamily = fontConsolas,
+            fontSize = 12.5.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1
+        )
+        if (name.isNotEmpty()) {
+            Text(
+                text = "/",
+                fontFamily = fontConsolas,
+                fontSize = 12.5.sp,
+                color = MaterialTheme.colorScheme.outline
+            )
+            Text(
+                text = name,
+                fontFamily = fontConsolas,
+                fontSize = 12.5.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.MiddleEllipsis,
+                modifier = Modifier.weight(1f, fill = false)
+            )
+        }
+    }
+}
+
+
+/** Run / Reset / Clear / Terminate. */
+@Composable
+private fun TerminalActions(uiEvents: (TerminalEvents) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(7.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        ActionButton(
+            text = R.string.terminal_run,
+            modifier = Modifier.weight(1f),
+            filled = true,
+            onClick = { uiEvents(TerminalEvents.Run) }
+        )
+        ActionButton(
+            text = R.string.terminal_reset,
+            modifier = Modifier.weight(1f),
+            onClick = { uiEvents(TerminalEvents.SoftReset) }
+        )
+        ActionButton(
+            text = R.string.terminal_clear,
+            modifier = Modifier.weight(1f),
+            onClick = { uiEvents(TerminalEvents.Clear) }
+        )
+        ActionButton(
+            text = R.string.terminal_terminate,
+            modifier = Modifier.weight(1f),
+            danger = true,
+            onClick = { uiEvents(TerminalEvents.Terminate) }
+        )
+    }
 }

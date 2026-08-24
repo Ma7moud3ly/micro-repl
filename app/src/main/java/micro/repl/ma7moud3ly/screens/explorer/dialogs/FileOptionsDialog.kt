@@ -32,8 +32,7 @@ import micro.repl.ma7moud3ly.model.MicroFile
 import micro.repl.ma7moud3ly.screens.explorer.ExplorerEvents
 import micro.repl.ma7moud3ly.ui.components.MyDialog
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
-import micro.repl.ma7moud3ly.ui.theme.fileColor
-import micro.repl.ma7moud3ly.ui.theme.folderColor
+import micro.repl.ma7moud3ly.ui.theme.explorerColors
 
 private val microFile = MicroFile(
     name = "main.py",
@@ -144,7 +143,8 @@ private fun FileOptionHeader(microFile: MicroFile) {
                 id = if (microFile.isFile) R.drawable.file
                 else R.drawable.folder
             ),
-            tint = if (microFile.isFile) fileColor else folderColor,
+            tint = if (microFile.isFile) explorerColors.file
+            else explorerColors.folder,
             contentDescription = "",
             modifier = Modifier.size(32.dp)
         )

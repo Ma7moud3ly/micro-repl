@@ -41,22 +41,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import micro.repl.ma7moud3ly.BuildConfig
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.model.ConnectionStatus
 import micro.repl.ma7moud3ly.ui.components.MyScreen
 import micro.repl.ma7moud3ly.ui.components.ProgressView
-import micro.repl.ma7moud3ly.ui.theme.NewHomeTheme
+import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
 
 @Preview
 @Composable
 private fun HomeConnectedPreview() {
-    NewHomeTheme(darkTheme = true) {
+    AppTheme(darkTheme = true) {
         HomeScreenContent(
             connectionStatus = { TestHome.connected },
             isDark = true,
@@ -68,7 +68,7 @@ private fun HomeConnectedPreview() {
 @Preview
 @Composable
 private fun HomeConnectedPreviewLight() {
-    NewHomeTheme(darkTheme = false) {
+    AppTheme(darkTheme = false) {
         HomeScreenContent(
             connectionStatus = { TestHome.connected },
             isDark = false,
@@ -80,7 +80,7 @@ private fun HomeConnectedPreviewLight() {
 @Preview
 @Composable
 private fun HomeDisconnectedPreview() {
-    NewHomeTheme(darkTheme = true) {
+    AppTheme(darkTheme = true) {
         HomeScreenContent(
             connectionStatus = { TestHome.disconnected },
             isDark = true,
@@ -92,7 +92,7 @@ private fun HomeDisconnectedPreview() {
 @Preview
 @Composable
 private fun HomeDisconnectedPreviewLight() {
-    NewHomeTheme(darkTheme = false) {
+    AppTheme(darkTheme = false) {
         HomeScreenContent(
             connectionStatus = { TestHome.disconnected },
             isDark = false,
@@ -113,7 +113,7 @@ internal fun HomeScreenContent(
         header = {
             Column {
                 HomeAppBar(connectionStatus)
-                ControlStrip(
+                SectionControl(
                     isDark = isDark,
                     isPortrait = isPortrait,
                     uiEvents = uiEvents
@@ -142,7 +142,6 @@ internal fun HomeScreenContent(
     }
 }
 
-/* ----------------------------- app bar ----------------------------- */
 
 @Composable
 private fun HomeAppBar(connectionStatus: () -> ConnectionStatus) {
@@ -221,10 +220,8 @@ private fun RuntimeLogo(@DrawableRes src: Int, isActive: Boolean) {
     }
 }
 
-/* -------------------------- control strip -------------------------- */
-
 @Composable
-private fun ControlStrip(
+private fun SectionControl(
     isDark: Boolean,
     isPortrait: Boolean,
     uiEvents: (HomeEvents) -> Unit
@@ -256,7 +253,6 @@ private fun ControlStrip(
     }
 }
 
-/** A two-cell segmented toggle; [startSelected] picks which cell is filled. */
 @Composable
 private fun TwoWaySegment(
     startSelected: Boolean,
@@ -315,7 +311,6 @@ private fun SegmentIcon(@DrawableRes icon: Int, selected: Boolean) {
     )
 }
 
-/** An outlined rectangle: tall for portrait, wide for landscape. */
 @Composable
 private fun OrientationGlyph(portrait: Boolean, selected: Boolean) {
     val color = if (selected) MaterialTheme.colorScheme.onSurface
@@ -330,7 +325,6 @@ private fun OrientationGlyph(portrait: Boolean, selected: Boolean) {
     )
 }
 
-/* ------------------------------ footer ----------------------------- */
 
 @Composable
 private fun Footer(uiEvents: (HomeEvents) -> Unit) {
@@ -339,14 +333,19 @@ private fun Footer(uiEvents: (HomeEvents) -> Unit) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 20.dp, top = 14.dp, end = 20.dp, bottom = 18.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
         ) {
             Text(
-                text = stringResource(R.string.home_footer),
+                text = stringResource(
+                    R.string.home_footer,
+                    BuildConfig.VERSION_NAME
+                ),
                 fontFamily = fontConsolas,
                 fontSize = 10.5.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
             )
             Text(
                 text = " · ",
@@ -359,7 +358,7 @@ private fun Footer(uiEvents: (HomeEvents) -> Unit) {
                 fontFamily = fontConsolas,
                 fontSize = 10.5.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textDecoration = TextDecoration.Underline,
+                //textDecoration = TextDecoration.Underline,
                 modifier = Modifier.clickable { uiEvents(HomeEvents.Help) }
             )
         }

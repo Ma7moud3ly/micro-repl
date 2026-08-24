@@ -46,13 +46,13 @@ import androidx.compose.ui.unit.dp
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.model.MicroFile
 import micro.repl.ma7moud3ly.screens.explorer.dialogs.FileOptionsDialog
+import micro.repl.ma7moud3ly.ui.components.BackButton
 import micro.repl.ma7moud3ly.ui.components.MyScreen
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
-import micro.repl.ma7moud3ly.ui.theme.fileColor
-import micro.repl.ma7moud3ly.ui.theme.folderColor
-import micro.repl.ma7moud3ly.ui.theme.grey100
+import micro.repl.ma7moud3ly.ui.theme.explorerColors
 
-private val iconSize = 80.dp
+
+private val iconSize = 60.dp
 private val microFile1 = MicroFile(
     name = "main.py",
     type = MicroFile.FILE,
@@ -178,7 +178,7 @@ private fun Header(
                     IconHeader(
                         title = R.string.explorer_file_new,
                         icon = R.drawable.new_file,
-                        tint = fileColor,
+                        tint = explorerColors.file,
                         onClick = {
                             val file = MicroFile(
                                 path = path(),
@@ -189,7 +189,7 @@ private fun Header(
                     )
                     IconHeader(title = R.string.explorer_new_folder,
                         icon = R.drawable.new_folder,
-                        tint = folderColor,
+                        tint = explorerColors.folder,
                         onClick = {
                             val file = MicroFile(
                                 path = path(),
@@ -208,10 +208,8 @@ private fun Header(
                 }
             },
             navigationIcon = {
-                IconHeader(
-                    title = R.string.explorer_up,
-                    icon = R.drawable.arrow_left,
-                    tint = MaterialTheme.colorScheme.primary,
+                BackButton(
+                    modifier = Modifier.padding(start = 8.dp),
                     onClick = { uiEvents(ExplorerEvents.Up) }
                 )
             },
@@ -284,7 +282,7 @@ private fun ItemFile(
                 else R.drawable.folder
             ),
             contentDescription = microFile.name,
-            tint = if (isFile) grey100 else folderColor,
+            tint = if (isFile) explorerColors.file else explorerColors.folder,
             modifier = Modifier.size(iconSize)
         )
         Text(

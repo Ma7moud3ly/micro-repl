@@ -42,13 +42,13 @@ import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.model.MicroDevice
 import micro.repl.ma7moud3ly.ui.components.rememberMyDialogState
 import micro.repl.ma7moud3ly.ui.theme.LocalStatusColors
-import micro.repl.ma7moud3ly.ui.theme.NewHomeTheme
+import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
 
 @Preview
 @Composable
 private fun SectionConnectedPreview() {
-    NewHomeTheme(darkTheme = true) {
+    AppTheme(darkTheme = true) {
         Surface(color = MaterialTheme.colorScheme.background) {
             SectionConnected(
                 device = TestHome.connectedDevice,
@@ -61,7 +61,7 @@ private fun SectionConnectedPreview() {
 @Preview
 @Composable
 private fun SectionConnectedPreviewLight() {
-    NewHomeTheme(darkTheme = false) {
+    AppTheme(darkTheme = false) {
         Surface(color = MaterialTheme.colorScheme.background) {
             SectionConnected(
                 device = TestHome.connectedDevice,
@@ -119,7 +119,7 @@ private fun DeviceCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable(onClick = onOpenDetails)
-                    .padding(18.dp),
+                    .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(14.dp)
             ) {
@@ -147,7 +147,7 @@ private fun DeviceCard(
                         text = device.board,
                         fontFamily = fontConsolas,
                         fontSize = 11.5.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )

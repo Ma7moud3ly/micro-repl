@@ -34,7 +34,7 @@ import micro.repl.ma7moud3ly.model.MicroDeviceDetails
 import micro.repl.ma7moud3ly.ui.components.MyDialog
 import micro.repl.ma7moud3ly.ui.components.MyDialogState
 import micro.repl.ma7moud3ly.ui.components.rememberMyDialogState
-import micro.repl.ma7moud3ly.ui.theme.NewHomeTheme
+import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
 
 private val previewDetails = MicroDeviceDetails(
@@ -47,7 +47,7 @@ private val previewDetails = MicroDeviceDetails(
 @Preview
 @Composable
 private fun DeviceDetailsPreviewDark() {
-    NewHomeTheme(darkTheme = true) {
+    AppTheme(darkTheme = true) {
         Surface(color = MaterialTheme.colorScheme.surface) {
             DeviceDetailsContent(previewDetails, onDisconnect = {}, onForgetDevice = {})
         }
@@ -57,7 +57,7 @@ private fun DeviceDetailsPreviewDark() {
 @Preview
 @Composable
 private fun DeviceDetailsPreviewLight() {
-    NewHomeTheme(darkTheme = false) {
+    AppTheme(darkTheme = false) {
         Surface(color = MaterialTheme.colorScheme.surface) {
             DeviceDetailsContent(previewDetails, onDisconnect = {}, onForgetDevice = {})
         }

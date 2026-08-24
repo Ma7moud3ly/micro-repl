@@ -24,13 +24,13 @@ import micro.repl.ma7moud3ly.managers.isPortrait
 import micro.repl.ma7moud3ly.managers.toggleOrientationMode
 import micro.repl.ma7moud3ly.model.MicroDevice
 import micro.repl.ma7moud3ly.ui.theme.LocalThemeController
-import micro.repl.ma7moud3ly.ui.theme.NewHomeTheme
+import micro.repl.ma7moud3ly.ui.theme.AppTheme
 
 private const val TAG = "HomeScreen"
 
 /**
  * Home screen: connects a board, reports connection state, and opens the
- * terminal / explorer / editor / scripts. Themed with [NewHomeTheme].
+ * terminal / explorer / editor / scripts. Themed with [AppTheme].
  */
 @Composable
 fun HomeScreen(
@@ -101,7 +101,7 @@ fun HomeScreen(
     }
 
     val status = viewModel.status.collectAsState()
-    NewHomeTheme(darkTheme = isDark) {
+    AppTheme(darkTheme = isDark) {
         HomeScreenContent(
             isDark = isDark,
             isPortrait = isPortrait,
