@@ -15,7 +15,7 @@ android {
     compileSdk = 37
     defaultConfig {
         applicationId = "micro.repl.ma7moud3ly"
-        minSdk = 24
+        minSdk = 23
         targetSdk = 37
         versionCode = 15
         versionName = "2.0"
