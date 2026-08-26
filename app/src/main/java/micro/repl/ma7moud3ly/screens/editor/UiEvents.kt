@@ -9,4 +9,6 @@ sealed interface EditorEvents {
     data object Save : EditorEvents
     data object Clear : EditorEvents
     data object Lines : EditorEvents
+    data object ZoomIn : EditorEvents
+    data object ZoomOut : EditorEvents
 }

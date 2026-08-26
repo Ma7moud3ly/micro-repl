@@ -120,6 +120,14 @@ class EditorManager(
         settings.toggleLinesNumber()
     }
 
+    fun zoomIn() {
+        settings.zoomIn()
+    }
+
+    fun zoomOut() {
+        settings.zoomOut()
+    }
+
     /** Persists the editor settings. Called when the editor is disposed. */
     fun release() {
         persistSettings()
