@@ -239,15 +239,15 @@ class EditorManager(
             val resolved = restoreRecentScript(context, sharedPref, script, blank)
 
             val settings = EditorSettings(
-                theme = if (activity.isDark()) EditorThemes.VS_CODE_DARK
-                else EditorThemes.VS_CODE_LIGHT,
+                theme = if (activity.isDark()) EditorThemes.NEMO_DARK
+                else EditorThemes.NEMO_LIGHT,
                 // EditorSettings requires fontSize in 8..32.
                 fontSize = sharedPref.getInt(KEY_FONT_SIZE, 14).coerceIn(8, 32),
                 showLineNumbers = sharedPref.getBoolean(KEY_SHOW_LINES, true)
             )
             val codeState = CodeState(
                 initialCode = resolved.content,
-                language = Language.PYTHON
+                language = Language.MICRO_PYTHON,
             )
             return EditorManager(
                 context = context,
