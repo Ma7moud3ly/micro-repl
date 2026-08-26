@@ -16,7 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.edit
 import io.ma7moud3ly.nemo.model.CodeState
 import io.ma7moud3ly.nemo.model.EditorSettings
-import io.ma7moud3ly.nemo.model.EditorThemes
+import io.ma7moud3ly.nemo.model.EditorTheme
 import io.ma7moud3ly.nemo.model.Language
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -238,6 +238,7 @@ class EditorManager(
             coroutineScope: CoroutineScope,
             script: MicroScript,
             blank: Boolean,
+            theme: EditorTheme,
             filesManager: FilesManager? = null,
             onRun: ((MicroScript) -> Unit)? = null,
             afterEdit: (() -> Unit)? = null
@@ -247,8 +248,7 @@ class EditorManager(
             val resolved = restoreRecentScript(context, sharedPref, script, blank)
 
             val settings = EditorSettings(
-                theme = if (activity.isDark()) EditorThemes.NEMO_DARK
-                else EditorThemes.NEMO_LIGHT,
+                theme = theme,
                 // EditorSettings requires fontSize in 8..32.
                 fontSize = sharedPref.getInt(KEY_FONT_SIZE, 14).coerceIn(8, 32),
                 showLineNumbers = sharedPref.getBoolean(KEY_SHOW_LINES, true)

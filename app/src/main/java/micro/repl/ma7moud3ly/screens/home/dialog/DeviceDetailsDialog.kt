@@ -5,7 +5,7 @@
  *
  */
 
-package micro.repl.ma7moud3ly.screens.home
+package micro.repl.ma7moud3ly.screens.home.dialog
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement

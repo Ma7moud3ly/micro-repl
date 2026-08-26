@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import micro.repl.ma7moud3ly.MainViewModel
@@ -17,6 +18,7 @@ import micro.repl.ma7moud3ly.managers.FilesManager
 import micro.repl.ma7moud3ly.managers.TerminalManager
 import micro.repl.ma7moud3ly.model.ConnectionStatus
 import micro.repl.ma7moud3ly.model.asMicroScript
+import micro.repl.ma7moud3ly.screens.dialogs.ThemeSelectorDialog
 import micro.repl.ma7moud3ly.screens.editor.EditorScreen
 import micro.repl.ma7moud3ly.screens.explorer.FilesExplorerScreen
 import micro.repl.ma7moud3ly.screens.home.HomeScreen
@@ -47,11 +49,18 @@ fun RootGraph(
         navController = navController,
         startDestination = AppRoutes.Home
     ) {
+        dialog<AppRoutes.ThemePicker> {
+            ThemeSelectorDialog(onDismiss = { navController.popBackStack() })
+        }
+
         composable<AppRoutes.Home> {
             HomeScreen(
                 viewModel = viewModel,
                 boardManager = boardManager,
                 terminalManager = terminalManager,
+                openThemePicker = {
+                    navController.navigate(AppRoutes.ThemePicker)
+                },
                 openExplorer = {
                     navController.navigate(AppRoutes.Explorer)
                 },
@@ -96,6 +105,9 @@ fun RootGraph(
                 script = script,
                 blank = editor.blank,
                 filesManager = filesManager,
+                openThemePicker = {
+                    navController.navigate(AppRoutes.ThemePicker)
+                },
                 onRemoteRun = { s ->
                     navController.navigate(AppRoutes.Terminal(s.asJson))
                 },

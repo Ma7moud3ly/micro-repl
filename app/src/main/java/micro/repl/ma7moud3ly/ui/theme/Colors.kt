@@ -1,43 +1,18 @@
 package micro.repl.ma7moud3ly.ui.theme
 
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import io.ma7moud3ly.nemo.model.EditorTheme
 
-internal val NewHomeDarkScheme = darkColorScheme(
-    primary = Color(0xFFE8EAED),
-    onPrimary = Color(0xFF14161A),
-    background = Color(0xFF14161A),
-    surface = Color(0xFF1B1D22),
-    surfaceVariant = Color(0xFF202329),
-    outline = Color(0xFF3A3F47),
-    outlineVariant = Color(0xFF2A2E34),
-    onSurface = Color(0xFFE8EAED),
-    onSurfaceVariant = Color(0xFF9BA2A9),
-    error = Color(0xFFEC7C63),
-    inverseSurface = Color(0xFFE8EAED),
-    inverseOnSurface = Color(0xFF1B1D22)
-)
 
-internal val NewHomeLightScheme = lightColorScheme(
-    primary = Color(0xFF17181A),
-    onPrimary = Color(0xFFFFFFFF),
-    background = Color(0xFFFBFBFA),
-    surface = Color(0xFFFFFFFF),
-    surfaceVariant = Color(0xFFF1F0ED),
-    outline = Color(0xFFDCDBD7),
-    outlineVariant = Color(0xFFE8E7E4),
-    onSurface = Color(0xFF17181A),
-    onSurfaceVariant = Color(0xFF6B6F76),
-    error = Color(0xFFB3402A),
-    inverseSurface = Color(0xFF17181A),
-    inverseOnSurface = Color(0xFFFFFFFF)
-)
+internal fun Long.toColor() = Color(this)
+
 
 /**
  * Connection-status accents plus the two neutral roles Material has no slot for
  * ([muted] = onSurfaceMuted, [selected] = segment/badge selected fill).
+ *
+ * Values are derived from the active editor theme — see `EditorTheme.toStatusColors()`.
  */
 data class StatusColors(
     val ok: Color,
@@ -47,24 +22,27 @@ data class StatusColors(
     val selected: Color
 )
 
-internal val DarkStatusColors = StatusColors(
-    ok = Color(0xFF3ADB8B),
-    warn = Color(0xFFE8A93B),
-    error = Color(0xFFEC7C63),
-    muted = Color(0xFF6A7079),
-    selected = Color(0xFF2A2F36)
+
+/**
+ * Connection-status accents pulled from the theme's syntax palette, so they
+ * stay legible on every theme instead of being fixed reds/greens.
+ */
+fun EditorTheme.toStatusColors() = StatusColors(
+    ok = syntax.string.toColor(),
+    warn = syntax.number.toColor(),
+    error = syntax.type.toColor(),
+    // comments are the theme's own "muted text" role
+    muted = syntax.comment.toColor(),
+    selected = currentLineBackground.toColor()
 )
 
-internal val LightStatusColors = StatusColors(
-    ok = Color(0xFF12804E),
-    warn = Color(0xFF9A6A0B),
-    error = Color(0xFFB3402A),
-    muted = Color(0xFF9AA0A6),
-    selected = Color(0xFFF1F0ED)
-)
 
-/** Read the current status accents: `LocalStatusColors.current`. */
-val LocalStatusColors = staticCompositionLocalOf { LightStatusColors }
+/**
+ * Read the current status accents: `LocalStatusColors.current`.
+ * Falls back to the default theme's palette so reads outside [AppTheme]
+ * (e.g. `@Preview`) still resolve.
+ */
+val LocalStatusColors = staticCompositionLocalOf { AppThemes.DEFAULT.toStatusColors() }
 
 data class ExplorerColors(
     val file: Color,

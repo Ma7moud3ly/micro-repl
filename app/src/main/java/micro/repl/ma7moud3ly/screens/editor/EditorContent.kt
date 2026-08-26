@@ -1,12 +1,18 @@
 package micro.repl.ma7moud3ly.screens.editor
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -40,6 +46,7 @@ import micro.repl.ma7moud3ly.ui.components.MyScreen
 import micro.repl.ma7moud3ly.ui.components.SegmentIcon
 import micro.repl.ma7moud3ly.ui.components.SegmentLabel
 import micro.repl.ma7moud3ly.ui.components.SegmentPair
+import micro.repl.ma7moud3ly.ui.components.ThemeButton
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
 
@@ -139,8 +146,6 @@ private fun EditorAppBar(
     uiEvents: (EditorEvents) -> Unit
 ) {
     val title by editorManager.title
-
-    // Title gets the full row — script paths can be long.
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -158,9 +163,10 @@ private fun EditorAppBar(
         )
         ScriptTitle(
             source = source,
-            name = title.ifEmpty { stringResource(R.string.editor_untitled) },
+            name = title.ifEmpty { "/" + stringResource(R.string.editor_untitled) },
             modifier = Modifier.weight(1f)
         )
+        ThemeButton(onClick = { uiEvents(EditorEvents.ShowThemeDialog) })
     }
 }
 
@@ -176,63 +182,72 @@ private fun EditorActions(
     val canRedo = editorManager.canRedo
     val showLines = editorManager.showLines
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
+    // Scrolls when the controls don't fit; on wider screens the row is stretched
+    // to the viewport so SpaceBetween still pushes the two groups apart.
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        val viewportWidth = maxWidth
         Row(
-            horizontalArrangement = Arrangement.spacedBy(7.dp),
+            modifier = Modifier
+                .horizontalScroll(rememberScrollState())
+                .widthIn(min = viewportWidth)
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (canRun && editorManager.isPython) ActionButton(
-                text = R.string.terminal_run,
-                filled = true,
-                textModifier = Modifier.padding(horizontal = 14.dp),
-                onClick = { uiEvents(EditorEvents.Run) }
-            )
-            ActionButton(
-                text = R.string.editor_save,
-                textModifier = Modifier.padding(horizontal = 14.dp),
-                onClick = { uiEvents(EditorEvents.Save) }
-            )
-            if (editorManager.isLocal) ActionButton(
-                text = R.string.editor_new,
-                textModifier = Modifier.padding(horizontal = 14.dp),
-                onClick = { uiEvents(EditorEvents.New) }
-            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(7.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (canRun && editorManager.isPython) ActionButton(
+                    text = R.string.terminal_run,
+                    filled = true,
+                    textModifier = Modifier.padding(horizontal = 14.dp),
+                    onClick = { uiEvents(EditorEvents.Run) }
+                )
+                ActionButton(
+                    text = R.string.editor_save,
+                    textModifier = Modifier.padding(horizontal = 14.dp),
+                    onClick = { uiEvents(EditorEvents.Save) }
+                )
+                if (editorManager.isLocal) ActionButton(
+                    text = R.string.editor_new,
+                    textModifier = Modifier.padding(horizontal = 14.dp),
+                    onClick = { uiEvents(EditorEvents.New) }
+                )
+            }
+            // keeps the two groups apart once the row overflows and SpaceBetween
+            // has no free space left to distribute
+            Spacer(Modifier.width(16.dp))
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                SegmentPair(
+                    cellWidth = 28.dp, cellHeight = 24.dp,
+                    onStart = { uiEvents(EditorEvents.Undo) },
+                    onEnd = { uiEvents(EditorEvents.Redo) },
+                    startEnabled = canUndo,
+                    endEnabled = canRedo,
+                    start = { SegmentIcon(R.drawable.undo, MaterialTheme.colorScheme.onSurface) },
+                    end = { SegmentIcon(R.drawable.redo, MaterialTheme.colorScheme.onSurface) }
+                )
+                // font size
+                SegmentPair(
+                    cellWidth = 28.dp, cellHeight = 24.dp,
+                    onStart = { uiEvents(EditorEvents.ZoomOut) },
+                    onEnd = { uiEvents(EditorEvents.ZoomIn) },
+                    start = { SegmentLabel("A−", MaterialTheme.colorScheme.onSurface) },
+                    end = { SegmentLabel("A+", MaterialTheme.colorScheme.onSurface) }
+                )
+                BarToggle(
+                    icon = R.drawable.lines,
+                    selected = showLines,
+                    onClick = { uiEvents(EditorEvents.Lines) }
+                )
+            }
         }
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            SegmentPair(
-                cellWidth = 28.dp, cellHeight = 24.dp,
-                onStart = { uiEvents(EditorEvents.Undo) },
-                onEnd = { uiEvents(EditorEvents.Redo) },
-                startEnabled = canUndo,
-                endEnabled = canRedo,
-                start = { SegmentIcon(R.drawable.undo, MaterialTheme.colorScheme.onSurface) },
-                end = { SegmentIcon(R.drawable.redo, MaterialTheme.colorScheme.onSurface) }
-            )
-            // font size
-            SegmentPair(
-                cellWidth = 28.dp, cellHeight = 24.dp,
-                onStart = { uiEvents(EditorEvents.ZoomOut) },
-                onEnd = { uiEvents(EditorEvents.ZoomIn) },
-                start = { SegmentLabel("A−", MaterialTheme.colorScheme.onSurface) },
-                end = { SegmentLabel("A+", MaterialTheme.colorScheme.onSurface) }
-            )
-            BarToggle(
-                icon = R.drawable.lines,
-                selected = showLines,
-                onClick = { uiEvents(EditorEvents.Lines) }
-            )
         }
     }
-}
 
 @Composable
 private fun ScriptTitle(
@@ -250,6 +265,7 @@ private fun ScriptTitle(
             fontFamily = fontConsolas,
             fontSize = 12.5.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontWeight = FontWeight.SemiBold,
             maxLines = 1
         )
         if (!name.isNullOrEmpty()) {
@@ -257,7 +273,7 @@ private fun ScriptTitle(
                 text = name,
                 fontFamily = fontConsolas,
                 fontSize = 12.5.sp,
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = FontWeight.Normal,
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.MiddleEllipsis,

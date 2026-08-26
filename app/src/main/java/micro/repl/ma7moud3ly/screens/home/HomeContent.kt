@@ -37,6 +37,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -45,21 +46,24 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.ma7moud3ly.nemo.model.EditorTheme
 import micro.repl.ma7moud3ly.BuildConfig
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.model.ConnectionStatus
 import micro.repl.ma7moud3ly.ui.components.MyScreen
 import micro.repl.ma7moud3ly.ui.components.ProgressView
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
+import micro.repl.ma7moud3ly.ui.theme.AppThemes
+import micro.repl.ma7moud3ly.ui.theme.LocalThemeController
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
 
 @Preview
 @Composable
 private fun HomeConnectedPreview() {
-    AppTheme(darkTheme = true) {
+    AppTheme(theme = AppThemes.MICRO_REPL_DARK) {
         HomeScreenContent(
             connectionStatus = { TestHome.connected },
-            isDark = true,
+            theme = AppThemes.MICRO_REPL_DARK,
             uiEvents = {}
         )
     }
@@ -68,10 +72,10 @@ private fun HomeConnectedPreview() {
 @Preview
 @Composable
 private fun HomeConnectedPreviewLight() {
-    AppTheme(darkTheme = false) {
+    AppTheme(theme = AppThemes.MICRO_REPL_LIGHT) {
         HomeScreenContent(
             connectionStatus = { TestHome.connected },
-            isDark = false,
+            theme = AppThemes.MICRO_REPL_LIGHT,
             uiEvents = {}
         )
     }
@@ -80,10 +84,10 @@ private fun HomeConnectedPreviewLight() {
 @Preview
 @Composable
 private fun HomeDisconnectedPreview() {
-    AppTheme(darkTheme = true) {
+    AppTheme(theme = AppThemes.MICRO_REPL_DARK) {
         HomeScreenContent(
             connectionStatus = { TestHome.disconnected },
-            isDark = true,
+            theme = AppThemes.MICRO_REPL_DARK,
             uiEvents = {}
         )
     }
@@ -92,10 +96,10 @@ private fun HomeDisconnectedPreview() {
 @Preview
 @Composable
 private fun HomeDisconnectedPreviewLight() {
-    AppTheme(darkTheme = false) {
+    AppTheme(theme = AppThemes.MICRO_REPL_LIGHT) {
         HomeScreenContent(
             connectionStatus = { TestHome.disconnected },
-            isDark = false,
+            theme = AppThemes.MICRO_REPL_LIGHT,
             uiEvents = {}
         )
     }
@@ -105,8 +109,8 @@ private fun HomeDisconnectedPreviewLight() {
 @Composable
 internal fun HomeScreenContent(
     connectionStatus: () -> ConnectionStatus,
-    isDark: Boolean,
     isPortrait: Boolean = true,
+    theme: EditorTheme = LocalThemeController.current.theme,
     uiEvents: (HomeEvents) -> Unit
 ) {
     MyScreen(
@@ -114,8 +118,8 @@ internal fun HomeScreenContent(
             Column {
                 HomeAppBar(connectionStatus)
                 SectionControl(
-                    isDark = isDark,
                     isPortrait = isPortrait,
+                    theme = theme,
                     uiEvents = uiEvents
                 )
             }
@@ -220,11 +224,15 @@ private fun RuntimeLogo(@DrawableRes src: Int, isActive: Boolean) {
     }
 }
 
+/**
+ * [theme] defaults to the app-wide controller, so callers don't have to thread it
+ * down; previews can still pass one explicitly.
+ */
 @Composable
 private fun SectionControl(
-    isDark: Boolean,
     isPortrait: Boolean,
-    uiEvents: (HomeEvents) -> Unit
+    uiEvents: (HomeEvents) -> Unit,
+    theme: EditorTheme = LocalThemeController.current.theme
 ) {
     Column {
         Row(
@@ -234,12 +242,10 @@ private fun SectionControl(
             horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // theme: dark / light
-            TwoWaySegment(
-                startSelected = isDark,
-                onToggle = { uiEvents(HomeEvents.ToggleTheme) },
-                start = { selected -> SegmentIcon(R.drawable.dark_mode, selected) },
-                end = { selected -> SegmentIcon(R.drawable.light_mode, selected) }
+            // theme picker
+            ThemeButton(
+                theme = theme,
+                onClick = { uiEvents(HomeEvents.ShowThemeDialog) }
             )
             // orientation: portrait / landscape
             TwoWaySegment(
@@ -252,6 +258,57 @@ private fun SectionControl(
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
     }
 }
+
+/** Shows the active theme's colours and name; opens the theme picker. */
+@Composable
+private fun ThemeButton(
+    theme: EditorTheme,
+    onClick: () -> Unit
+) {
+    Surface(
+        shape = RoundedCornerShape(9.dp),
+        color = Color.Transparent,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        onClick = onClick
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(28.dp)
+                    .padding(vertical = 6.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                    ThemeDot(Color(theme.syntax.keyword))
+                    ThemeDot(Color(theme.syntax.string))
+                    ThemeDot(Color(theme.syntax.function))
+                }
+            }
+            Text(
+                text = theme.name,
+                fontFamily = fontConsolas,
+                fontSize = 10.5.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1
+            )
+        }
+    }
+}
+
+@Composable
+private fun ThemeDot(color: Color) {
+    Box(
+        modifier = Modifier
+            .size(6.dp)
+            .clip(CircleShape)
+            .background(color)
+    )
+}
+
 
 @Composable
 private fun TwoWaySegment(

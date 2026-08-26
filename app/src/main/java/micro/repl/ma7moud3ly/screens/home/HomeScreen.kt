@@ -23,7 +23,6 @@ import micro.repl.ma7moud3ly.managers.TerminalManager
 import micro.repl.ma7moud3ly.managers.isPortrait
 import micro.repl.ma7moud3ly.managers.toggleOrientationMode
 import micro.repl.ma7moud3ly.model.MicroDevice
-import micro.repl.ma7moud3ly.ui.theme.LocalThemeController
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 
 private const val TAG = "HomeScreen"
@@ -37,14 +36,13 @@ fun HomeScreen(
     viewModel: MainViewModel,
     boardManager: BoardManager?,
     terminalManager: TerminalManager?,
+    openThemePicker: () -> Unit,
     openTerminal: () -> Unit,
     openEditor: () -> Unit,
     openScripts: () -> Unit,
     openExplorer: () -> Unit
 ) {
     val activity = LocalActivity.current as Activity
-    val themeController = LocalThemeController.current
-    val isDark = themeController.isDark
     val isPortrait = remember { activity.isPortrait() }
 
     fun onApproveDevice(microDevice: MicroDevice) {
@@ -101,32 +99,30 @@ fun HomeScreen(
     }
 
     val status = viewModel.status.collectAsState()
-    AppTheme(darkTheme = isDark) {
-        HomeScreenContent(
-            isDark = isDark,
-            isPortrait = isPortrait,
-            connectionStatus = { status.value },
-            uiEvents = {
-                Log.i(TAG, "event - $it")
-                when (it) {
-                    is HomeEvents.OpenTerminal -> openTerminal()
-                    is HomeEvents.OpenExplorer -> openExplorer()
-                    is HomeEvents.OpenEditor -> openEditor()
-                    is HomeEvents.OpenScripts -> openScripts()
-                    is HomeEvents.Reset -> onReset()
-                    is HomeEvents.SoftReset -> onSoftReset()
-                    is HomeEvents.Terminate -> onTerminate()
-                    is HomeEvents.Connect -> boardManager?.detectUsbDevices()
-                    is HomeEvents.Disconnect -> boardManager?.onDisconnectDevice()
-                    is HomeEvents.RestartApp -> activity.recreate()
-                    is HomeEvents.ToggleTheme -> themeController.toggle()
-                    is HomeEvents.ToggleOrientation -> activity.toggleOrientationMode()
-                    is HomeEvents.Help -> onHelp()
-                    is HomeEvents.DenyDevice -> boardManager?.onDenyDevice()
-                    is HomeEvents.ApproveDevice -> onApproveDevice(it.microDevice)
-                    is HomeEvents.ForgetDevice -> onForgetDevice(it.microDevice)
-                }
+
+    HomeScreenContent(
+        isPortrait = isPortrait,
+        connectionStatus = { status.value },
+        uiEvents = {
+            Log.i(TAG, "event - $it")
+            when (it) {
+                is HomeEvents.OpenTerminal -> openTerminal()
+                is HomeEvents.OpenExplorer -> openExplorer()
+                is HomeEvents.OpenEditor -> openEditor()
+                is HomeEvents.OpenScripts -> openScripts()
+                is HomeEvents.Reset -> onReset()
+                is HomeEvents.SoftReset -> onSoftReset()
+                is HomeEvents.Terminate -> onTerminate()
+                is HomeEvents.Connect -> boardManager?.detectUsbDevices()
+                is HomeEvents.Disconnect -> boardManager?.onDisconnectDevice()
+                is HomeEvents.RestartApp -> activity.recreate()
+                is HomeEvents.ShowThemeDialog -> openThemePicker()
+                is HomeEvents.ToggleOrientation -> activity.toggleOrientationMode()
+                is HomeEvents.Help -> onHelp()
+                is HomeEvents.DenyDevice -> boardManager?.onDenyDevice()
+                is HomeEvents.ApproveDevice -> onApproveDevice(it.microDevice)
+                is HomeEvents.ForgetDevice -> onForgetDevice(it.microDevice)
             }
-        )
-    }
+        }
+    )
 }
