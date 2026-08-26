@@ -42,6 +42,7 @@ import micro.repl.ma7moud3ly.ui.components.BackButton
 import micro.repl.ma7moud3ly.ui.components.BarToggle
 import micro.repl.ma7moud3ly.ui.components.MyScreen
 import micro.repl.ma7moud3ly.ui.components.SegmentIcon
+import micro.repl.ma7moud3ly.ui.components.SegmentLabel
 import micro.repl.ma7moud3ly.ui.components.SegmentPair
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
@@ -184,6 +185,14 @@ private fun EditorAppBar(
                 endEnabled = canRedo,
                 start = { SegmentIcon(R.drawable.undo, MaterialTheme.colorScheme.onSurface) },
                 end = { SegmentIcon(R.drawable.redo, MaterialTheme.colorScheme.onSurface) }
+            )
+            // font size
+            SegmentPair(
+                cellWidth = 28.dp, cellHeight = 24.dp,
+                onStart = { uiEvents(EditorEvents.ZoomOut) },
+                onEnd = { uiEvents(EditorEvents.ZoomIn) },
+                start = { SegmentLabel("A−", MaterialTheme.colorScheme.onSurface) },
+                end = { SegmentLabel("A+", MaterialTheme.colorScheme.onSurface) }
             )
             BarToggle(
                 icon = R.drawable.lines,

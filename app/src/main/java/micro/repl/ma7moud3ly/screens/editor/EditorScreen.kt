@@ -114,6 +114,8 @@ fun EditorScreen(
                 is EditorEvents.Clear -> editorManager.clear()
                 is EditorEvents.Redo -> editorManager.redo()
                 is EditorEvents.Undo -> editorManager.undo()
+                is EditorEvents.ZoomIn -> editorManager.zoomIn()
+                is EditorEvents.ZoomOut -> editorManager.zoomOut()
             }
         }
     )
