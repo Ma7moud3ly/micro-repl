@@ -15,8 +15,8 @@ data class MicroScript(
     val hasContent: Boolean get() = exists && content.isEmpty().not()
     val file: File get() = File(path)
     val scriptDir: String get() = file.parent.orEmpty()
-    val nameWithoutExt: String get() = file.name.replace(".py", "")
-    val name: String get() = file.name
+    val nameWithoutExt: String get() = name.replace(".py", "")
+    val name: String get() = path.substringAfterLast('/')
     val isPython: Boolean get() = name.trim().endsWith(".py")
     val isLocal: Boolean get() = editorMode == EditorMode.LOCAL
     val asJson: String get() = Json.encodeToString(this)

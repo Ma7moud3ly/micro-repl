@@ -10,327 +10,176 @@ package micro.repl.ma7moud3ly.managers
 import android.app.Activity
 import android.content.Context
 import android.util.Log
-import android.widget.Toast
-import androidx.core.content.res.ResourcesCompat
-import io.github.rosemoe.sora.event.ContentChangeEvent
-import io.github.rosemoe.sora.event.SelectionChangeEvent
-import io.github.rosemoe.sora.event.SideIconClickEvent
-import io.github.rosemoe.sora.langs.textmate.TextMateColorScheme
-import io.github.rosemoe.sora.langs.textmate.TextMateLanguage
-import io.github.rosemoe.sora.langs.textmate.registry.ThemeRegistry
-import io.github.rosemoe.sora.langs.textmate.registry.model.ThemeModel
-import io.github.rosemoe.sora.widget.CodeEditor
-import io.github.rosemoe.sora.widget.style.builtin.ScaleCursorAnimator
-import io.github.rosemoe.sora.widget.subscribeEvent
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.core.content.edit
+import io.ma7moud3ly.nemo.model.CodeState
+import io.ma7moud3ly.nemo.model.EditorSettings
+import io.ma7moud3ly.nemo.model.EditorThemes
+import io.ma7moud3ly.nemo.model.Language
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import micro.repl.ma7moud3ly.R
-import micro.repl.ma7moud3ly.model.EditorState
 import micro.repl.ma7moud3ly.model.MicroScript
-import org.eclipse.tm4e.core.registry.IGrammarSource
-import org.eclipse.tm4e.core.registry.IThemeSource
 import java.io.File
 import java.io.IOException
-import java.io.InputStreamReader
-import androidx.core.content.edit
 
 /**
- * Manages the code editor and its interactions with scripts and files.
+ * Single state facade for the editor screen.
  *
- * This class handles the initialization, configuration, and operations of the
- * code editor. It interacts with the `ScriptsManager` and `FilesManager`
- * to manage scripts and files, respectively. It also provides functionality
- * for running scripts, handling editor actions, and managing editor settings.
+ * The manager owns the Nemo [CodeState] (text + undo/redo history) and
+ * [EditorSettings] (theme, line numbers, font size) and exposes the small bit of
+ * script identity the UI needs (title, path, script flags, run availability).
+ * The UI reads everything from this one object — there is no separate mirror
+ * state and no reactive syncing.
  *
- * @param coroutineScope The coroutine scope used for asynchronous operations.
- * @param context The application context.
- * @param editor The `CodeEditor` instance.
- * @param editorState The `EditorState` object that holds the editor's state.
- * @param scriptsManager The `ScriptsManager` used to manage local scripts.
- * @param filesManager The `FilesManager` used to manage files on the MicroPython board.
- * @param onRun A callback function that is invoked when a script is run.
- * @param afterEdit A callback function that is invoked after an edit operation is performed.
+ * Use [EditorManager.create] to build an instance for the real screen (it reads
+ * persisted preferences and restores the recent script). The primary constructor
+ * is intentionally free of `Activity`/filesystem work so it stays usable in
+ * `@Preview`.
  */
 class EditorManager(
-    private val coroutineScope: CoroutineScope,
     private val context: Context,
-    private val editor: CodeEditor,
-    private val editorState: EditorState,
-    private val scriptsManager: ScriptsManager = ScriptsManager(context),
+    private val coroutineScope: CoroutineScope,
+    val codeState: CodeState,
+    val settings: EditorSettings,
+    initialScript: MicroScript,
     private val filesManager: FilesManager? = null,
     private val onRun: ((MicroScript) -> Unit)? = null,
     private val afterEdit: (() -> Unit)? = null
 ) {
-    private val activity: Activity = context as Activity
+    // Built lazily so the constructor stays preview-safe.
+    private val scriptsManager by lazy { ScriptsManager(context) }
+
+    private var script: MicroScript = initialScript
+
+    // The last persisted content; the diff against it is our "dirty" signal.
+    private var savedContent: String = initialScript.content
+
     var actionAfterSave: EditorAction? = null
-    private var anyChanges: Boolean = false
 
-    init {
-        getEditorSettings()
-        initCodeEditor(
-            onTextChanges = {
-                anyChanges = true
-                editorState.content = editor.text.toString()
-                editorState.canUndo.value = editor.canUndo()
-                editorState.canRedo.value = editor.canRedo()
-            }
+    /** The editor title (file name / path), shown in the header. */
+    val title = mutableStateOf(initialScript.path)
+
+    /** Whether the run button is available. */
+    val canRun = mutableStateOf(false)
+
+    /**
+     * Script identity, derived from the current [script].
+     */
+    val isLocal: Boolean get() = script.isLocal
+    val microPython: Boolean get() = script.microPython
+    val isPython: Boolean get() = script.isPython
+    val path: String get() = script.path
+    val exists: Boolean get() = script.exists || script.path.isNotEmpty()
+
+    /**
+     * Undo/redo availability, derived from [codeState]. Reading [codeState.code]
+     * (a snapshot state) inside the derivation makes these recompose on every
+     * edit/undo/redo.
+     */
+    val canUndo: Boolean by derivedStateOf {
+        codeState.code
+        codeState.canUndo()
+    }
+    val canRedo: Boolean by derivedStateOf {
+        codeState.code
+        codeState.canRedo()
+    }
+
+    /** Line-numbers visibility, owned by [settings]. */
+    val showLines: Boolean get() = settings.showLineNumbersState.value
+
+    private val asMicroScript: MicroScript
+        get() = MicroScript(
+            content = codeState.code,
+            path = script.path,
+            editorMode = script.editorMode
         )
-        //init theme
-        coroutineScope.launch {
-            withContext(Dispatchers.Default) {
-                initEditorLanguage()
-            }
-        }
-    }
-
 
     /**
-     * Initializes the code editor with settings and event listeners.
-     *
-     * This method sets up the code editor with the appropriate settings, such as
-     * the typeface, line spacing, cursor animator, and non-printable painting
-     * flags. It also subscribes to various editor events to update the editor
-     * state and perform actions based on user interactions.
-     *
-     * @param onTextChanges A callback function that is invoked when the text in the
-     *                       editor is changed. This function is used to update the
-     *                       editor state and to mark the editor as having unsaved changes.
-     */
-    private fun initCodeEditor(onTextChanges: () -> Unit) {
-
-        editor.setText(editorState.content)
-        editor.setScaleTextSizes(10f, 100f)
-        editorState.showLines.value = editor.isLineNumberEnabled
-
-        editor.apply {
-            typefaceText = ResourcesCompat.getFont(context, R.font.jetbrains_mono_regular)
-            setLineSpacing(2f, 1.1f)
-            cursorAnimator = ScaleCursorAnimator(this)
-            nonPrintablePaintingFlags =
-                CodeEditor.FLAG_DRAW_WHITESPACE_LEADING or
-                        CodeEditor.FLAG_DRAW_LINE_SEPARATOR or
-                        CodeEditor.FLAG_DRAW_WHITESPACE_IN_SELECTION
-
-            // Update display dynamically
-            subscribeEvent<SelectionChangeEvent> { _, _ ->/* updatePositionText() */ }
-            subscribeEvent<ContentChangeEvent> { _, _ ->
-                onTextChanges()
-            }
-            subscribeEvent<SideIconClickEvent> { _, _ ->
-                Toast.makeText(context, "Side icon clicked", Toast.LENGTH_SHORT).show()
-            }
-
-            /*subscribeEvent<KeyBindingEvent> { event, _ ->
-                if (event.eventType != EditorKeyEvent.Type.DOWN) {
-                    return@subscribeEvent
-                }
-                Toast.makeText(
-                    context,
-                    "Keybinding event: " + generateKeybindingString(event),
-                    Toast.LENGTH_LONG
-                ).show()
-            }*/
-        }
-    }
-
-    /**
-     * Initializes the programming language and theme for the code editor.
-     *
-     * This method loads the appropriate language configuration and theme based
-     * on the editor state. It supports Python syntax highlighting and themes
-     * such as "darcula.json" and "QuietLight.tmTheme".
-     */
-    private fun initEditorLanguage() {
-        Log.i(TAG, "setEditorLanguage")
-        Log.v(TAG, "state - ${editorState.title.value} | ${editorState.isPython}")
-        try {
-            val isDark = activity.isDark()
-            val theme = if (isDark) "darcula.json" else "QuietLight.tmTheme"
-
-            //load a specific theme file from assets/themes
-            val themeSource = IThemeSource.fromInputStream(
-                context.assets.open("themes/$theme"),
-                theme,
-                null
-            )
-            val themeRegistry = ThemeRegistry.getInstance()
-            themeRegistry.loadTheme(ThemeModel(themeSource, theme))
-
-
-            val colorScheme = TextMateColorScheme.create(themeRegistry)
-            editor.colorScheme = colorScheme
-
-            // don't initialize python syntax for non python files
-            if (editorState.isPython.not()) return
-
-            //load python language configuration from assets/python
-            val grammarSource = IGrammarSource.fromInputStream(
-                //https://github.com/microsoft/vscode/blob/main/extensions/python/syntaxes/MagicPython.tmLanguage.json
-                context.assets.open("python/python.tmLanguage.json"),
-                "Python.tmLanguage.json",
-                null
-            )
-            //https://github.com/microsoft/vscode/blob/main/extensions/python/language-configuration.json
-            val langConfiguration = InputStreamReader(
-                context.assets.open("python/language-configuration.json")
-            )
-            val language = TextMateLanguage.create(grammarSource, langConfiguration, themeSource)
-            editor.setEditorLanguage(language)
-
-        } catch (e: Exception) {
-            Log.e(TAG, "Exception - ${e.message}")
-            e.printStackTrace()
-        }
-    }
-
-    /*private fun generateKeybindingString(event: KeyBindingEvent): String {
-        val sb = StringBuilder()
-        if (event.isCtrlPressed) {
-            sb.append("Ctrl + ")
-        }
-
-        if (event.isAltPressed) {
-            sb.append("Alt + ")
-        }
-
-        if (event.isShiftPressed) {
-            sb.append("Shift + ")
-        }
-
-        sb.append(KeyEvent.keyCodeToString(event.keyCode))
-        return sb.toString()
-    }*/
-
-    /**
-     * Script Edit & Save
+     * Editor actions
      */
 
-    /**
-     * Clears the content of the editor.
-     */
     fun clear() {
-        editor.setText("")
+        codeState.updateText("")
     }
 
-    /**
-     * Performs an undo operation in the editor.
-     */
     fun undo() {
-        Log.v(TAG, "undo")
-        editor.undo()
+        codeState.undo()
     }
 
-    /**
-     * Performs a redo operation in the editor.
-     */
     fun redo() {
-        Log.v(TAG, "redo")
-        editor.redo()
+        codeState.redo()
     }
 
-    /**
-     * Toggles the dark mode of the editor.
-     */
-    fun toggleDarkMode() {
-        activity.toggleThemeMode()
-    }
-
-    /**
-     * Toggles the display of line numbers in the editor.
-     */
     fun toggleLines() {
-        val showLines = !editor.isLineNumberEnabled
-        editor.isLineNumberEnabled = showLines
-        editorState.showLines.value = showLines
+        settings.toggleLinesNumber()
     }
 
-    /**
-     * Releases the resources used by the editor.
-     */
+    /** Persists the editor settings. Called when the editor is disposed. */
     fun release() {
-        editor.release()
+        persistSettings()
     }
 
     /**
-     * Executes the action specified by `actionAfterSave`.
-     *
-     * This method is typically called after a save operation is completed.
-     * It checks the value of `actionAfterSave` and performs the corresponding
-     * action, such as creating a new script, closing the current script, or
-     * running the current script.
+     * Executes the pending [actionAfterSave] (typically after a save completes).
      */
     fun actionAfterSave() {
         Log.v(TAG, "actionAfterSave")
-        setEditorSettings()
+        persistSettings()
         val action = this.actionAfterSave
         actionAfterSave = null
         when (action) {
             EditorAction.NewScript -> {
-                editor.setText("")
-                editorState.reset(context.getString(R.string.editor_untitled))
+                codeState.updateText("")
+                codeState.clearHistory()
+                script = MicroScript(editorMode = script.editorMode)
+                savedContent = ""
+                title.value = context.getString(R.string.editor_untitled)
             }
 
-            EditorAction.CLoseScript -> {
-                afterEdit?.invoke()
-            }
-
-            EditorAction.RunScript -> {
-                onRun?.invoke(editorState.asMicroScript)
-            }
-
+            EditorAction.CLoseScript -> afterEdit?.invoke()
+            EditorAction.RunScript -> onRun?.invoke(asMicroScript)
             else -> {}
         }
     }
 
-    /**
-     * Checks if there are any unsaved changes in the editor and the script exists.
-     *
-     * @return `true` if there are unsaved changes and the script exists, `false` otherwise.
-     */
+    /** True if the script exists and has unsaved changes. */
     fun saveExisting(): Boolean {
-        val exist = editorState.exists && anyChanges
+        val exist = exists && codeState.code != savedContent
         Log.v(TAG, "saveExisting  - $exist")
         return exist
     }
 
-    /**
-     * Checks if the current script is new and has content.
-     *
-     * @return `true` if the script is new and has content, `false` otherwise.
-     */
+    /** True if the script is new (no path) and has content. */
     fun saveNew(): Boolean {
-        val new = editorState.exists.not() && editorState.content.isNotEmpty()
+        val new = exists.not() && codeState.code.isNotEmpty()
         Log.v(TAG, "saveNew - $new")
         return new
     }
 
     /**
-     * Saves the current script.
-     *
-     * If the script is local, it is saved to the local file system using the
-     * `ScriptsManager`. If the script is on the MicroPython board, it is saved
-     * using the `FilesManager`.
-     *
-     * @param onDone A callback function that is invoked when the save operation is complete.
+     * Saves the current script locally or to the MicroPython board.
      */
     fun save(onDone: () -> Unit) {
-        if (editorState.isLocal) {
-            val file = File(editorState.path)
-            val saved = scriptsManager.write(file, editorState.content)
+        if (isLocal) {
+            val file = File(script.path)
+            val saved = scriptsManager.write(file, codeState.code)
             if (saved) {
-                anyChanges = false
-                val name = file.name
-                editorState.title.value = name
+                savedContent = codeState.code
+                title.value = file.name
             }
             onDone()
         } else {
             filesManager?.write(
-                path = editorState.path,
-                content = editorState.content,
+                path = script.path,
+                content = codeState.code,
                 onSave = {
-                    anyChanges = false
+                    savedContent = codeState.code
                     coroutineScope.launch {
                         withContext(Dispatchers.Main) {
                             onDone()
@@ -342,82 +191,98 @@ class EditorManager(
     }
 
     /**
-     * Saves the current script as a new file.
-     *
-     * This method prompts the user to enter a new file name and then saves the
-     * current script to that file using the `ScriptsManager`.
-     *
-     * @param name The new file name for the script.
-     * @param onDone A callback function that is invoked when the save operation is complete.
+     * Saves the current script under a new file name.
      */
     fun saveFileAs(name: String, onDone: () -> Unit) {
         scriptsManager.scriptDirectory()?.let {
-            editorState.path = it.path + "/" + name
-            editorState.title.value = name
-            Log.v(TAG, "saveFileAs - ${editorState.path}")
+            script = script.copy(path = it.path + "/" + name)
+            title.value = name
+            Log.v(TAG, "saveFileAs - ${script.path}")
             save(onDone)
         }
     }
 
-    /**
-     * SharedPreferences
-     */
-
-    /**
-     * Saves the editor settings to shared preferences.
-     */
-    private fun setEditorSettings() {
+    private fun persistSettings() {
+        val activity = context as? Activity ?: return
         activity.getPreferences(Context.MODE_PRIVATE).edit {
-            putBoolean("show_lines", editor.isLineNumberEnabled)
-            putFloat("text_size", editor.textSizePx)
-            if (editorState.isLocal && editorState.exists) {
-                Log.v(TAG, "setEditorSettings - hasScript")
-                putString("script", editorState.path)
-            }
-        }
-    }
-
-    /**
-     * Retrieves the editor settings from shared preferences.
-     */
-    private fun getEditorSettings() {
-        val sharedPref = activity.getPreferences(Context.MODE_PRIVATE)
-        editor.isLineNumberEnabled = sharedPref.getBoolean("show_lines", true)
-        editor.textSizePx = sharedPref.getFloat("text_size", 20f)
-        if (editorState.isBlank.not()) {
-            val recentScript = sharedPref.getString("script", "").orEmpty()
-            if (recentScript.isNotEmpty()) readRecentScript(recentScript)
-        }
-    }
-
-    /**
-     * Reads the recent script from the specified path.
-     *
-     * @param path The path to the recent script.
-     */
-    private fun readRecentScript(path: String) {
-        // read the recent local script
-        // when there is no new script provided to the editor
-        if (editorState.isLocal && editorState.exists.not()) {
-            Log.v(TAG, "readRecentScript path: $path")
-            val file = File(path)
-            if (file.exists()) {
-                try {
-                    editorState.apply {
-                        this.content = scriptsManager.read(file)
-                        this.path = path
-                        this.title.value = path
-                        this.isPython = file.name.endsWith(".py")
-                    }
-                } catch (e: IOException) {
-                    e.printStackTrace()
-                }
+            putBoolean(KEY_SHOW_LINES, settings.showLineNumbersState.value)
+            putInt(KEY_FONT_SIZE, settings.fontSizeState.value)
+            if (isLocal && exists) {
+                Log.v(TAG, "persistSettings - hasScript")
+                putString(KEY_SCRIPT, script.path)
             }
         }
     }
 
     companion object {
         private const val TAG = "EditorManager"
+        private const val KEY_SHOW_LINES = "show_lines"
+        private const val KEY_FONT_SIZE = "font_size"
+        private const val KEY_SCRIPT = "script"
+
+        /**
+         * Builds an [EditorManager] for the real screen: reads persisted settings,
+         * restores the recent local script when opening without one, and creates
+         * the Nemo [CodeState]/[EditorSettings].
+         */
+        fun create(
+            context: Context,
+            coroutineScope: CoroutineScope,
+            script: MicroScript,
+            blank: Boolean,
+            filesManager: FilesManager? = null,
+            onRun: ((MicroScript) -> Unit)? = null,
+            afterEdit: (() -> Unit)? = null
+        ): EditorManager {
+            val activity = context as Activity
+            val sharedPref = activity.getPreferences(Context.MODE_PRIVATE)
+            val resolved = restoreRecentScript(context, sharedPref, script, blank)
+
+            val settings = EditorSettings(
+                theme = if (activity.isDark()) EditorThemes.NEMO_DARK
+                else EditorThemes.NEMO_LIGHT,
+                // EditorSettings requires fontSize in 8..32.
+                fontSize = sharedPref.getInt(KEY_FONT_SIZE, 14).coerceIn(8, 32),
+                showLineNumbers = sharedPref.getBoolean(KEY_SHOW_LINES, true)
+            )
+            val codeState = CodeState(
+                initialCode = resolved.content,
+                language = Language.MICRO_PYTHON,
+            )
+            return EditorManager(
+                context = context,
+                coroutineScope = coroutineScope,
+                codeState = codeState,
+                settings = settings,
+                initialScript = resolved,
+                filesManager = filesManager,
+                onRun = onRun,
+                afterEdit = afterEdit
+            )
+        }
+
+        /**
+         * Returns the recent local script when the editor is opened without a
+         * script; otherwise returns [script] unchanged.
+         */
+        private fun restoreRecentScript(
+            context: Context,
+            sharedPref: android.content.SharedPreferences,
+            script: MicroScript,
+            blank: Boolean
+        ): MicroScript {
+            if (blank || script.isLocal.not() || script.exists) return script
+            val recent = sharedPref.getString(KEY_SCRIPT, "").orEmpty()
+            if (recent.isEmpty()) return script
+            val file = File(recent)
+            if (file.exists().not()) return script
+            return try {
+                script.copy(content = ScriptsManager(context).read(file), path = recent)
+            } catch (e: IOException) {
+                e.printStackTrace()
+                script
+            }
+        }
     }
 }
 
@@ -427,4 +292,3 @@ sealed interface EditorAction {
     data object NewScript : EditorAction
     data object CLoseScript : EditorAction
 }
-

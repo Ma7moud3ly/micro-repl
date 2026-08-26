@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -80,6 +81,7 @@ fun Footer(
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 8.dp)
+            .navigationBarsPadding()
     ) {
         SectionConfig(
             modifier = Modifier
@@ -101,7 +103,8 @@ fun Footer(
     } else Row(
         modifier = Modifier
             .fillMaxWidth()
-            .horizontalScroll(rememberScrollState()),
+            .horizontalScroll(rememberScrollState())
+            .navigationBarsPadding(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(
             8.dp,

@@ -26,7 +26,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -59,6 +59,7 @@ import micro.repl.ma7moud3ly.ui.components.MyScreen
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.dividerColor
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
+import kotlin.time.Duration.Companion.milliseconds
 
 
 @Preview
@@ -133,7 +134,7 @@ private fun TerminalOutput(
     val scrollState = rememberScrollState()
     LaunchedEffect(output()) {
         scrollState.animateScrollTo(scrollState.maxValue)
-        delay(2000)
+        delay(2000.milliseconds)
     }
     Column(
         modifier = Modifier
@@ -241,50 +242,13 @@ private fun Header(
     uiEvents: (TerminalEvents) -> Unit
 ) {
     Column {
-        MediumTopAppBar(
-            expandedHeight = 75.dp,
-            collapsedHeight = 40.dp,
-            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                titleContentColor = MaterialTheme.colorScheme.primary,
-                containerColor = Color.Transparent
+        TopAppBar(
+            expandedHeight = 40.dp,
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = Color.Transparent,
+                titleContentColor = MaterialTheme.colorScheme.primary
             ),
-            title = {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(
-                        8.dp,
-                        alignment = Alignment.Start
-                    ),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    EditorButton(
-                        text = R.string.terminal_run,
-                        background = MaterialTheme.colorScheme.primary,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        onClick = { uiEvents(TerminalEvents.Run) }
-                    )
-                    EditorButton(
-                        text = R.string.terminal_reset,
-                        background = MaterialTheme.colorScheme.primary,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        onClick = { uiEvents(TerminalEvents.SoftReset) }
-                    )
-                    EditorButton(
-                        text = R.string.terminal_terminate,
-                        background = MaterialTheme.colorScheme.primary,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        onClick = { uiEvents(TerminalEvents.Terminate) }
-                    )
-                    EditorButton(
-                        text = R.string.terminal_clear,
-                        background = MaterialTheme.colorScheme.primary,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        onClick = { uiEvents(TerminalEvents.Clear) }
-                    )
-                }
-            },
+            title = {},
             navigationIcon = {
                 EditorIcon(
                     icon = R.drawable.arrow_left,
@@ -325,6 +289,41 @@ private fun Header(
                 }
             }
         )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(
+                8.dp,
+                alignment = Alignment.Start
+            ),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            EditorButton(
+                text = R.string.terminal_run,
+                background = MaterialTheme.colorScheme.primary,
+                color = MaterialTheme.colorScheme.onPrimary,
+                onClick = { uiEvents(TerminalEvents.Run) }
+            )
+            EditorButton(
+                text = R.string.terminal_reset,
+                background = MaterialTheme.colorScheme.primary,
+                color = MaterialTheme.colorScheme.onPrimary,
+                onClick = { uiEvents(TerminalEvents.SoftReset) }
+            )
+            EditorButton(
+                text = R.string.terminal_terminate,
+                background = MaterialTheme.colorScheme.primary,
+                color = MaterialTheme.colorScheme.onPrimary,
+                onClick = { uiEvents(TerminalEvents.Terminate) }
+            )
+            EditorButton(
+                text = R.string.terminal_clear,
+                background = MaterialTheme.colorScheme.primary,
+                color = MaterialTheme.colorScheme.onPrimary,
+                onClick = { uiEvents(TerminalEvents.Clear) }
+            )
+        }
         HorizontalDivider()
         Title(microScript)
     }

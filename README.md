@@ -74,5 +74,5 @@ Or download the latest APK from the [Releases Section](https://github.com/Ma7mou
 - https://github.com/thonny/thonny
 - https://github.com/dhylands/rshell
 - https://github.com/mik3y/usb-serial-for-android
-- https://github.com/Rosemoe/sora-editor
+- https://github.com/Ma7moud3ly/nemo-editor
 - https://github.com/PsiCodes/KtxPy/tree/master
