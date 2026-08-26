@@ -95,6 +95,7 @@ fun ActionButton(
     textModifier: Modifier = Modifier,
     filled: Boolean = false,
     danger: Boolean = false,
+    height: Dp = 28.dp,
     onClick: () -> Unit
 ) {
     val error = LocalStatusColors.current.error
@@ -114,7 +115,7 @@ fun ActionButton(
         shape = RoundedCornerShape(10.dp),
         color = background,
         border = border,
-        modifier = modifier.height(34.dp)
+        modifier = modifier.height(height)
     ) {
         Box(contentAlignment = Alignment.Center) {
             Text(

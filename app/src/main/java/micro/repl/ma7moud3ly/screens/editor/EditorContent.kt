@@ -1,18 +1,14 @@
 package micro.repl.ma7moud3ly.screens.editor
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,7 +17,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -32,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import io.ma7moud3ly.nemo.NemoCodeEditor
 import io.ma7moud3ly.nemo.model.CodeState
 import io.ma7moud3ly.nemo.model.EditorSettings
+import io.ma7moud3ly.nemo.model.EditorThemes
 import io.ma7moud3ly.nemo.model.Language
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.managers.EditorManager
@@ -57,7 +53,7 @@ private fun EditorScreenPreviewLight() {
             context = context,
             coroutineScope = scope,
             codeState = CodeState("print('Hello World')", Language.PYTHON),
-            settings = EditorSettings(),
+            settings = EditorSettings(theme = EditorThemes.VS_CODE_LIGHT),
             initialScript = MicroScript(
                 path = "lib/path/path/path/path/path/main.py",
                 editorMode = EditorMode.REMOTE,
@@ -143,6 +139,39 @@ private fun EditorAppBar(
     uiEvents: (EditorEvents) -> Unit
 ) {
     val title by editorManager.title
+
+    // Title gets the full row — script paths can be long.
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        BackButton { uiEvents(EditorEvents.Back) }
+        val source = stringResource(
+            when {
+                editorManager.isLocal -> R.string.this_device
+                editorManager.microPython -> R.string.micro_python
+                else -> R.string.circuit_python
+            }
+        )
+        ScriptTitle(
+            source = source,
+            name = title.ifEmpty { stringResource(R.string.editor_untitled) },
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+
+/** Run (when runnable) · Save · New (local only), then the view controls. */
+@Composable
+private fun EditorActions(
+    editorManager: EditorManager,
+    uiEvents: (EditorEvents) -> Unit
+) {
+    val canRun by editorManager.canRun
     val canUndo = editorManager.canUndo
     val canRedo = editorManager.canRedo
     val showLines = editorManager.showLines
@@ -150,29 +179,31 @@ private fun EditorAppBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(
-            modifier = Modifier.weight(1f),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(7.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            BackButton { uiEvents(EditorEvents.Back) }
-            val source = stringResource(
-                when {
-                    editorManager.isLocal -> R.string.this_device
-                    editorManager.microPython -> R.string.micro_python
-                    else -> R.string.circuit_python
-                }
+            if (canRun && editorManager.isPython) ActionButton(
+                text = R.string.terminal_run,
+                filled = true,
+                textModifier = Modifier.padding(horizontal = 14.dp),
+                onClick = { uiEvents(EditorEvents.Run) }
             )
-            ScriptTitle(
-                source = source,
-                name = title.substringAfterLast('/').ifEmpty { "untitled" },
-                modifier = Modifier.weight(1f, fill = false)
+            ActionButton(
+                text = R.string.editor_save,
+                textModifier = Modifier.padding(horizontal = 14.dp),
+                onClick = { uiEvents(EditorEvents.Save) }
+            )
+            if (editorManager.isLocal) ActionButton(
+                text = R.string.editor_new,
+                textModifier = Modifier.padding(horizontal = 14.dp),
+                onClick = { uiEvents(EditorEvents.New) }
             )
         }
-        Spacer(Modifier.width(8.dp))
         Row(
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -203,69 +234,6 @@ private fun EditorAppBar(
     }
 }
 
-/** Run (when runnable) · Save · New (local only) · Clear. */
-@Composable
-private fun EditorActions(
-    editorManager: EditorManager,
-    uiEvents: (EditorEvents) -> Unit
-) {
-    val canRun by editorManager.canRun
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(7.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        if (canRun && editorManager.isPython) ActionButton(
-            text = R.string.terminal_run,
-            modifier = Modifier.weight(1f),
-            filled = true,
-            onClick = { uiEvents(EditorEvents.Run) }
-        )
-        ActionButton(
-            text = R.string.editor_save,
-            modifier = Modifier.weight(1f),
-            onClick = { uiEvents(EditorEvents.Save) }
-        )
-        if (editorManager.isLocal) ActionButton(
-            text = R.string.editor_new,
-            modifier = Modifier.weight(1f),
-            onClick = { uiEvents(EditorEvents.New) }
-        )
-        ActionButton(
-            text = R.string.terminal_clear,
-            modifier = Modifier.weight(1f),
-            onClick = { uiEvents(EditorEvents.Clear) }
-        )
-    }
-}
-
-@Composable
-fun EditorButton(
-    @StringRes text: Int,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    color: Color = Color.White,
-    background: Color = MaterialTheme.colorScheme.tertiary
-) {
-    SmallFloatingActionButton(
-        onClick = onClick,
-        modifier = modifier,
-        containerColor = background
-    ) {
-        Text(
-            text = stringResource(text),
-            style = MaterialTheme.typography.bodySmall,
-            color = color,
-            modifier = Modifier.padding(
-                vertical = 4.dp,
-                horizontal = 8.dp
-            )
-        )
-    }
-}
-
 @Composable
 private fun ScriptTitle(
     source: String,
@@ -274,7 +242,7 @@ private fun ScriptTitle(
 ) {
     Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(3.dp),
+        horizontalArrangement = Arrangement.spacedBy(2.dp),
         verticalAlignment = Alignment.Bottom
     ) {
         Text(
@@ -285,12 +253,6 @@ private fun ScriptTitle(
             maxLines = 1
         )
         if (!name.isNullOrEmpty()) {
-            Text(
-                text = "/",
-                fontFamily = fontConsolas,
-                fontSize = 12.5.sp,
-                color = MaterialTheme.colorScheme.outline
-            )
             Text(
                 text = name,
                 fontFamily = fontConsolas,
