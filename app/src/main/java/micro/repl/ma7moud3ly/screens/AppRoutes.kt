@@ -13,6 +13,9 @@ sealed interface AppRoutes {
     data object Scripts
 
     @Serializable
+    data object ThemePicker
+
+    @Serializable
     data class Terminal(val script: String = "")
 
     @Serializable

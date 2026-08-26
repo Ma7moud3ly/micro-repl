@@ -16,6 +16,7 @@ import micro.repl.ma7moud3ly.model.MicroScript
 import micro.repl.ma7moud3ly.screens.dialogs.FileSaveAsDialog
 import micro.repl.ma7moud3ly.screens.dialogs.FileSaveDialog
 import micro.repl.ma7moud3ly.ui.components.rememberMyDialogState
+import micro.repl.ma7moud3ly.ui.theme.LocalThemeController
 
 private const val TAG = "EditorScreen"
 
@@ -25,6 +26,7 @@ fun EditorScreen(
     script: MicroScript,
     blank: Boolean,
     filesManager: FilesManager,
+    openThemePicker: () -> Unit,
     onRemoteRun: (MicroScript) -> Unit,
     onBack: () -> Unit
 ) {
@@ -32,6 +34,7 @@ fun EditorScreen(
     val coroutineScope = rememberCoroutineScope()
     val saveDialog = rememberMyDialogState()
     val saveAsNewDialog = rememberMyDialogState()
+    val themeController = LocalThemeController.current
 
     val editorManager = remember {
         EditorManager.create(
@@ -39,10 +42,16 @@ fun EditorScreen(
             coroutineScope = coroutineScope,
             script = script,
             blank = blank,
+            theme = themeController.theme,
             filesManager = filesManager,
             onRun = onRemoteRun,
             afterEdit = onBack
         )
+    }
+
+    // Follow theme changes made while the editor is open.
+    LaunchedEffect(themeController.theme) {
+        editorManager.settings.themeState.value = themeController.theme
     }
 
     LaunchedEffect(canRun()) {
@@ -116,6 +125,7 @@ fun EditorScreen(
                 is EditorEvents.Undo -> editorManager.undo()
                 is EditorEvents.ZoomIn -> editorManager.zoomIn()
                 is EditorEvents.ZoomOut -> editorManager.zoomOut()
+                is EditorEvents.ShowThemeDialog -> openThemePicker()
             }
         }
     )

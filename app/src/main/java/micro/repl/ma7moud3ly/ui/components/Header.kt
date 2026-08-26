@@ -31,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.ui.theme.LocalStatusColors
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
 
@@ -83,6 +84,34 @@ fun BarToggle(
                 tint = if (selected) MaterialTheme.colorScheme.onSurface
                 else MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(14.dp)
+            )
+        }
+    }
+}
+
+/** Bordered icon cell that opens the theme picker. */
+@Composable
+fun ThemeButton(
+    onClick: () -> Unit,
+    cellWidth: Dp = 34.dp,
+    cellHeight: Dp = 24.dp
+) {
+    Surface(
+        shape = RoundedCornerShape(9.dp),
+        color = Color.Transparent,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(width = cellWidth, height = cellHeight)
+                .clickable(onClick = onClick),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.theme),
+                contentDescription = stringResource(R.string.home_theme),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(15.dp)
             )
         }
     }

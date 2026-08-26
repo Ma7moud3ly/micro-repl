@@ -20,7 +20,7 @@ sealed interface HomeEvents {
     data object Connect : HomeEvents
     data object Disconnect : HomeEvents
     data object RestartApp : HomeEvents
-    data object ToggleTheme : HomeEvents
+    data object ShowThemeDialog : HomeEvents
     data object ToggleOrientation : HomeEvents
     data object Help : HomeEvents
     data object DenyDevice : HomeEvents

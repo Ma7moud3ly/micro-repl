@@ -21,14 +21,9 @@
     <string name="home_status_waiting">waiting for device</string>
 
     <!-- connection -->
-    <string name="home_connect">Connect</string>
     <string name="home_disconnect">Disconnect</string>
     <string name="home_change_device">Change device</string>
-    <string name="home_connected">Connected</string>
-    <string name="home_disconnected">Disconnected</string>
-    <string name="home_connecting">Connecting</string>
     <string name="home_details">Details</string>
-    <string name="home_connection_msg">Please connect your device and click Connect. Or restart the app.</string>
 
     <!-- empty state -->
     <string name="home_no_device">No device connected</string>
@@ -56,28 +51,24 @@
     <string name="home_device_vendor_id">Vendor Id</string>
     <string name="home_device_product_id">Product Id</string>
 
+    <!-- theme picker -->
+    <string name="home_theme">Theme</string>
+    <string name="home_theme_dark">dark</string>
+    <string name="home_theme_light">light</string>
+    <string name="home_powered_by">powered by</string>
+    <string name="home_nemo_link">https://github.com/Ma7moud3ly/nemo-editor</string>
+
     <!-- footer / help -->
     <string name="home_footer">Micro REPL %s</string>
     <string name="home_report_bug">Feedback or a bug? 🐞</string>
-    <string name="home_help">for support or bugs reporting 🐞</string>
     <string name="home_help_link">https://github.com/Ma7moud3ly/micro-repl</string>
-
-    <string name="error_no_devices">No devices connected!</string>
-    <string name="error_not_supported">This device is not supported!</string>
-    <string name="error_cant_open_port">Can\'t open serial port!</string>
-    <string name="error_permission_denied">USB permission denied!</string>
-    <string name="error_connection_lost">Connection lost!</string>
-    <string name="error_unknown">Unknown error!</string>
 
     <string name="editor_untitled">untitled</string>
     <string name="editor_save">Save</string>
     <string name="editor_new">New</string>
-    <string name="editor_wait">Wait !</string>
     <string name="editor_msg_save">Do you want to save this file ?</string>
     <string name="editor_msg_save_changes">Do you want to save changes to (%s) ?</string>
     <string name="editor_msg_delete">Do you want to delete (%s) ?</string>
-    <string name="editor_msg_rename">Please write the new name of (%s)</string>
-    <string name="editor_msg_mode">Do you want to change to (%s) ?\nNote: Activity will restart and connection to any port will be lost.</string>
 
     <string name="explorer_run">Run</string>
     <string name="explorer_edit">Open in Editor</string>
@@ -88,8 +79,6 @@
     <string name="explorer_create">Create</string>
     <string name="explorer_file_new">New File</string>
     <string name="explorer_file_import">Import File</string>
-    <string name="explorer_file_export">Export File</string>
-    <string name="explorer_up">Up</string>
     <string name="explorer_new_folder">New Folder</string>
     <string name="explorer_refresh">Refresh</string>
     <string name="explorer_rename_label">Rename %s</string>
@@ -104,19 +93,9 @@
     <string name="terminal_soft_reset_msg">Reset Interpreter</string>
     <string name="terminal_clear">Clear</string>
     <string name="terminal_new_line">New line</string>
-    <string name="terminal_up">Undo</string>
-    <string name="terminal_down">Redo</string>
-    <string name="terminal_zoom_in">Zoom in</string>
-    <string name="terminal_zoom_out">Zoom out</string>
-    <string name="terminal_dark_mode">Dark mode</string>
 
     <string name="scripts_empty">"No scripts saved yet!"</string>
     <string name="scripts_local">Local Scripts</string>
     <string name="scripts_new">New</string>
-
-    <string name="config_dark_mode">Dark Mode</string>
-    <string name="config_light_mode">Light Mode</string>
-    <string name="config_portrait">Portrait</string>
-    <string name="config_landscape">Landscape</string>
 
 </resources>

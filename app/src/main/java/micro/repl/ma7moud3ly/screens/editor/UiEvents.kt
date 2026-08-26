@@ -11,4 +11,5 @@ sealed interface EditorEvents {
     data object Lines : EditorEvents
     data object ZoomIn : EditorEvents
     data object ZoomOut : EditorEvents
+    data object ShowThemeDialog : EditorEvents
 }

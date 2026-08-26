@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.model.MicroDevice
+import micro.repl.ma7moud3ly.screens.home.dialog.DeviceDetailsDialog
 import micro.repl.ma7moud3ly.ui.components.rememberMyDialogState
 import micro.repl.ma7moud3ly.ui.theme.LocalStatusColors
 import micro.repl.ma7moud3ly.ui.theme.AppTheme

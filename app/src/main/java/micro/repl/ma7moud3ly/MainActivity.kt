@@ -32,7 +32,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val themeController = rememberThemeController(this)
             CompositionLocalProvider(LocalThemeController provides themeController) {
-                AppTheme(darkTheme = themeController.isDark) {
+                AppTheme(theme = themeController.theme) {
                     RootGraph(
                         viewModel = viewModel,
                         boardManager = boardManager,
