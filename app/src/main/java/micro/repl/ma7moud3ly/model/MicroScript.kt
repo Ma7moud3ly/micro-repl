@@ -1,10 +1,7 @@
 package micro.repl.ma7moud3ly.model
 
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import java.io.File
 
-@Serializable
 data class MicroScript(
     var path: String = "",
     var content: String = "",
@@ -19,12 +16,5 @@ data class MicroScript(
     val name: String get() = path.substringAfterLast('/')
     val isPython: Boolean get() = name.trim().endsWith(".py")
     val isLocal: Boolean get() = editorMode == EditorMode.LOCAL
-    val asJson: String get() = Json.encodeToString(this)
 }
 
-fun String.asMicroScript(): MicroScript = try {
-    if (this.isEmpty()) MicroScript()
-    else Json.decodeFromString<MicroScript>(this)
-} catch (e: Exception) {
-    MicroScript()
-}

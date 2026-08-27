@@ -42,7 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.ma7moud3ly.nemo.model.EditorTheme
 import micro.repl.ma7moud3ly.R
-import micro.repl.ma7moud3ly.screens.AppRoutes
+import micro.repl.ma7moud3ly.model.AppRoutes
 import micro.repl.ma7moud3ly.ui.components.MyDialog
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.AppThemes

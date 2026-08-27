@@ -15,7 +15,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import micro.repl.ma7moud3ly.managers.BoardManager
 import micro.repl.ma7moud3ly.managers.FilesManager
 import micro.repl.ma7moud3ly.managers.TerminalManager
-import micro.repl.ma7moud3ly.screens.RootGraph
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.LocalThemeController
 import micro.repl.ma7moud3ly.ui.theme.rememberThemeController

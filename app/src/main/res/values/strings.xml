@@ -97,5 +97,6 @@
     <string name="scripts_empty">"No scripts saved yet!"</string>
     <string name="scripts_local">Local Scripts</string>
     <string name="scripts_new">New</string>
+    <string name="scripts_share_failed">Couldn&#8217;t share this script</string>
 
 </resources>
