@@ -149,7 +149,7 @@ fun ActionButton(
         Box(contentAlignment = Alignment.Center) {
             Text(
                 text = stringResource(text),
-                fontSize = 12.5.sp,
+                fontSize = 12.sp,
                 color = contentColor,
                 modifier = textModifier,
                 maxLines = 1

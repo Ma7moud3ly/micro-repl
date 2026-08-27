@@ -147,7 +147,7 @@ private fun DeviceCard(
                     Text(
                         text = device.board,
                         fontFamily = fontConsolas,
-                        fontSize = 11.5.sp,
+                        fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -164,7 +164,7 @@ private fun DeviceCard(
                 Text(
                     text = stringResource(R.string.home_details),
                     style = MaterialTheme.typography.labelMedium,
-                    fontSize = 12.5.sp,
+                    fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurface,
                     textDecoration = TextDecoration.Underline,
                     modifier = Modifier.clickable(onClick = onOpenDetails)

@@ -144,7 +144,7 @@ private fun DetailRow(key: String, value: String) {
                 text = key,
                 modifier = Modifier.weight(1f),
                 fontFamily = fontConsolas,
-                fontSize = 11.5.sp,
+                fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -153,7 +153,7 @@ private fun DetailRow(key: String, value: String) {
                 text = value,
                 modifier = Modifier.weight(1f),
                 fontFamily = fontConsolas,
-                fontSize = 11.5.sp,
+                fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
