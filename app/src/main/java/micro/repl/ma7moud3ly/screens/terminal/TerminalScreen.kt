@@ -1,7 +1,9 @@
 package micro.repl.ma7moud3ly.screens.terminal
 
+import android.app.Activity
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -9,7 +11,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -34,7 +35,7 @@ fun TerminalScreen(
     terminalManager: TerminalManager,
     onBack: () -> Unit
 ) {
-    val context = LocalContext.current
+    val activity = LocalActivity.current as Activity
     val coroutineScope = rememberCoroutineScope()
     var terminalInput by remember { viewModel.terminalInput }
     var terminalOutput by remember { viewModel.terminalOutput }
@@ -52,19 +53,24 @@ fun TerminalScreen(
         }
     }
 
+    fun clear() {
+        terminalInput = ""
+        terminalOutput = ""
+    }
+
     fun executeScript() {
         coroutineScope.launch {
             withContext(Dispatchers.IO) {
                 if (microScript.isLocal) {
                     terminalManager.executeLocalScript(
                         microScript = microScript,
-                        onClear = {
-                            terminalInput = ""
-                            terminalOutput = ""
-                        }
+                        onClear = ::clear
                     )
                 } else {
-                    terminalManager.executeScript(microScript)
+                    terminalManager.executeScript(
+                        microScript = microScript,
+                        onClear = ::clear
+                    )
                 }
             }
         }
@@ -73,8 +79,8 @@ fun TerminalScreen(
     fun onTerminate(showMessage: Boolean = false) {
         terminalManager.terminateExecution()
         if (showMessage) Toast.makeText(
-            context,
-            context.getString(R.string.terminal_terminate_msg),
+            activity,
+            activity.getString(R.string.terminal_terminate_msg),
             Toast.LENGTH_SHORT
         ).show()
     }
@@ -82,8 +88,8 @@ fun TerminalScreen(
     fun onSoftReset() {
         terminalManager.softResetDevice {
             Toast.makeText(
-                context,
-                context.getString(R.string.terminal_soft_reset_msg),
+                activity,
+                activity.getString(R.string.terminal_soft_reset_msg),
                 Toast.LENGTH_SHORT
             ).show()
         }
@@ -100,8 +106,7 @@ fun TerminalScreen(
 
     DisposableEffect(LocalLifecycleOwner.current) {
         onDispose {
-            terminalOutput = ""
-            terminalInput = ""
+            clear()
             onTerminate()
         }
     }
@@ -113,8 +118,7 @@ fun TerminalScreen(
             TerminalEvents.Terminate -> onTerminate(true)
 
             TerminalEvents.Clear -> {
-                terminalInput = ""
-                terminalOutput = ""
+                clear()
             }
 
             TerminalEvents.MoveDown -> {
