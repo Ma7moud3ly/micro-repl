@@ -11,6 +11,7 @@ import android.util.Log
 import kotlinx.coroutines.delay
 import micro.repl.ma7moud3ly.model.MicroDevice
 import micro.repl.ma7moud3ly.model.MicroScript
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Manages terminal commands for interacting with a MicroPython board.
@@ -111,18 +112,21 @@ class TerminalManager(
      * mode. The output of the script is not returned directly but may be printed
      * on the board's console.
      *
-     * @param code The MicroPython script to execute.
+     * @param microScript The MicroPython script to execute.
      */
     suspend fun executeLocalScript(
         microScript: MicroScript,
         onClear: () -> Unit
     ) {
-        // reset the device to clear previously imported modules
-        boardManager.writeCommand(CommandsManager.RESET)
-        delay(100)
-        onClear()
+        // stop any running code/loops
+        boardManager.writeCommand(CommandsManager.TERMINATE)
         // Start silent mode.
         boardManager.writeCommand(CommandsManager.SILENT_MODE)
+        // reset the device to clear previously imported modules
+        boardManager.writeCommand(CommandsManager.RESET)
+        // clear noise from the terminal outputs
+        delay(100.milliseconds)
+        onClear()
         // Print a new line to separate the silent mode message from the output.
         // And write the code to interpreter to execute it
         boardManager.writeCommand("print()\r\n${microScript.content}")
@@ -132,11 +136,14 @@ class TerminalManager(
         boardManager.writeCommand(CommandsManager.REPL_MODE)
     }
 
-    fun executeScript(microScript: MicroScript) {
+    suspend fun executeScript(microScript: MicroScript, onClear: () -> Unit) {
+        // Start silent mode.
+        boardManager.writeCommand(CommandsManager.SILENT_MODE)
         // reset the device to clear previously imported modules
         boardManager.writeCommand(CommandsManager.RESET)
-        // Start silent mode.
-        //boardManager.writeCommand(CommandsManager.SILENT_MODE)
+        // clear noise from the terminal outputs
+        delay(100.milliseconds)
+        onClear()
         // Locate the working directory to the script
         boardManager.write(CommandsManager.chDir(microScript.scriptDir))
         // Run the script
