@@ -7,6 +7,8 @@
 
 package micro.repl.ma7moud3ly
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,6 +16,7 @@ import micro.repl.ma7moud3ly.managers.TerminalHistoryManager
 import micro.repl.ma7moud3ly.model.ConnectionStatus
 import micro.repl.ma7moud3ly.model.MicroDevice
 import micro.repl.ma7moud3ly.model.MicroFile
+import micro.repl.ma7moud3ly.model.MicroScript
 
 /**
  * Holds and manages the UI state for the main application screen.
@@ -47,6 +50,17 @@ class MainViewModel : ViewModel() {
      * Otherwise, it returns `null`.
      */
     val microDevice: MicroDevice? get() = (status.value as? ConnectionStatus.Connected)?.microDevice
+
+    ////// Script handoff
+
+    var script by mutableStateOf(MicroScript())
+        private set
+
+    /** Sets the script for the screen being opened. Pass `MicroScript()` for a blank one. */
+    fun openScript(script: MicroScript) {
+        this.script = script
+    }
+
 
     ////// Files Explorer
 
