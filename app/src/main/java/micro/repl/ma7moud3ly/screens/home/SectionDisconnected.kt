@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -96,8 +97,9 @@ private fun EmptyStateCard(
         Text(
             text = stringResource(R.string.home_no_device_msg),
             style = MaterialTheme.typography.bodyMedium,
-            fontSize = 13.5.sp,
+            fontSize = 12.sp,
             lineHeight = 21.sp,
+            textAlign = TextAlign.Justify,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.widthIn(max = 280.dp)
         )
@@ -114,7 +116,7 @@ private fun EmptyStateCard(
         ) {
             Text(
                 text = stringResource(R.string.home_connect_device),
-                fontSize = 14.5.sp,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold
             )
         }

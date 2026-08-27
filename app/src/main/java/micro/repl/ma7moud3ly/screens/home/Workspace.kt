@@ -134,7 +134,7 @@ private fun RowScope.WorkspaceTile(
             Text(
                 text = stringResource(title),
                 style = MaterialTheme.typography.bodyMedium,
-                fontSize = 14.5.sp,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -142,7 +142,7 @@ private fun RowScope.WorkspaceTile(
             Text(
                 text = stringResource(sub),
                 fontFamily = fontConsolas,
-                fontSize = 11.5.sp,
+                fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }

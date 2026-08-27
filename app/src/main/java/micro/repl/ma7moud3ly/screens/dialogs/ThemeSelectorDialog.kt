@@ -141,14 +141,14 @@ private fun PoweredByNemo() {
         Text(
             text = stringResource(R.string.home_powered_by),
             fontFamily = fontConsolas,
-            fontSize = 10.5.sp,
+            fontSize = 11.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(Modifier.width(4.dp))
         Text(
             text = "nemo-editor",
             fontFamily = fontConsolas,
-            fontSize = 10.5.sp,
+            fontSize = 11.sp,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurface,
             textDecoration = TextDecoration.Underline
@@ -178,7 +178,7 @@ private fun ThemeRow(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = theme.name,
-                fontSize = 13.5.sp,
+                fontSize = 14.sp,
                 fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
@@ -189,7 +189,7 @@ private fun ThemeRow(
                     if (theme.dark) R.string.home_theme_dark else R.string.home_theme_light
                 ),
                 fontFamily = fontConsolas,
-                fontSize = 10.5.sp,
+                fontSize = 11.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }

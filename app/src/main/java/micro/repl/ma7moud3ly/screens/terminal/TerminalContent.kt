@@ -340,7 +340,7 @@ private fun ScriptTitle(
         Text(
             text = source,
             fontFamily = fontConsolas,
-            fontSize = 12.5.sp,
+            fontSize = 12.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1
         )
@@ -348,13 +348,13 @@ private fun ScriptTitle(
             Text(
                 text = "/",
                 fontFamily = fontConsolas,
-                fontSize = 12.5.sp,
+                fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.outline
             )
             Text(
                 text = name,
                 fontFamily = fontConsolas,
-                fontSize = 12.5.sp,
+                fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,

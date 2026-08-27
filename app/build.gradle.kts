@@ -34,8 +34,8 @@ android {
         applicationId = "micro.repl.ma7moud3ly"
         minSdk = 23
         targetSdk = 37
-        versionCode = 15
-        versionName = "2.1"
+        versionCode = 16
+        versionName = "3.0"
         multiDexEnabled = true
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
