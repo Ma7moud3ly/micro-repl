@@ -134,6 +134,10 @@ fun RootGraph(
                     viewModel.openScript(microScript)
                     navController.navigate(AppRoutes.Editor())
                 },
+                onRunLocalScript = { microScript ->
+                    viewModel.openScript(microScript)
+                    navController.navigate(AppRoutes.Terminal)
+                },
                 onNewScript = {
                     viewModel.openScript(MicroScript())
                     navController.navigate(AppRoutes.Editor(blank = true))

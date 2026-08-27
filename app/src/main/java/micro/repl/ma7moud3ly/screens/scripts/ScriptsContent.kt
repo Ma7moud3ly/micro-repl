@@ -174,6 +174,13 @@ private fun ItemScript(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
+            ActionButton(
+                text = R.string.terminal_run,
+                filled = true,
+                textModifier = Modifier.padding(horizontal = 14.dp),
+                onClick = onRun
+            )
+
             ScriptIcon(
                 icon = R.drawable.share,
                 modifier = Modifier.size(18.dp),
@@ -191,15 +198,6 @@ private fun ItemScript(
                 description = R.string.explorer_delete,
                 onClick = onDelete
             )
-
-            /*if (script.isPython) Icon(
-                painter = painterResource(id = R.drawable.run),
-                contentDescription = stringResource(id = R.string.explorer_run),
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .size(editorIconSize)
-                    .clickable { onRun.invoke(script) }
-            )*/
         }
     }
 }

@@ -1,8 +1,10 @@
 package micro.repl.ma7moud3ly.screens.explorer
 
+import android.app.Activity
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -11,7 +13,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -55,7 +56,7 @@ fun FilesExplorerScreen(
     openEditor: (MicroScript) -> Unit,
     onBack: () -> Unit
 ) {
-    val context = LocalContext.current
+    val activity = LocalActivity.current as Activity
     val root by remember { viewModel.root }
     val coroutineScope = rememberCoroutineScope()
     val files = viewModel.files.collectAsState()
@@ -144,7 +145,7 @@ fun FilesExplorerScreen(
                 coroutineScope.launch {
                     filesManager.listDir()
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(context, "saved to $root", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(activity, "saved to $root", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -167,8 +168,8 @@ fun FilesExplorerScreen(
      */
     fun onRefresh() {
         Log.i(TAG, "onRefresh")
-        val msg = context.getText(R.string.explorer_refresh)
-        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+        val msg = activity.getText(R.string.explorer_refresh)
+        Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
         filesManager?.listDir()
     }
 

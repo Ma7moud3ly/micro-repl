@@ -26,7 +26,8 @@ private const val TAG = "ScriptsScreen"
 fun ScriptsScreen(
     onBack: () -> Unit,
     onNewScript: () -> Unit,
-    onOpenLocalScript: (MicroScript) -> Unit
+    onOpenLocalScript: (MicroScript) -> Unit,
+    onRunLocalScript: (MicroScript) -> Unit
 ) {
     val context = LocalContext.current
     val scriptsManager = remember { ScriptsManager(context) }
@@ -62,6 +63,17 @@ fun ScriptsScreen(
         }
     }
 
+    fun runLocalScript(script: MicroScript) {
+        try {
+            val content = scriptsManager.read(script.file)
+            script.content = content
+            Log.v(TAG, script.toString())
+            onRunLocalScript(script)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     ScriptsScreenContent(
         scripts = { scripts },
         uiEvents = {
@@ -69,6 +81,7 @@ fun ScriptsScreen(
                 is ScriptsEvents.Back -> onBack()
                 is ScriptsEvents.NewScript -> onNewScript()
                 is ScriptsEvents.Open -> readLocalScript(it.script)
+                is ScriptsEvents.Run -> runLocalScript(it.script)
                 is ScriptsEvents.Share -> scriptsManager.shareScript(it.script)
                 is ScriptsEvents.Delete -> {
                     selectedScript = it.script
@@ -79,8 +92,6 @@ fun ScriptsScreen(
                     selectedScript = it.script
                     renameFileDialog.show()
                 }
-
-                is ScriptsEvents.Run -> {}
             }
         }
     )
