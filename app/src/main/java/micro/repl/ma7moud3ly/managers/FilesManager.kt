@@ -145,11 +145,41 @@ class FilesManager(
      * @param onSave A callback function that is invoked when the write operation is complete.
      */
     fun writeBinary(path: String, bytes: ByteArray, onSave: () -> Unit) {
-        Log.v(TAG, "writeBinary-to: $path")
-        val code = CommandsManager.writeBinaryFile(path, bytes)
-        boardManager.writeInSilentMode(code, onResponse = { result ->
-            Log.i(TAG, "result $result")
+        Log.v(TAG, "writeBinary-to: $path (${bytes.size} bytes)")
+        writeBinaryChunk(path, bytes, offset = 0, onSave = onSave)
+    }
+
+    /**
+     * Uploads [bytes] one chunk at a time, each chunk its own command.
+     *
+     * Sending the whole file as a single command used to build a string roughly
+     * ten times the file size on the heap, which ran out of memory on larger
+     * files. Chunks keep that bounded, and are stateless: the first opens the
+     * file with `wb`, the rest append with `ab`.
+     */
+    private fun writeBinaryChunk(
+        path: String,
+        bytes: ByteArray,
+        offset: Int,
+        onSave: () -> Unit
+    ) {
+        // offset > 0 means every chunk is done; an empty file still needs one
+        // command so that it gets created.
+        if (offset > 0 && offset >= bytes.size) {
             onSave.invoke()
+            return
+        }
+        val length = minOf(CommandsManager.BINARY_CHUNK_SIZE, bytes.size - offset)
+        val code = CommandsManager.writeBinaryFile(
+            path = path,
+            byteArray = bytes,
+            offset = offset,
+            length = length,
+            append = offset > 0
+        )
+        boardManager.writeInSilentMode(code, onResponse = { result ->
+            Log.i(TAG, "chunk at $offset (+$length) -> $result")
+            writeBinaryChunk(path, bytes, offset + length, onSave)
         })
     }
 

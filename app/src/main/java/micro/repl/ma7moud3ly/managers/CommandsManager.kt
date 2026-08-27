@@ -7,6 +7,7 @@
 
 package micro.repl.ma7moud3ly.managers
 
+import android.util.Base64
 import micro.repl.ma7moud3ly.model.MicroFile
 
 /**
@@ -138,10 +139,35 @@ object CommandsManager {
      * @param byteArray The bytes to write to the file.
      * @return The MicroPython command string.
      */
-    fun writeBinaryFile(path: String, byteArray: ByteArray): String {
-        val content = byteArray.toPythonBytes()
-        return "b = bytes($content)\r\nf = open('$path','wb');" +
-                "a = f.write(b);f.close();print(a)"
+    /**
+     * Bytes per chunk when uploading a binary file.
+     *
+     * Small enough that both the base64 text here and the decoded buffer on the
+     * board stay modest, so memory use doesn't scale with the file size.
+     */
+    const val BINARY_CHUNK_SIZE = 2048
+
+    /**
+     * Generates a MicroPython command that writes one chunk of a binary file.
+     *
+     * The payload is base64 (~1.33 chars per byte) rather than a decimal list
+     * (~5 chars per byte), which keeps the command string - and the serial
+     * transfer - about four times smaller.
+     *
+     * @param append `false` opens the file with `wb` (creating/truncating it),
+     *   `true` opens with `ab` so later chunks are appended.
+     */
+    fun writeBinaryFile(
+        path: String,
+        byteArray: ByteArray,
+        offset: Int = 0,
+        length: Int = byteArray.size,
+        append: Boolean = false
+    ): String {
+        val encoded = Base64.encodeToString(byteArray, offset, length, Base64.NO_WRAP)
+        val mode = if (append) "ab" else "wb"
+        return "import ubinascii;f=open('$path','$mode');" +
+                "a=f.write(ubinascii.a2b_base64('$encoded'));f.close();print(a)"
     }
 
     /**
@@ -234,12 +260,4 @@ object CommandsManager {
         } else data
     }
 
-    private fun ByteArray.toPythonBytes(): String {
-        return this.joinToString(
-            separator = ", ",
-            prefix = "[",
-            postfix = "]",
-            transform = { it.toInt().and(0xFF).toString() }
-        )
-    }
 }

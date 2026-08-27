@@ -146,7 +146,8 @@ class BoardManager(
         code: String,
         onResponse: ((data: String) -> Unit)? = null
     ) {
-        Log.i(TAG, "writeInSilentMode - $code")
+        // Avoid materialising a second copy of large payloads (binary uploads).
+        Log.i(TAG, "writeInSilentMode - " + code.take(200))
         writeCommand(CommandsManager.SILENT_MODE)
         executionMode = ExecutionMode.SCRIPT
         syncData.clear()
