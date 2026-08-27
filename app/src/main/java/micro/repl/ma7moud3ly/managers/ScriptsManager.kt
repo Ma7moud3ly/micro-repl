@@ -10,15 +10,18 @@ package micro.repl.ma7moud3ly.managers
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.mutableStateListOf
 import androidx.core.content.FileProvider
-import micro.repl.ma7moud3ly.model.MicroScript
 import java.io.DataInputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.OutputStreamWriter
+import micro.repl.ma7moud3ly.R
+import micro.repl.ma7moud3ly.model.MicroScript
 
 
 /**
@@ -114,11 +117,20 @@ class ScriptsManager(private val context: Context) {
             return
         }
 
-        val fileUri: Uri = FileProvider.getUriForFile(
-            context,
-            "${context.packageName}.fileprovider",
-            file
-        )
+        // getUriForFile throws when the file falls outside every root declared
+        // in provider_paths.xml, which varies with how a device mounts external
+        // storage. Sharing failing is not worth crashing over.
+        val fileUri: Uri = try {
+            FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.fileprovider",
+                file
+            )
+        } catch (e: IllegalArgumentException) {
+            Log.e(TAG, "shareScript - cannot expose ${file.absolutePath}", e)
+            Toast.makeText(context, R.string.scripts_share_failed, Toast.LENGTH_SHORT).show()
+            return
+        }
 
         val shareIntent = Intent(Intent.ACTION_SEND).apply {
             type = "*/*"
