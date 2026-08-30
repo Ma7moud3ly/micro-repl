@@ -39,6 +39,7 @@ fun RootGraph(
             when (status) {
                 is ConnectionStatus.Connected -> canRun = true
                 else -> {
+                    canRun = false
                     navController.popBackStack(AppRoutes.Home, inclusive = false)
                 }
             }
@@ -130,6 +131,7 @@ fun RootGraph(
 
         composable<AppRoutes.Scripts> {
             ScriptsScreen(
+                canRun = { canRun },
                 onOpenLocalScript = { microScript ->
                     viewModel.openScript(microScript)
                     navController.navigate(AppRoutes.Editor())

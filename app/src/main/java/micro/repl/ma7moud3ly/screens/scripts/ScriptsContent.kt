@@ -55,6 +55,7 @@ private val scripts = listOf(
 private fun ScriptsScreenPreviewLight() {
     AppTheme(darkTheme = false) {
         ScriptsScreenContent(
+            canRun = true,
             scripts = { scripts },
             uiEvents = {}
         )
@@ -66,6 +67,7 @@ private fun ScriptsScreenPreviewLight() {
 private fun ScriptsScreenPreviewDark() {
     AppTheme(darkTheme = true) {
         ScriptsScreenContent(
+            canRun = true,
             scripts = { scripts },
             uiEvents = {}
         )
@@ -74,6 +76,7 @@ private fun ScriptsScreenPreviewDark() {
 
 @Composable
 fun ScriptsScreenContent(
+    canRun: Boolean,
     scripts: () -> List<MicroScript>,
     uiEvents: (ScriptsEvents) -> Unit,
 ) {
@@ -92,6 +95,7 @@ fun ScriptsScreenContent(
         if (list.isNotEmpty()) {
             list.forEach { script ->
                 ItemScript(
+                    canRun = canRun,
                     script = script,
                     onOpen = { uiEvents(ScriptsEvents.Open(script)) },
                     onRename = { uiEvents(ScriptsEvents.Rename(script)) },
@@ -147,6 +151,7 @@ private fun Header(
 
 @Composable
 private fun ItemScript(
+    canRun: Boolean,
     script: MicroScript,
     onOpen: () -> Unit,
     onShare: () -> Unit,
@@ -174,7 +179,7 @@ private fun ItemScript(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            ActionButton(
+            if (canRun && script.isPython) ActionButton(
                 text = R.string.terminal_run,
                 filled = true,
                 textModifier = Modifier.padding(horizontal = 14.dp),

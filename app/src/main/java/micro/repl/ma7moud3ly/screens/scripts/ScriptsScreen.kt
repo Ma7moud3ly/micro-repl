@@ -24,6 +24,7 @@ private const val TAG = "ScriptsScreen"
 
 @Composable
 fun ScriptsScreen(
+    canRun: () -> Boolean,
     onBack: () -> Unit,
     onNewScript: () -> Unit,
     onOpenLocalScript: (MicroScript) -> Unit,
@@ -75,6 +76,7 @@ fun ScriptsScreen(
     }
 
     ScriptsScreenContent(
+        canRun = canRun(),
         scripts = { scripts },
         uiEvents = {
             when (it) {
