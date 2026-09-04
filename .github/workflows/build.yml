@@ -84,12 +84,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          apks=$(find app/build/outputs/apk/default/release -name '*.apk')
-          if [ -z "$apks" ]; then
+          apk=$(find app/build/outputs/apk/default/release -name '*.apk' | head -1)
+          if [ -z "$apk" ]; then
             echo "No APK produced" >&2
             exit 1
           fi
-          echo "$apks"
-          gh release create "${GITHUB_REF_NAME}" $apks \
+          asset="micro-repl-${GITHUB_REF_NAME}.apk"
+          cp "$apk" "$asset"
+          echo "$apk -> $asset"
+          gh release create "${GITHUB_REF_NAME}" "$asset" \
             --title "${GITHUB_REF_NAME}" \
             --generate-notes
