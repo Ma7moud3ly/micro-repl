@@ -116,11 +116,12 @@ fun RootGraph(
                     navController.navigate(AppRoutes.Terminal)
                 },
                 onBack = {
-                    // The editor can be reached from the explorer, which is
-                    // useless once the board is gone. Going back there would
-                    // land on a dead file list, so skip to Home instead.
-                    if (canRun) navController.popBackStack()
-                    else navController.popBackStack(AppRoutes.Home, inclusive = false)
+                    // Only the explorer is dead without a board, so that's the
+                    // one worth skipping past. Scripts works offline - go back to it as normal.
+                    val previous = navController.previousBackStackEntry?.destination
+                    val skip = canRun.not() && previous?.hasRoute(AppRoutes.Explorer::class) == true
+                    if (skip) navController.popBackStack(AppRoutes.Home, inclusive = false)
+                    else navController.popBackStack()
                 }
             )
         }
