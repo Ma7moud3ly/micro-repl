@@ -119,7 +119,10 @@ fun TerminalScreenContent(
     ) {
         TerminalOutput(
             output = terminalOutput,
-            fontSize = { fontSize }
+            fontSize = { fontSize },
+            // fill = false so short output sits right above the prompt;
+            // long output is capped here instead of pushing it off-screen.
+            modifier = Modifier.weight(1f, fill = false)
         )
         TerminalInputFiled(
             input = terminalInput,
@@ -134,7 +137,8 @@ fun TerminalScreenContent(
 @Composable
 private fun TerminalOutput(
     output: () -> String,
-    fontSize: () -> TextUnit
+    fontSize: () -> TextUnit,
+    modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
     LaunchedEffect(output()) {
@@ -142,7 +146,7 @@ private fun TerminalOutput(
         delay(2000.milliseconds)
     }
     Column(
-        modifier = Modifier
+        modifier = modifier
             .verticalScroll(scrollState)
             .padding(horizontal = 8.dp)
     ) {
