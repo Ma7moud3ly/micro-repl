@@ -14,6 +14,12 @@ data class MicroScript(
     val scriptDir: String get() = file.parent.orEmpty()
     val nameWithoutExt: String get() = name.replace(".py", "")
     val name: String get() = path.substringAfterLast('/')
+    val displayName: String
+        get() = when {
+            exists.not() -> "/untitled"
+            isLocal -> "/$name"
+            else -> path
+        }
     val isPython: Boolean get() = name.trim().endsWith(".py")
     val isLocal: Boolean get() = editorMode == EditorMode.LOCAL
 }

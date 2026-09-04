@@ -1,5 +1,11 @@
 package micro.repl.ma7moud3ly.screens.editor
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -37,6 +43,7 @@ import io.ma7moud3ly.nemo.model.EditorThemes
 import io.ma7moud3ly.nemo.model.Language
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.managers.EditorManager
+import micro.repl.ma7moud3ly.managers.EditorSession
 import micro.repl.ma7moud3ly.model.EditorMode
 import micro.repl.ma7moud3ly.model.MicroScript
 import micro.repl.ma7moud3ly.ui.components.ActionButton
@@ -59,14 +66,17 @@ private fun EditorScreenPreviewLight() {
         EditorManager(
             context = context,
             coroutineScope = scope,
-            codeState = CodeState("print('Hello World')", Language.PYTHON),
+            session = EditorSession(
+                codeState = CodeState("print('Hello World')", Language.PYTHON),
+                initialScript = MicroScript(
+                    path = "lib/path/path/path/path/path/main.py",
+                    editorMode = EditorMode.REMOTE,
+                    microPython = true
+                )
+            ),
             settings = EditorSettings(theme = EditorThemes.VS_CODE_LIGHT),
-            initialScript = MicroScript(
-                path = "lib/path/path/path/path/path/main.py",
-                editorMode = EditorMode.REMOTE,
-                microPython = true
-            )
-        ).apply { canRun.value = true }
+            runnable = { true }
+        )
     }
     AppTheme(darkTheme = false) {
         EditorScreenContent(
@@ -85,14 +95,17 @@ private fun EditorScreenPreviewDark() {
         EditorManager(
             context = context,
             coroutineScope = scope,
-            codeState = CodeState("print('Hello World')", Language.PYTHON),
+            session = EditorSession(
+                codeState = CodeState("print('Hello World')", Language.PYTHON),
+                initialScript = MicroScript(
+                    path = "lib/path/path/path/path/path/main.py",
+                    editorMode = EditorMode.REMOTE,
+                    microPython = true
+                )
+            ),
             settings = EditorSettings(),
-            initialScript = MicroScript(
-                path = "lib/path/path/path/path/path/main.py",
-                editorMode = EditorMode.REMOTE,
-                microPython = true
-            )
-        ).apply { canRun.value = true }
+            runnable = { true }
+        )
     }
     AppTheme(darkTheme = true) {
         EditorScreenContent(
@@ -146,6 +159,13 @@ private fun EditorAppBar(
     uiEvents: (EditorEvents) -> Unit
 ) {
     val title by editorManager.title
+    val source = stringResource(
+        when {
+            editorManager.isLocal -> R.string.this_device
+            editorManager.isMicroPython -> R.string.micro_python
+            else -> R.string.circuit_python
+        }
+    )
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -154,16 +174,9 @@ private fun EditorAppBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         BackButton { uiEvents(EditorEvents.Back) }
-        val source = stringResource(
-            when {
-                editorManager.isLocal -> R.string.this_device
-                editorManager.microPython -> R.string.micro_python
-                else -> R.string.circuit_python
-            }
-        )
         ScriptTitle(
             source = source,
-            name = title.ifEmpty { "/" + stringResource(R.string.editor_untitled) },
+            name = title,
             modifier = Modifier.weight(1f)
         )
         ThemeButton(onClick = { uiEvents(EditorEvents.ShowThemeDialog) })
@@ -177,7 +190,8 @@ private fun EditorActions(
     editorManager: EditorManager,
     uiEvents: (EditorEvents) -> Unit
 ) {
-    val canRun by editorManager.canRun
+    val canRun = editorManager.canRun
+    val isDirty = editorManager.isDirty
     val canUndo = editorManager.canUndo
     val canRedo = editorManager.canRedo
     val showLines = editorManager.showLines
@@ -204,11 +218,23 @@ private fun EditorActions(
                     textModifier = Modifier.padding(horizontal = 14.dp),
                     onClick = { uiEvents(EditorEvents.Run) }
                 )
-                ActionButton(
-                    text = R.string.editor_save,
-                    textModifier = Modifier.padding(horizontal = 14.dp),
-                    onClick = { uiEvents(EditorEvents.Save) }
-                )
+                // A remote script has nowhere to save without the board connected,
+                // so the write would fail silently.
+                if (canRun || editorManager.isLocal) Box {
+                    ActionButton(
+                        text = R.string.editor_save,
+                        textModifier = Modifier.padding(horizontal = 14.dp),
+                        onClick = { uiEvents(EditorEvents.Save) }
+                    )
+                    if (isDirty) Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .offset(x = (-5).dp, y = (5).dp)
+                            .size(5.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.error)
+                    )
+                }
                 if (editorManager.isLocal) ActionButton(
                     text = R.string.editor_new,
                     textModifier = Modifier.padding(horizontal = 14.dp),
@@ -246,8 +272,8 @@ private fun EditorActions(
                 )
             }
         }
-        }
     }
+}
 
 @Composable
 private fun ScriptTitle(
@@ -273,7 +299,7 @@ private fun ScriptTitle(
                 text = name,
                 fontFamily = fontConsolas,
                 fontSize = 12.sp,
-                fontWeight = FontWeight.Normal,
+                fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.MiddleEllipsis,

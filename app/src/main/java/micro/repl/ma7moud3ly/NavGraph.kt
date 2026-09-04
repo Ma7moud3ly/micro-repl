@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -15,9 +16,9 @@ import androidx.navigation.toRoute
 import micro.repl.ma7moud3ly.managers.BoardManager
 import micro.repl.ma7moud3ly.managers.FilesManager
 import micro.repl.ma7moud3ly.managers.TerminalManager
+import micro.repl.ma7moud3ly.model.AppRoutes
 import micro.repl.ma7moud3ly.model.ConnectionStatus
 import micro.repl.ma7moud3ly.model.MicroScript
-import micro.repl.ma7moud3ly.model.AppRoutes
 import micro.repl.ma7moud3ly.screens.dialogs.ThemeSelectorDialog
 import micro.repl.ma7moud3ly.screens.editor.EditorScreen
 import micro.repl.ma7moud3ly.screens.explorer.FilesExplorerScreen
@@ -40,7 +41,13 @@ fun RootGraph(
                 is ConnectionStatus.Connected -> canRun = true
                 else -> {
                     canRun = false
-                    navController.popBackStack(AppRoutes.Home, inclusive = false)
+                    // If the board is disconnected, go back to Home.
+                    // Don't go back to Home when the Editor is open,
+                    // so the current script remains open.
+                    val destination = navController.currentDestination
+                    if (destination?.hasRoute(AppRoutes.Editor::class) == false) {
+                        navController.popBackStack(AppRoutes.Home, inclusive = false)
+                    }
                 }
             }
         }
@@ -108,7 +115,14 @@ fun RootGraph(
                     viewModel.openScript(s)
                     navController.navigate(AppRoutes.Terminal)
                 },
-                onBack = { navController.popBackStack() }
+                onBack = {
+                    // Only the explorer is dead without a board, so that's the
+                    // one worth skipping past. Scripts works offline - go back to it as normal.
+                    val previous = navController.previousBackStackEntry?.destination
+                    val skip = canRun.not() && previous?.hasRoute(AppRoutes.Explorer::class) == true
+                    if (skip) navController.popBackStack(AppRoutes.Home, inclusive = false)
+                    else navController.popBackStack()
+                }
             )
         }
 

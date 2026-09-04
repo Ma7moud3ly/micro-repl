@@ -119,7 +119,10 @@ fun TerminalScreenContent(
     ) {
         TerminalOutput(
             output = terminalOutput,
-            fontSize = { fontSize }
+            fontSize = { fontSize },
+            // fill = false so short output sits right above the prompt;
+            // long output is capped here instead of pushing it off-screen.
+            modifier = Modifier.weight(1f, fill = false)
         )
         TerminalInputFiled(
             input = terminalInput,
@@ -134,7 +137,8 @@ fun TerminalScreenContent(
 @Composable
 private fun TerminalOutput(
     output: () -> String,
-    fontSize: () -> TextUnit
+    fontSize: () -> TextUnit,
+    modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
     LaunchedEffect(output()) {
@@ -142,7 +146,7 @@ private fun TerminalOutput(
         delay(2000.milliseconds)
     }
     Column(
-        modifier = Modifier
+        modifier = modifier
             .verticalScroll(scrollState)
             .padding(horizontal = 8.dp)
     ) {
@@ -324,44 +328,32 @@ private fun ScriptTitle(
     modifier: Modifier = Modifier
 ) {
     val script = microScript()
-    val source = stringResource(
-        id = if (script.isLocal) R.string.this_device else R.string.micro_python
-    )
-    val name = when {
-        script.exists.not() -> ""
-        script.isLocal -> script.name
-        else -> script.path.substringAfterLast('/')
-    }
-    Row(
+    if (script.exists) Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(2.dp),
         verticalAlignment = Alignment.Bottom
     ) {
         Text(
-            text = source,
+            text = stringResource(
+                if (script.isLocal) R.string.this_device
+                else R.string.micro_python
+            ),
             fontFamily = fontConsolas,
+            fontWeight = FontWeight.SemiBold,
             fontSize = 12.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1
         )
-        if (name.isNotEmpty()) {
-            Text(
-                text = "/",
-                fontFamily = fontConsolas,
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.outline
-            )
-            Text(
-                text = name,
-                fontFamily = fontConsolas,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-                overflow = TextOverflow.MiddleEllipsis,
-                modifier = Modifier.weight(1f, fill = false)
-            )
-        }
+        Text(
+            text = script.displayName,
+            fontFamily = fontConsolas,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.MiddleEllipsis,
+            modifier = Modifier.weight(1f, fill = false)
+        )
     }
 }
 
