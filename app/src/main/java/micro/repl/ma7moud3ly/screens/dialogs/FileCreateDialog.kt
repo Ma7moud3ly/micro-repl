@@ -82,7 +82,7 @@ fun FileCreateDialog(
         stringResource(id = R.string.explorer_create) + " " + stringResource(
             id = if (file.isFile) R.string.explorer_file_new
             else R.string.explorer_new_folder
-        ) + "~/" + file.path
+        ) + "~" + file.path
     } else stringResource(
         id = R.string.explorer_rename_label, file.name
     )

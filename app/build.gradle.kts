@@ -34,7 +34,7 @@ android {
         applicationId = "micro.repl.ma7moud3ly"
         minSdk = 23
         targetSdk = 37
-        versionCode = 17
+        versionCode = 18
         versionName = "3.1"
         multiDexEnabled = true
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
