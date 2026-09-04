@@ -84,7 +84,7 @@ private fun EmptyStateCard(
             .clip(shape)
             .background(MaterialTheme.colorScheme.surfaceVariant)
             .dashedBorder()
-            .padding(horizontal = 22.dp, vertical = 28.dp)
+            .padding( 16.dp)
     ) {
         IconBadge(text = ">_", size = 36.dp)
         Text(
