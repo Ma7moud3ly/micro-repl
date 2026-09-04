@@ -218,7 +218,9 @@ private fun EditorActions(
                     textModifier = Modifier.padding(horizontal = 14.dp),
                     onClick = { uiEvents(EditorEvents.Run) }
                 )
-                Box {
+                // A remote script has nowhere to save without the board connected,
+                // so the write would fail silently.
+                if (canRun || editorManager.isLocal) Box {
                     ActionButton(
                         text = R.string.editor_save,
                         textModifier = Modifier.padding(horizontal = 14.dp),
