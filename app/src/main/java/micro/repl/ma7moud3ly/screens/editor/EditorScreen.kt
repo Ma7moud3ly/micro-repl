@@ -8,9 +8,11 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.retain.retain
 import androidx.compose.ui.platform.LocalContext
 import micro.repl.ma7moud3ly.managers.EditorAction
 import micro.repl.ma7moud3ly.managers.EditorManager
+import micro.repl.ma7moud3ly.managers.EditorSession
 import micro.repl.ma7moud3ly.managers.FilesManager
 import micro.repl.ma7moud3ly.model.MicroScript
 import micro.repl.ma7moud3ly.screens.dialogs.FileSaveAsDialog
@@ -36,13 +38,16 @@ fun EditorScreen(
     val saveAsNewDialog = rememberMyDialogState()
     val themeController = LocalThemeController.current
 
-    val editorManager = remember {
+
+    val editorSession = retain<EditorSession> { EditorSession.create(context, script, blank) }
+
+    val editorManager = remember(editorSession) {
         EditorManager.create(
             context = context,
             coroutineScope = coroutineScope,
-            script = script,
-            blank = blank,
+            session = editorSession,
             theme = themeController.theme,
+            runnable = canRun,
             filesManager = filesManager,
             onRun = onRemoteRun,
             afterEdit = onBack
@@ -54,19 +59,22 @@ fun EditorScreen(
         editorManager.settings.themeState.value = themeController.theme
     }
 
-    LaunchedEffect(canRun()) {
-        if (canRun()) editorManager.canRun.value = true
-    }
 
     fun checkAction(action: EditorAction) {
         Log.i(TAG, "action - $action")
         editorManager.actionAfterSave = action
-        if (editorManager.saveExisting()) {
-            if (action == EditorAction.SaveScript) editorManager.save {
+        if (editorManager.saveExisting()) when (action) {
+            EditorAction.SaveScript -> editorManager.save {
                 Toast.makeText(context, "Saved...", Toast.LENGTH_SHORT).show()
-            } else {
-                saveDialog.show()
             }
+
+            // Running always uses the latest text, so save first instead of asking.
+            EditorAction.RunScript -> editorManager.save {
+                editorManager.actionAfterSave()
+            }
+
+            // Closing or starting a new script can discard work, so ask.
+            else -> saveDialog.show()
         } else if (editorManager.saveNew()) {
             saveAsNewDialog.show()
         } else {
@@ -86,7 +94,7 @@ fun EditorScreen(
 
     FileSaveDialog(
         state = saveDialog,
-        name = { editorManager.title.value },
+        name = { editorManager.scriptName },
         onOk = {
             editorManager.save {
                 editorManager.actionAfterSave()

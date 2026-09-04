@@ -324,44 +324,32 @@ private fun ScriptTitle(
     modifier: Modifier = Modifier
 ) {
     val script = microScript()
-    val source = stringResource(
-        id = if (script.isLocal) R.string.this_device else R.string.micro_python
-    )
-    val name = when {
-        script.exists.not() -> ""
-        script.isLocal -> script.name
-        else -> script.path.substringAfterLast('/')
-    }
-    Row(
+    if (script.exists) Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(2.dp),
         verticalAlignment = Alignment.Bottom
     ) {
         Text(
-            text = source,
+            text = stringResource(
+                if (script.isLocal) R.string.this_device
+                else R.string.micro_python
+            ),
             fontFamily = fontConsolas,
+            fontWeight = FontWeight.SemiBold,
             fontSize = 12.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1
         )
-        if (name.isNotEmpty()) {
-            Text(
-                text = "/",
-                fontFamily = fontConsolas,
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.outline
-            )
-            Text(
-                text = name,
-                fontFamily = fontConsolas,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-                overflow = TextOverflow.MiddleEllipsis,
-                modifier = Modifier.weight(1f, fill = false)
-            )
-        }
+        Text(
+            text = script.displayName,
+            fontFamily = fontConsolas,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.MiddleEllipsis,
+            modifier = Modifier.weight(1f, fill = false)
+        )
     }
 }
 
