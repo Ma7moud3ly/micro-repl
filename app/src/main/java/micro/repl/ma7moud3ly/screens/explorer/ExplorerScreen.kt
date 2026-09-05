@@ -18,8 +18,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import micro.repl.ma7moud3ly.MainViewModel
 import micro.repl.ma7moud3ly.R
-import micro.repl.ma7moud3ly.managers.FilesManager
-import micro.repl.ma7moud3ly.managers.TerminalManager
 import micro.repl.ma7moud3ly.model.EditorMode
 import micro.repl.ma7moud3ly.model.MicroFile
 import micro.repl.ma7moud3ly.model.MicroScript
@@ -41,8 +39,6 @@ private const val TAG = "FileManagerScreen"
  * importing and exporting files, renaming and deleting files, and creating new files.
  *
  * @param viewModel The MainViewModel instance providing data for the screen.
- * @param terminalManager The TerminalManager instance for managing terminal sessions.
- * @param filesManager The FilesManager instance for interacting with the remote file system.
  * @param openTerminal A lambda function to open a terminal session with a given MicroScript.
  * @param openEditor A lambda function to open an editor with a given MicroScript.
  * @param onBack A lambda function to navigate back to the previous screen.
@@ -50,13 +46,13 @@ private const val TAG = "FileManagerScreen"
 @Composable
 fun FilesExplorerScreen(
     viewModel: MainViewModel,
-    terminalManager: TerminalManager,
-    filesManager: FilesManager?,
     openTerminal: (MicroScript) -> Unit,
     openEditor: (MicroScript) -> Unit,
     onBack: () -> Unit
 ) {
     val activity = LocalActivity.current as Activity
+    val terminalManager = viewModel.terminalManager
+    val filesManager = viewModel.filesManager
     val root by remember { viewModel.root }
     val coroutineScope = rememberCoroutineScope()
     val files = viewModel.files.collectAsState()
@@ -70,7 +66,7 @@ fun FilesExplorerScreen(
 
     // LaunchedEffect to terminate any running execution and list the directory contents
     LaunchedEffect(Unit) {
-        terminalManager.terminateExecution()
+        terminalManager?.terminateExecution()
         filesManager?.listDir(viewModel.root.value)
     }
 

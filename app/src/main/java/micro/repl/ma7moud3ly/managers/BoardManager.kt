@@ -21,11 +21,9 @@ import android.hardware.usb.UsbManager
 import android.os.Build
 import android.os.Build.VERSION.SDK_INT
 import android.os.Handler
+import android.os.Looper
 import android.os.Parcelable
 import android.util.Log
-import androidx.activity.ComponentActivity
-import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.LifecycleOwner
 import com.hoho.android.usbserial.driver.UsbSerialPort
 import com.hoho.android.usbserial.driver.UsbSerialProber
 import com.hoho.android.usbserial.util.SerialInputOutputManager
@@ -66,7 +64,7 @@ class BoardManager(
     private val context: Context,
     private val onStatusChanges: ((status: ConnectionStatus) -> Unit)? = null,
     private val onReceiveData: ((data: String, clear: Boolean) -> Unit)? = null,
-) : SerialInputOutputManager.Listener, DefaultLifecycleObserver {
+) : SerialInputOutputManager.Listener {
 
     companion object {
         private const val TAG = "BoardManager"
@@ -103,21 +101,24 @@ class BoardManager(
 
 
     init {
-        (activity as ComponentActivity).lifecycle.addObserver(this)
         getProducts()
         onStatusChanges?.invoke(ConnectionStatus.Connecting)
     }
 
-    override fun onCreate(owner: LifecycleOwner) {
-        super.onCreate(owner)
+    /** Starts scanning for boards. Pair every call with [release]. */
+    fun start() {
         detectUsbDevices()
     }
 
-    override fun onDestroy(owner: LifecycleOwner) {
-        Log.i(TAG, "onDestroy")
-        super.onDestroy(owner)
+    /**
+     * Closes the port and unregisters the USB receiver.
+     *
+     * Called when the session owner goes away, so the receiver callback doesn't
+     * keep firing against a dead session.
+     */
+    fun release() {
+        Log.i(TAG, "release")
         try {
-            //unregister usb broadcast receiver on destroy to avoid repeating its callback
             context.unregisterReceiver(usbReceiver)
             if (port?.isOpen == true) port?.close()
         } catch (e: Exception) {
@@ -452,7 +453,7 @@ class BoardManager(
         val errorMessage = e?.message ?: ""
         Log.e(TAG, "onRunError - ${e?.message}")
         onStatusChanges?.invoke(ConnectionStatus.Connecting)
-        Handler(activity.mainLooper).postDelayed({
+        Handler(Looper.getMainLooper()).postDelayed({
             if (usbManager.deviceList.isEmpty()) throwError(
                 ConnectionError.CONNECTION_LOST,
                 errorMessage

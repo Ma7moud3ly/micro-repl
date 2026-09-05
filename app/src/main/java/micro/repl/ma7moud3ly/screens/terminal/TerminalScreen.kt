@@ -19,9 +19,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import micro.repl.ma7moud3ly.MainViewModel
 import micro.repl.ma7moud3ly.R
-import micro.repl.ma7moud3ly.managers.BoardManager
 import micro.repl.ma7moud3ly.managers.CommandsManager
-import micro.repl.ma7moud3ly.managers.TerminalManager
 import micro.repl.ma7moud3ly.model.MicroScript
 
 private const val TAG = "TerminalScreen"
@@ -31,11 +29,11 @@ private const val TAG = "TerminalScreen"
 fun TerminalScreen(
     microScript: MicroScript,
     viewModel: MainViewModel,
-    boardManager: BoardManager,
-    terminalManager: TerminalManager,
     onBack: () -> Unit
 ) {
     val activity = LocalActivity.current as Activity
+    val boardManager = viewModel.boardManager
+    val terminalManager = viewModel.terminalManager
     val coroutineScope = rememberCoroutineScope()
     var terminalInput by remember { viewModel.terminalInput }
     var terminalOutput by remember { viewModel.terminalOutput }
@@ -45,9 +43,9 @@ fun TerminalScreen(
             val code = terminalInput
             viewModel.history.push(code)
             // for one statement, execute it instantly with
-            if (code.contains("\n").not()) terminalManager.eval(code)
+            if (code.contains("\n").not()) terminalManager?.eval(code)
             // for multiline code, consider it as a script
-            else terminalManager.evalMultiLine(code)
+            else terminalManager?.evalMultiLine(code)
             terminalInput = ""
             terminalOutput += "\n"
         }
@@ -62,12 +60,12 @@ fun TerminalScreen(
         coroutineScope.launch {
             withContext(Dispatchers.IO) {
                 if (microScript.isLocal) {
-                    terminalManager.executeLocalScript(
+                    terminalManager?.executeLocalScript(
                         microScript = microScript,
                         onClear = ::clear
                     )
                 } else {
-                    terminalManager.executeScript(
+                    terminalManager?.executeScript(
                         microScript = microScript,
                         onClear = ::clear
                     )
@@ -77,7 +75,7 @@ fun TerminalScreen(
     }
 
     fun onTerminate(showMessage: Boolean = false) {
-        terminalManager.terminateExecution()
+        terminalManager?.terminateExecution()
         if (showMessage) Toast.makeText(
             activity,
             activity.getString(R.string.terminal_terminate_msg),
@@ -86,7 +84,7 @@ fun TerminalScreen(
     }
 
     fun onSoftReset() {
-        terminalManager.softResetDevice {
+        terminalManager?.softResetDevice {
             Toast.makeText(
                 activity,
                 activity.getString(R.string.terminal_soft_reset_msg),
@@ -100,7 +98,7 @@ fun TerminalScreen(
         if (microScript.hasContent) {
             executeScript()
         } else {
-            boardManager.writeCommand(CommandsManager.REPL_MODE)
+            boardManager?.writeCommand(CommandsManager.REPL_MODE)
         }
     }
 

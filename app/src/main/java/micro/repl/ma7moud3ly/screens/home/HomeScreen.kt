@@ -18,8 +18,6 @@ import androidx.compose.runtime.remember
 import androidx.core.net.toUri
 import micro.repl.ma7moud3ly.MainViewModel
 import micro.repl.ma7moud3ly.R
-import micro.repl.ma7moud3ly.managers.BoardManager
-import micro.repl.ma7moud3ly.managers.TerminalManager
 import micro.repl.ma7moud3ly.managers.isPortrait
 import micro.repl.ma7moud3ly.managers.toggleOrientationMode
 import micro.repl.ma7moud3ly.model.MicroDevice
@@ -34,8 +32,6 @@ private const val TAG = "HomeScreen"
 @Composable
 fun HomeScreen(
     viewModel: MainViewModel,
-    boardManager: BoardManager?,
-    terminalManager: TerminalManager?,
     openThemePicker: () -> Unit,
     openTerminal: () -> Unit,
     openEditor: () -> Unit,
@@ -44,6 +40,8 @@ fun HomeScreen(
 ) {
     val activity = LocalActivity.current as Activity
     val isPortrait = remember { activity.isPortrait() }
+    val boardManager = viewModel.boardManager
+    val terminalManager = viewModel.terminalManager
 
     fun onApproveDevice(microDevice: MicroDevice) {
         boardManager?.approveDevice(microDevice.usbDevice!!)

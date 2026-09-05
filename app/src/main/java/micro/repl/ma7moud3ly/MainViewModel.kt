@@ -7,12 +7,18 @@
 
 package micro.repl.ma7moud3ly
 
+import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
+import micro.repl.ma7moud3ly.managers.BoardManager
+import micro.repl.ma7moud3ly.managers.FilesManager
 import micro.repl.ma7moud3ly.managers.TerminalHistoryManager
+import micro.repl.ma7moud3ly.managers.TerminalManager
 import micro.repl.ma7moud3ly.model.ConnectionStatus
 import micro.repl.ma7moud3ly.model.MicroDevice
 import micro.repl.ma7moud3ly.model.MicroFile
@@ -27,6 +33,72 @@ import micro.repl.ma7moud3ly.model.MicroScript
  * list, terminal input and output, and command history.
  */
 class MainViewModel : ViewModel() {
+
+    ////// Board session
+
+    /**
+     * Talks to the connected board over USB serial.
+     *
+     * Null until [attach] runs, and again once the hosting Activity is destroyed.
+     */
+    var boardManager by mutableStateOf<BoardManager?>(null)
+        private set
+
+    /** Runs code and resets the board. Shares the [boardManager] connection. */
+    var terminalManager by mutableStateOf<TerminalManager?>(null)
+        private set
+
+    /** Reads and writes files on the board. Shares the [boardManager] connection. */
+    var filesManager by mutableStateOf<FilesManager?>(null)
+        private set
+
+    /**
+     * Builds the board session on top of [context].
+     *
+     * [BoardManager] still needs an Activity for the USB permission intent, so the
+     * session is scoped to whoever calls this and must be torn down with [detach].
+     * The state below (connection status, terminal output, files) is what survives
+     * a configuration change.
+     */
+    fun attach(context: Context) {
+        if (boardManager != null) return
+        val board = BoardManager(
+            context = context,
+            onStatusChanges = { status.value = it },
+            onReceiveData = ::onReceiveTerminalData
+        )
+        boardManager = board
+        terminalManager = TerminalManager(board)
+        filesManager = FilesManager(
+            boardManager = board,
+            onUpdateFiles = { files.value = it }
+        )
+        board.start()
+    }
+
+    /** Tears down the session built by [attach]. */
+    fun detach() {
+        boardManager?.release()
+        boardManager = null
+        terminalManager = null
+        filesManager = null
+    }
+
+    /**
+     * Appends board output to the terminal on the main thread, since it arrives on the
+     * serial reader thread.
+     */
+    private fun onReceiveTerminalData(data: String, clear: Boolean) {
+        viewModelScope.launch {
+            terminalOutput.value = when {
+                clear -> ""
+                // limit terminal output to 10000 chars to avoid app
+                // freeze for very large outputs
+                terminalOutput.value.length > 10000 -> data
+                else -> terminalOutput.value + data
+            }
+        }
+    }
 
     ////// Home
 

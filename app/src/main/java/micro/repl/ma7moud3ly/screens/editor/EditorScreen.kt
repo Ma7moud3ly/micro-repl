@@ -10,10 +10,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.retain.retain
 import androidx.compose.ui.platform.LocalContext
+import micro.repl.ma7moud3ly.MainViewModel
 import micro.repl.ma7moud3ly.managers.EditorAction
 import micro.repl.ma7moud3ly.managers.EditorManager
 import micro.repl.ma7moud3ly.managers.EditorSession
-import micro.repl.ma7moud3ly.managers.FilesManager
 import micro.repl.ma7moud3ly.model.MicroScript
 import micro.repl.ma7moud3ly.screens.dialogs.FileSaveAsDialog
 import micro.repl.ma7moud3ly.screens.dialogs.FileSaveDialog
@@ -27,7 +27,7 @@ fun EditorScreen(
     canRun: () -> Boolean,
     script: MicroScript,
     blank: Boolean,
-    filesManager: FilesManager,
+    viewModel: MainViewModel,
     openThemePicker: () -> Unit,
     onRemoteRun: (MicroScript) -> Unit,
     onBack: () -> Unit
@@ -48,7 +48,7 @@ fun EditorScreen(
             session = editorSession,
             theme = themeController.theme,
             runnable = canRun,
-            filesManager = filesManager,
+            filesManager = viewModel.filesManager,
             onRun = onRemoteRun,
             afterEdit = onBack
         )

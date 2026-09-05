@@ -13,9 +13,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import micro.repl.ma7moud3ly.managers.BoardManager
-import micro.repl.ma7moud3ly.managers.FilesManager
-import micro.repl.ma7moud3ly.managers.TerminalManager
 import micro.repl.ma7moud3ly.model.AppRoutes
 import micro.repl.ma7moud3ly.model.ConnectionStatus
 import micro.repl.ma7moud3ly.model.MicroScript
@@ -29,9 +26,6 @@ import micro.repl.ma7moud3ly.screens.terminal.TerminalScreen
 @Composable
 fun RootGraph(
     viewModel: MainViewModel,
-    boardManager: BoardManager,
-    filesManager: FilesManager,
-    terminalManager: TerminalManager,
     navController: NavHostController = rememberNavController(),
 ) {
     var canRun by remember { mutableStateOf(false) }
@@ -60,8 +54,6 @@ fun RootGraph(
         composable<AppRoutes.Home> {
             HomeScreen(
                 viewModel = viewModel,
-                boardManager = boardManager,
-                terminalManager = terminalManager,
                 openThemePicker = {
                     navController.navigate(AppRoutes.ThemePicker)
                 },
@@ -92,8 +84,6 @@ fun RootGraph(
             TerminalScreen(
                 microScript = microScript,
                 viewModel = viewModel,
-                terminalManager = terminalManager,
-                boardManager = boardManager,
                 onBack = {
                     navController.popBackStack()
                 }
@@ -107,7 +97,7 @@ fun RootGraph(
                 canRun = { canRun },
                 script = script,
                 blank = editor.blank,
-                filesManager = filesManager,
+                viewModel = viewModel,
                 openThemePicker = {
                     navController.navigate(AppRoutes.ThemePicker)
                 },
@@ -128,9 +118,7 @@ fun RootGraph(
 
         composable<AppRoutes.Explorer> {
             FilesExplorerScreen(
-                filesManager = filesManager,
                 viewModel = viewModel,
-                terminalManager = terminalManager,
                 openTerminal = { microScript ->
                     viewModel.openScript(microScript)
                     navController.navigate(AppRoutes.Terminal)
