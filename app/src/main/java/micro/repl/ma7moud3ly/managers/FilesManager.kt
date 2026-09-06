@@ -8,8 +8,12 @@
 package micro.repl.ma7moud3ly.managers
 
 import android.util.Log
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import micro.repl.ma7moud3ly.model.MicroFile
 import org.json.JSONArray
+import org.koin.core.annotation.Single
 
 
 /**
@@ -24,16 +28,17 @@ import org.json.JSONArray
  * MicroPython commands for each operation. It also handles decoding the
  * responses from the board to extract file and directory information.
  *
- * @param boardManager The `BoardManager` instance used to communicate with the board.
- * @param onUpdateFiles A callback function that is invoked when the list of files
- *                       in the current directory is updated. This function receives
- *                       a list of `MicroFile` objects representing the files and
- *                       directories in the current directory.
+ * @param replManager The `ReplManager` instance used to communicate with the board.
  */
+@Single
 class FilesManager(
-    private val boardManager: BoardManager,
-    private val onUpdateFiles: ((files: List<MicroFile>) -> Unit)? = null
+    private val replManager: ReplManager
 ) {
+
+    private val _files = MutableStateFlow<List<MicroFile>>(emptyList())
+
+    /** Contents of the directory last listed by [listDir]. */
+    val files: StateFlow<List<MicroFile>> = _files.asStateFlow()
 
     companion object {
         private const val TAG = "FilesManager"
@@ -51,22 +56,20 @@ class FilesManager(
      * This method sends a command to the MicroPython board to list the contents
      * of the current working directory. The response from the board is then
      * decoded into a list of `MicroFile` objects, which is then passed to the
-     * `onUpdateFiles` callback function if it is set.
+     * [files] flow.
      */
-    fun listDir(path: String) {
+    suspend fun listDir(path: String) {
         Log.v(TAG, "path: $path")
         this.path = path
         val code = CommandsManager.listDir(path)
-        boardManager.writeInSilentMode(code, onResponse = { result ->
-            decodeFiles(result)
-        })
+        decodeFiles(replManager.writeInSilentMode(code))
     }
 
     /**
      * Lists the files and directories in the current working directory.
      * This method calls the overloaded `listDir` method with the current path.
      */
-    fun listDir() {
+    suspend fun listDir() {
         listDir(this.path)
     }
 
@@ -75,12 +78,10 @@ class FilesManager(
      *
      * @param file The `MicroFile` object representing the file or directory to remove.
      */
-    fun remove(file: MicroFile) {
+    suspend fun remove(file: MicroFile) {
         val code = if (file.isFile) CommandsManager.removeFile(file)
         else CommandsManager.removeDirectory(file)
-        boardManager.writeInSilentMode(code, onResponse = { result ->
-            decodeFiles(result)
-        })
+        decodeFiles(replManager.writeInSilentMode(code))
     }
 
     /**
@@ -88,12 +89,10 @@ class FilesManager(
      *
      * @param file The `MicroFile` object representing the file or directory to create.
      */
-    fun new(file: MicroFile) {
+    suspend fun new(file: MicroFile) {
         val code = if (file.isFile) CommandsManager.makeFile(file)
         else CommandsManager.makeDirectory(file)
-        boardManager.writeInSilentMode(code, onResponse = { result ->
-            decodeFiles(result)
-        })
+        decodeFiles(replManager.writeInSilentMode(code))
     }
 
     /**
@@ -102,24 +101,20 @@ class FilesManager(
      * @param src The `MicroFile` object representing the source file or directory.
      * @param dst The `MicroFile` object representing the destination file or directory.
      */
-    fun rename(src: MicroFile, dst: MicroFile) {
+    suspend fun rename(src: MicroFile, dst: MicroFile) {
         val code = CommandsManager.rename(src, dst)
-        boardManager.writeInSilentMode(code, onResponse = { result ->
-            decodeFiles(result)
-        })
+        decodeFiles(replManager.writeInSilentMode(code))
     }
 
     /**
      * Reads the contents of a file.
      *
      * @param path The path to the file to read.
-     * @param onRead A callback function that is invoked with the contents of the file.
+     * @return The contents of the file.
      */
-    fun read(path: String, onRead: (content: String) -> Unit) {
+    suspend fun read(path: String): String {
         val code = CommandsManager.readFile(path)
-        boardManager.writeInSilentMode(code, onResponse = { result ->
-            onRead.invoke(result)
-        })
+        return replManager.writeInSilentMode(code)
     }
 
     /**
@@ -127,14 +122,11 @@ class FilesManager(
      *
      * @param path The path to the file to write to.
      * @param content The content to write to the file.
-     * @param onSave A callback function that is invoked when the write operation is complete.
      */
-    fun write(path: String, content: String, onSave: () -> Unit) {
+    suspend fun write(path: String, content: String) {
         val code = CommandsManager.writeFile(path, content)
-        boardManager.writeInSilentMode(code, onResponse = { result ->
-            Log.i(TAG, "result $result")
-            onSave.invoke()
-        })
+        val result = replManager.writeInSilentMode(code)
+        Log.i(TAG, "result $result")
     }
 
     /**
@@ -142,15 +134,12 @@ class FilesManager(
      *
      * @param path The path to the file to write to.
      * @param bytes The bytes to write to the file.
-     * @param onSave A callback function that is invoked when the write operation is complete.
      */
-    fun writeBinary(path: String, bytes: ByteArray, onSave: () -> Unit) {
+    suspend fun writeBinary(path: String, bytes: ByteArray) {
         Log.v(TAG, "writeBinary-to: $path")
         val code = CommandsManager.writeBinaryFile(path, bytes)
-        boardManager.writeInSilentMode(code, onResponse = { result ->
-            Log.i(TAG, "result $result")
-            onSave.invoke()
-        })
+        val result = replManager.writeInSilentMode(code)
+        Log.i(TAG, "result $result")
     }
 
     /**
@@ -159,7 +148,7 @@ class FilesManager(
      * This method parses the JSON response received from the MicroPython board
      * and creates a list of `MicroFile` objects representing the files and
      * directories in the current working directory. objects are sorted to show directories
-     * first then files.Finally the list is passed to the `onUpdateFiles` callback function if it is set.
+     * first then files.Finally, the list is passed to the [files] flow.
      *
      * @param json The JSON response string received from the board manager.
      */
@@ -193,6 +182,6 @@ class FilesManager(
             }
         }
         Log.i(TAG, sortedFiles.toString())
-        onUpdateFiles?.invoke(sortedFiles)
+        _files.value = sortedFiles
     }
 }

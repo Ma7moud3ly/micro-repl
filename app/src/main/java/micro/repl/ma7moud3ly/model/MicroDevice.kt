@@ -8,7 +8,10 @@ data class MicroDevice(
     val isMicroPython: Boolean = false,
     val details: MicroDeviceDetails? = null,
     val usbDevice: UsbDevice? = null
-)
+) {
+    /** Numeric USB product id, used to remember boards the user already approved. */
+    val productId: Int? get() = details?.productId?.toIntOrNull()
+}
 
 data class MicroDeviceDetails(
     val productName: String = "",

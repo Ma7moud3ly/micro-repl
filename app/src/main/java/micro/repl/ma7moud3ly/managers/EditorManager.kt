@@ -169,18 +169,11 @@ class EditorManager(
                 onDone()
             }
         } else {
-            filesManager?.write(
-                path = script.path,
-                content = codeState.code,
-                onSave = {
-                    session.markSaved()
-                    coroutineScope.launch {
-                        withContext(Dispatchers.Main) {
-                            onDone()
-                        }
-                    }
-                }
-            )
+            coroutineScope.launch {
+                filesManager?.write(path = script.path, content = codeState.code)
+                session.markSaved()
+                withContext(Dispatchers.Main) { onDone() }
+            }
         }
     }
 

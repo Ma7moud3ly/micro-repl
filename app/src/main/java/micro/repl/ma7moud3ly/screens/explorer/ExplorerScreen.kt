@@ -66,8 +66,8 @@ fun FilesExplorerScreen(
 
     // LaunchedEffect to terminate any running execution and list the directory contents
     LaunchedEffect(Unit) {
-        terminalManager?.terminateExecution()
-        filesManager?.listDir(viewModel.root.value)
+        terminalManager.terminateExecution()
+        filesManager.listDir(viewModel.root.value)
     }
 
     /**
@@ -81,7 +81,7 @@ fun FilesExplorerScreen(
         val newRoot = File(root).parent ?: "/"
         Log.i(TAG, "onUp from $root to $newRoot")
         viewModel.root.value = newRoot
-        filesManager?.listDir(newRoot)
+        coroutineScope.launch { filesManager.listDir(newRoot) }
     }
 
     BackHandler { onUp() }
@@ -93,17 +93,16 @@ fun FilesExplorerScreen(
      */
     fun onRun(file: MicroFile) {
         Log.i(TAG, "onRun - $file")
-        filesManager?.read(file.fullPath, onRead = { content ->
+        coroutineScope.launch {
+            val content = filesManager.read(file.fullPath)
             Log.i(TAG, "onRun - $content")
             val script = MicroScript(
                 path = file.fullPath,
                 content = content,
                 editorMode = EditorMode.REMOTE
             )
-            coroutineScope.launch {
-                openTerminal(script)
-            }
-        })
+            openTerminal(script)
+        }
     }
 
     /**
@@ -113,17 +112,16 @@ fun FilesExplorerScreen(
      */
     fun onEdit(file: MicroFile) {
         Log.i(TAG, "onEdit - $file")
-        filesManager?.read(file.fullPath, onRead = { content ->
+        coroutineScope.launch {
+            val content = filesManager.read(file.fullPath)
             Log.i(TAG, "onEdit - $content")
             val script = MicroScript(
                 path = file.fullPath,
                 content = content,
                 editorMode = EditorMode.REMOTE
             )
-            coroutineScope.launch {
-                openEditor(script)
-            }
-        })
+            openEditor(script)
+        }
     }
 
     /**
@@ -134,18 +132,13 @@ fun FilesExplorerScreen(
      */
     fun importFile(fileName: String, byteArray: ByteArray) {
         Log.v(TAG, "fileName - $fileName")
-        filesManager?.writeBinary(
-            path = "$root/$fileName",
-            bytes = byteArray,
-            onSave = {
-                coroutineScope.launch {
-                    filesManager.listDir()
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(activity, "saved to $root", Toast.LENGTH_SHORT).show()
-                    }
-                }
+        coroutineScope.launch {
+            filesManager.writeBinary(path = "$root/$fileName", bytes = byteArray)
+            filesManager.listDir()
+            withContext(Dispatchers.Main) {
+                Toast.makeText(activity, "saved to $root", Toast.LENGTH_SHORT).show()
             }
-        )
+        }
     }
 
     /**
@@ -156,7 +149,7 @@ fun FilesExplorerScreen(
     fun onOpenFolder(file: MicroFile) {
         Log.i(TAG, "onOpenFolder - ${file.fullPath}")
         viewModel.root.value = file.fullPath
-        filesManager?.listDir(file.fullPath)
+        coroutineScope.launch { filesManager.listDir(file.fullPath) }
     }
 
     /**
@@ -166,7 +159,7 @@ fun FilesExplorerScreen(
         Log.i(TAG, "onRefresh")
         val msg = activity.getText(R.string.explorer_refresh)
         Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
-        filesManager?.listDir()
+        coroutineScope.launch { filesManager.listDir() }
     }
 
     FileDeleteDialog(
@@ -174,7 +167,7 @@ fun FilesExplorerScreen(
         name = { selectedFile?.name.orEmpty() },
         onOk = {
             Log.i(TAG, "onRemove - $selectedFile")
-            filesManager?.remove(selectedFile!!)
+            coroutineScope.launch { filesManager.remove(selectedFile!!) }
         }
     )
 
@@ -183,7 +176,7 @@ fun FilesExplorerScreen(
         microFile = { selectedFile },
         onOk = { file ->
             Log.i(TAG, "onNew - $file")
-            filesManager?.new(file)
+            coroutineScope.launch { filesManager.new(file) }
         }
     )
 
@@ -199,10 +192,9 @@ fun FilesExplorerScreen(
                 else MicroFile.DIRECTORY
             )
             Log.i(TAG, "onRename - from ${selectedFile!!.name} to ${dst.name}")
-            filesManager?.rename(
-                src = selectedFile!!,
-                dst = dst
-            )
+            coroutineScope.launch {
+                filesManager.rename(src = selectedFile!!, dst = dst)
+            }
         }
     )
 

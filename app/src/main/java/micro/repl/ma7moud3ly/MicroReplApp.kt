@@ -10,19 +10,17 @@ package micro.repl.ma7moud3ly
 import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.LocalThemeController
 import micro.repl.ma7moud3ly.ui.theme.rememberThemeController
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun MicroReplApp(viewModel: MainViewModel = MainViewModel()) {
+fun MicroReplApp(viewModel: MainViewModel = koinViewModel()) {
     val activity = LocalActivity.current!!
 
-    DisposableEffect(activity) {
-        viewModel.attach(activity)
-        onDispose { viewModel.detach() }
-    }
+    LaunchedEffect(Unit) { viewModel.start() }
 
     val themeController = rememberThemeController(activity)
     CompositionLocalProvider(LocalThemeController provides themeController) {

@@ -7,14 +7,14 @@
 
 package micro.repl.ma7moud3ly
 
-import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import micro.repl.ma7moud3ly.managers.ReplManager
 import micro.repl.ma7moud3ly.managers.BoardManager
 import micro.repl.ma7moud3ly.managers.FilesManager
 import micro.repl.ma7moud3ly.managers.TerminalHistoryManager
@@ -23,105 +23,50 @@ import micro.repl.ma7moud3ly.model.ConnectionStatus
 import micro.repl.ma7moud3ly.model.MicroDevice
 import micro.repl.ma7moud3ly.model.MicroFile
 import micro.repl.ma7moud3ly.model.MicroScript
+import org.koin.core.annotation.KoinViewModel
 
 /**
  * Holds and manages the UI state for the main application screen.
  *
- * This ViewModel class provides data and state management for the main screen
- * of the application. It exposes LiveData objects for observing changes in
- * the device connection status, connected device, files explorer path, files
- * list, terminal input and output, and command history.
+ * The managers are process-wide singletons; this class owns the screen state built on
+ * top of them and the scope their suspending work runs in.
  */
-class MainViewModel : ViewModel() {
-
-    ////// Board session
-
-    /**
-     * Talks to the connected board over USB serial.
-     *
-     * Null until [attach] runs, and again once the hosting Activity is destroyed.
-     */
-    var boardManager by mutableStateOf<BoardManager?>(null)
-        private set
-
-    /** Runs code and resets the board. Shares the [boardManager] connection. */
-    var terminalManager by mutableStateOf<TerminalManager?>(null)
-        private set
-
-    /** Reads and writes files on the board. Shares the [boardManager] connection. */
-    var filesManager by mutableStateOf<FilesManager?>(null)
-        private set
-
-    /**
-     * Builds the board session on top of [context].
-     *
-     * [BoardManager] still needs an Activity for the USB permission intent, so the
-     * session is scoped to whoever calls this and must be torn down with [detach].
-     * The state below (connection status, terminal output, files) is what survives
-     * a configuration change.
-     */
-    fun attach(context: Context) {
-        if (boardManager != null) return
-        val board = BoardManager(
-            context = context,
-            onStatusChanges = { status.value = it },
-            onReceiveData = ::onReceiveTerminalData
-        )
-        boardManager = board
-        terminalManager = TerminalManager(board)
-        filesManager = FilesManager(
-            boardManager = board,
-            onUpdateFiles = { files.value = it }
-        )
-        board.start()
-    }
-
-    /** Tears down the session built by [attach]. */
-    fun detach() {
-        boardManager?.release()
-        boardManager = null
-        terminalManager = null
-        filesManager = null
-    }
-
-    /**
-     * Appends board output to the terminal on the main thread, since it arrives on the
-     * serial reader thread.
-     */
-    private fun onReceiveTerminalData(data: String, clear: Boolean) {
-        viewModelScope.launch {
-            terminalOutput.value = when {
-                clear -> ""
-                // limit terminal output to 10000 chars to avoid app
-                // freeze for very large outputs
-                terminalOutput.value.length > 10000 -> data
-                else -> terminalOutput.value + data
-            }
-        }
-    }
+@KoinViewModel
+class MainViewModel(
+    val boardManager: BoardManager,
+    val replManager: ReplManager,
+    val terminalManager: TerminalManager,
+    val filesManager: FilesManager
+) : ViewModel() {
 
     ////// Home
 
     /**
      * Represents the current connectivity status of the device.
-     *
-     * Possible values are:
-     * - `ConnectionStatus.Connecting`: Indicates that the device is currently
-     *   attempting to connect.
-     * - `ConnectionStatus.Connected`: Indicates that the device is successfully
-     *   connected.
-     * - `ConnectionStatus.Error`: Indicates that the connection attempt
-     *   failed.
      */
-    val status = MutableStateFlow<ConnectionStatus>(ConnectionStatus.Connecting)
+    val status: StateFlow<ConnectionStatus> get() = boardManager.status
 
     /**
      * The currently connected MicroPython device.
-     *
-     * This property is only available when the `status` is `ConnectionStatus.Connected`.
-     * Otherwise, it returns `null`.
      */
     val microDevice: MicroDevice? get() = (status.value as? ConnectionStatus.Connected)?.microDevice
+
+    /** Starts the board session and keeps it running for this ViewModel's lifetime. */
+    fun start() {
+        viewModelScope.launch { boardManager.start() }
+    }
+
+    fun detectUsbDevices() {
+        viewModelScope.launch { boardManager.detectUsbDevices() }
+    }
+
+    fun approveDevice(microDevice: MicroDevice) {
+        viewModelScope.launch { boardManager.approveDevice(microDevice) }
+    }
+
+    fun onForgetDevice(microDevice: MicroDevice) {
+        viewModelScope.launch { boardManager.onForgetDevice(microDevice) }
+    }
 
     ////// Script handoff
 
@@ -133,7 +78,6 @@ class MainViewModel : ViewModel() {
         this.script = script
     }
 
-
     ////// Files Explorer
 
     /**
@@ -144,7 +88,7 @@ class MainViewModel : ViewModel() {
     /**
      * The list of files and directories in the current path of the files explorer.
      */
-    val files = MutableStateFlow<List<MicroFile>>(listOf())
+    val files: StateFlow<List<MicroFile>> get() = filesManager.files
 
     ////// Terminal
 
@@ -162,4 +106,18 @@ class MainViewModel : ViewModel() {
      * Manages the command history for the terminal.
      */
     val history = TerminalHistoryManager()
+
+    init {
+        viewModelScope.launch {
+            replManager.output.collect { (data, clear) ->
+                terminalOutput.value = when {
+                    clear -> ""
+                    // limit terminal output to 10000 chars to avoid app
+                    // freeze for very large outputs
+                    terminalOutput.value.length > 10000 -> data
+                    else -> terminalOutput.value + data
+                }
+            }
+        }
+    }
 }

@@ -15,7 +15,9 @@ import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.core.net.toUri
+import kotlinx.coroutines.launch
 import micro.repl.ma7moud3ly.MainViewModel
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.managers.isPortrait
@@ -40,43 +42,47 @@ fun HomeScreen(
 ) {
     val activity = LocalActivity.current as Activity
     val isPortrait = remember { activity.isPortrait() }
-    val boardManager = viewModel.boardManager
     val terminalManager = viewModel.terminalManager
+    val coroutineScope = rememberCoroutineScope()
 
     fun onApproveDevice(microDevice: MicroDevice) {
-        boardManager?.approveDevice(microDevice.usbDevice!!)
+        viewModel.approveDevice(microDevice)
     }
 
     fun onForgetDevice(microDevice: MicroDevice) {
-        boardManager?.onForgetDevice(microDevice.usbDevice!!)
+        viewModel.onForgetDevice(microDevice)
     }
 
     fun onReset() {
         viewModel.microDevice?.let {
-            terminalManager?.resetDevice(it) {
-                Toast.makeText(
-                    activity,
-                    activity.getString(R.string.terminal_reset_msg),
-                    Toast.LENGTH_SHORT
-                ).show()
+            coroutineScope.launch {
+                terminalManager.resetDevice(it) {
+                    Toast.makeText(
+                        activity,
+                        activity.getString(R.string.terminal_reset_msg),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
         }
     }
 
     fun onSoftReset() {
         viewModel.microDevice?.let {
-            terminalManager?.softResetDevice {
-                Toast.makeText(
-                    activity,
-                    activity.getString(R.string.terminal_soft_reset_msg),
-                    Toast.LENGTH_SHORT
-                ).show()
+            coroutineScope.launch {
+                terminalManager.softResetDevice {
+                    Toast.makeText(
+                        activity,
+                        activity.getString(R.string.terminal_soft_reset_msg),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
         }
     }
 
     fun onTerminate() {
-        terminalManager?.terminateExecution()
+        coroutineScope.launch { terminalManager.terminateExecution() }
         Toast.makeText(
             activity,
             activity.getString(R.string.terminal_terminate_msg),
@@ -111,13 +117,13 @@ fun HomeScreen(
                 is HomeEvents.Reset -> onReset()
                 is HomeEvents.SoftReset -> onSoftReset()
                 is HomeEvents.Terminate -> onTerminate()
-                is HomeEvents.Connect -> boardManager?.detectUsbDevices()
-                is HomeEvents.Disconnect -> boardManager?.onDisconnectDevice()
+                is HomeEvents.Connect -> viewModel.detectUsbDevices()
+                is HomeEvents.Disconnect -> viewModel.boardManager.onDisconnectDevice()
                 is HomeEvents.RestartApp -> activity.recreate()
                 is HomeEvents.ShowThemeDialog -> openThemePicker()
                 is HomeEvents.ToggleOrientation -> activity.toggleOrientationMode()
                 is HomeEvents.Help -> onHelp()
-                is HomeEvents.DenyDevice -> boardManager?.onDenyDevice()
+                is HomeEvents.DenyDevice -> viewModel.boardManager.onDenyDevice()
                 is HomeEvents.ApproveDevice -> onApproveDevice(it.microDevice)
                 is HomeEvents.ForgetDevice -> onForgetDevice(it.microDevice)
             }
