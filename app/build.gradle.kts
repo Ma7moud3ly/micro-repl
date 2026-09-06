@@ -4,8 +4,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.koin.compiler)
 }
-
 
 // apply gms & firebase plugin only for gms build flavor
 if (gradle.startParameter.taskNames.any { it.contains("gms", ignoreCase = true) }) {
@@ -126,6 +126,17 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.kotlinx.serialization)
+
+    /**
+     * Koin - dependency injection
+     */
+    implementation(platform(libs.koin.bom))
+    implementation(libs.koin.core)
+    implementation(libs.koin.android)
+    implementation(libs.koin.androidx.compose)
+    implementation(libs.koin.compose.viewmodel)
+    implementation(libs.koin.compose.viewmodel.navigation)
+    implementation(libs.koin.annotations)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 
     /**
