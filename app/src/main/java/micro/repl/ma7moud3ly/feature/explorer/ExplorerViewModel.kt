@@ -23,7 +23,6 @@ import micro.repl.ma7moud3ly.managers.ScriptManager
 import micro.repl.ma7moud3ly.managers.TerminalManager
 import micro.repl.ma7moud3ly.model.ConnectionStatus
 import micro.repl.ma7moud3ly.model.EditorMode
-import micro.repl.ma7moud3ly.model.ExplorerCommand
 import micro.repl.ma7moud3ly.model.MicroFile
 import micro.repl.ma7moud3ly.model.MicroPath
 import micro.repl.ma7moud3ly.model.MicroScript

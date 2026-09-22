@@ -12,9 +12,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
-import micro.repl.ma7moud3ly.model.AppRoutes
 import micro.repl.ma7moud3ly.model.ConnectionStatus
-import micro.repl.ma7moud3ly.feature.dialogs.ThemeSelectorDialog
+import micro.repl.ma7moud3ly.ui.dialog.ThemeSelectorDialog
 import micro.repl.ma7moud3ly.feature.editor.EditorScreen
 import micro.repl.ma7moud3ly.feature.explorer.FilesExplorerScreen
 import micro.repl.ma7moud3ly.feature.home.HomeScreen

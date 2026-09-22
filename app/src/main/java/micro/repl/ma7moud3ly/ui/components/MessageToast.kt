@@ -34,7 +34,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import kotlinx.coroutines.delay
-import micro.repl.ma7moud3ly.model.Message
 import micro.repl.ma7moud3ly.ui.theme.LocalStatusColors
 import kotlin.time.Duration.Companion.milliseconds
 

@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 import micro.repl.ma7moud3ly.managers.EditorManager
 import micro.repl.ma7moud3ly.model.EditorAction
 import micro.repl.ma7moud3ly.model.EditorCommand
-import micro.repl.ma7moud3ly.model.asSuccessMessage
+import micro.repl.ma7moud3ly.ui.components.asSuccessMessage
 import micro.repl.ma7moud3ly.ui.components.MessageToastState
 import micro.repl.ma7moud3ly.ui.components.MyDialogState
 import org.koin.core.annotation.KoinViewModel

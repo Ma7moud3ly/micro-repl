@@ -1,4 +1,4 @@
-package micro.repl.ma7moud3ly.feature.dialogs
+package micro.repl.ma7moud3ly.ui.dialog
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
@@ -12,9 +12,9 @@ import micro.repl.ma7moud3ly.ui.theme.AppTheme
 
 @Preview
 @Composable
-private fun FileSaveAsDialogPreviewLight() {
+private fun FileRenameDialogPreviewLight() {
     AppTheme(darkTheme = false) {
-        FileSaveAsDialog(
+        FileRenameDialog(
             name = { "main.py" },
             onOk = {}
         )
@@ -23,9 +23,9 @@ private fun FileSaveAsDialogPreviewLight() {
 
 @Preview
 @Composable
-private fun FileSaveAsDialogPreviewDark() {
+private fun FileRenameDialogPreviewDark() {
     AppTheme(darkTheme = true) {
-        FileSaveAsDialog(
+        FileRenameDialog(
             name = { "main.py" },
             onOk = {}
         )
@@ -33,27 +33,20 @@ private fun FileSaveAsDialogPreviewDark() {
 }
 
 @Composable
-fun FileSaveAsDialog(
+fun FileRenameDialog(
     name: () -> String,
     state: MyDialogState = rememberMyDialogState(visible = true),
-    onOk: (String) -> Unit,
-    onDismiss: () -> Unit = {}
+    onOk: (String) -> Unit
 ) {
-    MyDialog(
-        state = state,
-        dismissOnClickOutside = false
-    ) {
+    MyDialog(state) {
         InputDialogContent(
             name = name(),
-            message = stringResource(R.string.editor_msg_save),
-            onDismiss = {
-                state.dismiss()
-                onDismiss()
-            },
+            message = stringResource(R.string.explorer_rename_label, name()),
+            onDismiss = { state.dismiss() },
             onOk = {
                 state.dismiss()
                 onOk(it)
-            },
+            }
         )
     }
 }

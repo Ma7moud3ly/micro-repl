@@ -1,4 +1,11 @@
-package micro.repl.ma7moud3ly.feature.dialogs
+/*
+ * Created by Mahmoud Aly - engma7moud3ly@gmail.com
+ * Project Micro REPL - https://github.com/Ma7moud3ly/micro-repl
+ * Copyright (c) 2023 . MIT license.
+ *
+ */
+
+package micro.repl.ma7moud3ly.ui.dialog
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -19,59 +26,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.ui.components.MyButton
-import micro.repl.ma7moud3ly.ui.components.MyDialog
-import micro.repl.ma7moud3ly.ui.components.MyDialogState
-import micro.repl.ma7moud3ly.ui.components.rememberMyDialogState
-import micro.repl.ma7moud3ly.ui.theme.AppTheme
 
+/**
+ * The bodies every dialog in the app is built from.
+ *
+ * A dialog belongs to the feature that opens it; what they share is these two
+ * shapes - ask for a name, or ask yes/no.
+ */
 
-@Preview
-@Composable
-private fun FileRenameDialogPreviewLight() {
-    AppTheme(darkTheme = false) {
-        FileRenameDialog(
-            name = { "main.py" },
-            onOk = {}
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun FileRenameDialogPreviewDark() {
-    AppTheme(darkTheme = true) {
-        FileRenameDialog(
-            name = { "main.py" },
-            onOk = {}
-        )
-    }
-}
-
-@Composable
-fun FileRenameDialog(
-    name: () -> String,
-    state: MyDialogState = rememberMyDialogState(visible = true),
-    onOk: (String) -> Unit
-) {
-    MyDialog(state) {
-        InputDialogContent(
-            name = name(),
-            message = stringResource(R.string.explorer_rename_label, name()),
-            onDismiss = { state.dismiss() },
-            onOk = {
-                state.dismiss()
-                onOk(it)
-            }
-        )
-    }
-}
-
+/** A prompt with a single text field: rename, save-as, new file. */
 @Composable
 internal fun InputDialogContent(
     name: String,
@@ -114,6 +83,46 @@ internal fun InputDialogContent(
             )
             MyButton(
                 text = stringResource(id = R.string.dialog_cancel),
+                background = MaterialTheme.colorScheme.secondary,
+                color = MaterialTheme.colorScheme.onSecondary,
+                modifier = Modifier.weight(0.4f),
+                onClick = onDismiss
+            )
+        }
+    }
+}
+
+/** A yes/no prompt: delete, discard, overwrite. */
+@Composable
+internal fun ApproveDialogContent(
+    message: String,
+    style: TextStyle = MaterialTheme.typography.bodyLarge,
+    textAlign: TextAlign = TextAlign.Center,
+    onOk: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = message,
+            style = style,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = textAlign
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            MyButton(
+                text = stringResource(id = R.string.dialog_yes),
+                modifier = Modifier.weight(0.4f),
+                onClick = onOk
+            )
+            MyButton(
+                text = stringResource(id = R.string.dialog_no),
                 background = MaterialTheme.colorScheme.secondary,
                 color = MaterialTheme.colorScheme.onSecondary,
                 modifier = Modifier.weight(0.4f),

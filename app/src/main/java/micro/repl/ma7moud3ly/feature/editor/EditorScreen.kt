@@ -13,8 +13,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import micro.repl.ma7moud3ly.model.EditorAction
 import micro.repl.ma7moud3ly.model.EditorCommand
-import micro.repl.ma7moud3ly.feature.dialogs.FileSaveAsDialog
-import micro.repl.ma7moud3ly.feature.dialogs.FileSaveDialog
+import micro.repl.ma7moud3ly.feature.editor.dialog.FileSaveAsDialog
+import micro.repl.ma7moud3ly.feature.editor.dialog.FileSaveDialog
 import micro.repl.ma7moud3ly.ui.components.MessageToast
 import micro.repl.ma7moud3ly.ui.theme.LocalEditorTheme
 import org.koin.androidx.compose.koinViewModel

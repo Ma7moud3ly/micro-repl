@@ -1,4 +1,4 @@
-package micro.repl.ma7moud3ly.model
+package micro.repl.ma7moud3ly
 
 import kotlinx.serialization.Serializable
 

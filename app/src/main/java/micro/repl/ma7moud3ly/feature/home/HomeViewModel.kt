@@ -19,7 +19,6 @@ import micro.repl.ma7moud3ly.managers.ScriptManager
 import micro.repl.ma7moud3ly.model.MicroScript
 import micro.repl.ma7moud3ly.managers.TerminalManager
 import micro.repl.ma7moud3ly.model.ConnectionStatus
-import micro.repl.ma7moud3ly.model.HomeCommand
 import micro.repl.ma7moud3ly.model.MicroDevice
 import org.koin.core.annotation.KoinViewModel
 

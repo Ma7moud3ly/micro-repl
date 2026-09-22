@@ -1,10 +1,11 @@
-package micro.repl.ma7moud3ly.feature.dialogs
+package micro.repl.ma7moud3ly.feature.explorer.dialog
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import micro.repl.ma7moud3ly.R
+import micro.repl.ma7moud3ly.ui.dialog.ApproveDialogContent
 import micro.repl.ma7moud3ly.ui.components.MyDialog
 import micro.repl.ma7moud3ly.ui.components.MyDialogState
 import micro.repl.ma7moud3ly.ui.components.rememberMyDialogState

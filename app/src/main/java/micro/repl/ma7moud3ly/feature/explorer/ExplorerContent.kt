@@ -45,7 +45,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.model.MicroFile
-import micro.repl.ma7moud3ly.feature.explorer.dialogs.FileOptionsDialog
+import micro.repl.ma7moud3ly.feature.explorer.dialog.FileOptionsDialog
 import micro.repl.ma7moud3ly.ui.components.BackButton
 import micro.repl.ma7moud3ly.ui.components.MyScreen
 import micro.repl.ma7moud3ly.ui.theme.AppTheme

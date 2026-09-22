@@ -11,8 +11,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import micro.repl.ma7moud3ly.model.MicroScript
-import micro.repl.ma7moud3ly.feature.dialogs.FileDeleteDialog
-import micro.repl.ma7moud3ly.feature.dialogs.FileRenameDialog
+import micro.repl.ma7moud3ly.ui.dialog.FileDeleteDialog
+import micro.repl.ma7moud3ly.ui.dialog.FileRenameDialog
 import micro.repl.ma7moud3ly.ui.components.rememberMyDialogState
 import org.koin.androidx.compose.koinViewModel
 

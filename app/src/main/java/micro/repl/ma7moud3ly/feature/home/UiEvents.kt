@@ -26,3 +26,10 @@ sealed interface HomeEvents {
     data class ApproveDevice(val microDevice: MicroDevice) : HomeEvents
     data class ForgetDevice(val microDevice: MicroDevice) : HomeEvents
 }
+
+
+sealed interface HomeCommand {
+    data object DeviceReset : HomeCommand
+    data object DeviceSoftReset : HomeCommand
+    data object ExecutionTerminated : HomeCommand
+}

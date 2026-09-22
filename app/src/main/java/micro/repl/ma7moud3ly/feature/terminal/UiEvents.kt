@@ -9,3 +9,8 @@ sealed interface TerminalEvents {
     data object MoveDown : TerminalEvents
     data object Back : TerminalEvents
 }
+
+sealed interface TerminalCommand {
+    data object Terminated : TerminalCommand
+    data object SoftReset : TerminalCommand
+}

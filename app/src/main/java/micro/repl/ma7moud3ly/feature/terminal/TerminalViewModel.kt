@@ -24,7 +24,6 @@ import micro.repl.ma7moud3ly.managers.ScriptManager
 import micro.repl.ma7moud3ly.managers.TerminalHistoryManager
 import micro.repl.ma7moud3ly.managers.TerminalManager
 import micro.repl.ma7moud3ly.model.MicroScript
-import micro.repl.ma7moud3ly.model.TerminalCommand
 import org.koin.core.annotation.KoinViewModel
 
 /** Beyond this, the terminal starts over rather than growing without bound. */

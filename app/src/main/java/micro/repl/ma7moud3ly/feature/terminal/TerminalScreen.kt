@@ -5,8 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.res.stringResource
 import micro.repl.ma7moud3ly.R
-import micro.repl.ma7moud3ly.model.TerminalCommand
-import micro.repl.ma7moud3ly.model.asSuccessMessage
+import micro.repl.ma7moud3ly.ui.components.asSuccessMessage
 import micro.repl.ma7moud3ly.ui.components.MessageToast
 import micro.repl.ma7moud3ly.ui.components.rememberMessageState
 import org.koin.androidx.compose.koinViewModel

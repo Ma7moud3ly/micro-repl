@@ -5,7 +5,7 @@
  *
  */
 
-package micro.repl.ma7moud3ly.feature.dialogs
+package micro.repl.ma7moud3ly.ui.dialog
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -42,7 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.ma7moud3ly.nemo.model.EditorTheme
 import micro.repl.ma7moud3ly.R
-import micro.repl.ma7moud3ly.model.AppRoutes
+import micro.repl.ma7moud3ly.AppRoutes
 import micro.repl.ma7moud3ly.ui.components.MyDialog
 import micro.repl.ma7moud3ly.managers.ThemesManager
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
@@ -50,8 +50,6 @@ import micro.repl.ma7moud3ly.ui.theme.AppThemes
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
 import org.koin.compose.koinInject
 
-// The dialog body is previewed directly — a real Dialog window renders empty
-// in the @Preview surface.
 @Preview
 @Composable
 private fun ThemePickerPreviewDark() {

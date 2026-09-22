@@ -1,4 +1,4 @@
-package micro.repl.ma7moud3ly.feature.explorer.dialogs
+package micro.repl.ma7moud3ly.feature.explorer.dialog
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
