@@ -38,6 +38,10 @@ class AndroidStorageManager(private val context: Context) : StorageManager {
         preferences.edit { putString(KEY_PRODUCTS, Json.encodeToString(productIds)) }
     }
 
+    override var themeName: String
+        get() = preferences.getString(KEY_THEME, "").orEmpty()
+        set(value) = preferences.edit { putString(KEY_THEME, value) }
+
     override var fontSize: Int
         // EditorSettings requires fontSize in 8..32.
         get() = preferences.getInt(KEY_FONT_SIZE, 14).coerceIn(8, 32)
@@ -56,5 +60,6 @@ class AndroidStorageManager(private val context: Context) : StorageManager {
         const val KEY_SHOW_LINES = "show_lines"
         const val KEY_FONT_SIZE = "font_size"
         const val KEY_SCRIPT = "script"
+        const val KEY_THEME = "editor_theme"
     }
 }

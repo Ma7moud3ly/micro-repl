@@ -21,7 +21,7 @@ import java.io.File
  * Everything that touches the filesystem suspends, so callers never have to know
  * which thread the platform needs for it.
  */
-interface ScriptsManager {
+interface LocalFilesManager {
 
     /** Scripts found by the last [refresh]. Updated again on delete and rename. */
     val scripts: SnapshotStateList<MicroScript>

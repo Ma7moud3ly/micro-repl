@@ -12,15 +12,18 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import micro.repl.ma7moud3ly.managers.BoardManager
+import micro.repl.ma7moud3ly.managers.ThemesManager
 import micro.repl.ma7moud3ly.model.ConnectionStatus
 import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
 class MainViewModel(
-    private val boardManager: BoardManager
+    private val boardManager: BoardManager,
+    private val themesManager: ThemesManager
 ) : ViewModel() {
 
     val status: StateFlow<ConnectionStatus> = boardManager.status
+    val theme = themesManager.theme
 
     init {
         viewModelScope.launch { boardManager.start() }

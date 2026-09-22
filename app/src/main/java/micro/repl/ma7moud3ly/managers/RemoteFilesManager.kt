@@ -16,21 +16,20 @@ import org.koin.core.annotation.Single
 
 
 /**
- * Used by Files Explorer to manage file and directory operations on a MicroPython board.
+ * The board's filesystem, as the Files Explorer sees it: listing, creating,
+ * deleting, renaming, reading and writing files and directories.
  *
- * This class provides methods for listing, creating, deleting, renaming,
- * reading, and writing files and directories on a MicroPython board.
- * It interacts with the `BoardManager` to send commands and receive responses
- * from the board's REPL.
+ * There is no file protocol on the wire. Every operation is a snippet of
+ * MicroPython from [CommandsManager], run silently through [replManager], whose
+ * printed reply is decoded back into [MicroFile]s.
  *
- * The `FilesManager` uses the `CommandsManager` to generate the appropriate
- * MicroPython commands for each operation. It also handles decoding the
- * responses from the board to extract file and directory information.
+ * [listDir] publishes what it finds to [files]; everything else answers its caller
+ * directly.
  *
- * @param replManager The `ReplManager` instance used to communicate with the board.
+ * @param replManager Runs the snippets on the board and hands back what they printed.
  */
 @Single
-class FilesManager(
+class RemoteFilesManager(
     private val replManager: ReplManager
 ) {
 
@@ -40,7 +39,7 @@ class FilesManager(
     val files: StateFlow<List<MicroFile>> = _files.asStateFlow()
 
     companion object {
-        private const val TAG = "FilesManager"
+        private const val TAG = "RemoteFilesManager"
     }
 
 

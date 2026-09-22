@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import micro.repl.ma7moud3ly.managers.BoardManager
-import micro.repl.ma7moud3ly.managers.ScriptStoreManager
+import micro.repl.ma7moud3ly.managers.ScriptManager
 import micro.repl.ma7moud3ly.model.MicroScript
 import micro.repl.ma7moud3ly.managers.TerminalManager
 import micro.repl.ma7moud3ly.model.ConnectionStatus
@@ -28,7 +28,7 @@ import org.koin.core.annotation.KoinViewModel
 class HomeViewModel(
     private val boardManager: BoardManager,
     private val terminalManager: TerminalManager,
-    private val scriptStoreManager: ScriptStoreManager
+    private val scriptManager: ScriptManager
 ) : ViewModel() {
 
     /** Current connectivity of the board. */
@@ -44,7 +44,7 @@ class HomeViewModel(
 
     /** Clears the handoff, so the terminal or editor opens on nothing. */
     fun newScript() {
-        scriptStoreManager.open(MicroScript())
+        scriptManager.open(MicroScript())
     }
 
     ////// Connection

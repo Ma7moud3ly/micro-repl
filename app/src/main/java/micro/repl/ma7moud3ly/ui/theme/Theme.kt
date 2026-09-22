@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.toArgb
@@ -74,9 +75,8 @@ fun EditorTheme.toColorScheme(): ColorScheme {
 }
 
 
-/**
- * Themes the app with a Nemo [EditorTheme].
- */
+val LocalEditorTheme = staticCompositionLocalOf { AppThemes.DEFAULT }
+
 @Composable
 fun AppTheme(
     theme: EditorTheme,

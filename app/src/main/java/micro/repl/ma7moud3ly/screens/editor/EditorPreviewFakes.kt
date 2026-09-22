@@ -8,7 +8,6 @@
 package micro.repl.ma7moud3ly.screens.editor
 
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import io.ma7moud3ly.nemo.model.CodeState
 import io.ma7moud3ly.nemo.model.EditorTheme
@@ -17,10 +16,12 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import micro.repl.ma7moud3ly.managers.EditorManager
 import micro.repl.ma7moud3ly.managers.EditorSession
-import micro.repl.ma7moud3ly.managers.FilesManager
+import micro.repl.ma7moud3ly.managers.RemoteFilesManager
 import micro.repl.ma7moud3ly.managers.ReplManager
-import micro.repl.ma7moud3ly.managers.ScriptStoreManager
-import micro.repl.ma7moud3ly.managers.port.ScriptsManager
+import micro.repl.ma7moud3ly.managers.BoardManager
+import micro.repl.ma7moud3ly.managers.ScriptManager
+import micro.repl.ma7moud3ly.managers.ThemesManager
+import micro.repl.ma7moud3ly.managers.port.LocalFilesManager
 import micro.repl.ma7moud3ly.managers.port.SerialPortManager
 import micro.repl.ma7moud3ly.managers.port.StorageManager
 import micro.repl.ma7moud3ly.model.EditorMode
@@ -49,17 +50,24 @@ internal fun previewEditorManager(
             microPython = true
         )
     )
+    val storageManager = FakeStorageManager()
+    val scriptsManager = FakeLocalFilesManager()
+    val serialPort = FakeSerialPortManager()
     return EditorManager(
-        scriptsManager = FakeScriptsManager(),
-        storageManager = FakeStorageManager(),
-        filesManager = FilesManager(ReplManager(FakeSerialPortManager())),
-        scriptStoreManager = ScriptStoreManager()
+        localFilesManager = scriptsManager,
+        storageManager = storageManager,
+        remoteFilesManager = RemoteFilesManager(ReplManager(serialPort)),
+        scriptManager = ScriptManager(scriptsManager, storageManager),
+        themesManager = ThemesManager(storageManager),
+        boardManager = BoardManager(serialPort, storageManager).apply {
+            isConnected = canRun
+        }
     ).apply {
-        open(session = session, theme = theme, canRunState = mutableStateOf(canRun))
+        open(session = session, theme = theme)
     }
 }
 
-private class FakeScriptsManager : ScriptsManager {
+private class FakeLocalFilesManager : LocalFilesManager {
     override val scripts: SnapshotStateList<MicroScript> = mutableStateListOf()
     override suspend fun refresh() = Unit
     override suspend fun scriptDirectory(): File? = null
@@ -76,6 +84,7 @@ private class FakeStorageManager : StorageManager {
     override var fontSize: Int = 14
     override var showLineNumbers: Boolean = true
     override var recentScript: String = ""
+    override var themeName: String = ""
 }
 
 private class FakeSerialPortManager : SerialPortManager {

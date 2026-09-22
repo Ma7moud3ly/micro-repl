@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import micro.repl.ma7moud3ly.managers.CommandsManager
 import micro.repl.ma7moud3ly.managers.ReplManager
-import micro.repl.ma7moud3ly.managers.ScriptStoreManager
+import micro.repl.ma7moud3ly.managers.ScriptManager
 import micro.repl.ma7moud3ly.managers.TerminalHistoryManager
 import micro.repl.ma7moud3ly.managers.TerminalManager
 import micro.repl.ma7moud3ly.model.MicroScript
@@ -35,11 +35,11 @@ class TerminalViewModel(
     private val replManager: ReplManager,
     private val terminalManager: TerminalManager,
     private val terminalHistoryManager: TerminalHistoryManager,
-    scriptStoreManager: ScriptStoreManager
+    scriptManager: ScriptManager
 ) : ViewModel() {
 
     /** The script this session was opened on, blank for a bare REPL. */
-    val script: MicroScript = scriptStoreManager.script
+    val script: MicroScript = scriptManager.script
 
     /** The code being typed. */
     var input by mutableStateOf("")

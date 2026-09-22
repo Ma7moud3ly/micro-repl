@@ -16,7 +16,7 @@ import micro.repl.ma7moud3ly.model.EditorCommand
 import micro.repl.ma7moud3ly.screens.dialogs.FileSaveAsDialog
 import micro.repl.ma7moud3ly.screens.dialogs.FileSaveDialog
 import micro.repl.ma7moud3ly.ui.components.MessageToast
-import micro.repl.ma7moud3ly.ui.theme.LocalThemeController
+import micro.repl.ma7moud3ly.ui.theme.LocalEditorTheme
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -29,17 +29,14 @@ fun EditorScreen(
     val messageToast = remember { viewModel.messageToastState }
     val saveDialog = remember { viewModel.saveDialogState }
     val saveAsNewDialog = remember { viewModel.saveAsNewDialogState }
-    val themeController = LocalThemeController.current
-
-    LaunchedEffect(Unit) {
-        viewModel.open(theme = themeController.theme)
-    }
+    val theme = LocalEditorTheme.current
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
                 is EditorCommand.Run -> onRemoteRun()
                 is EditorCommand.Close -> onBack()
+                else -> Unit
             }
         }
     }
@@ -49,13 +46,11 @@ fun EditorScreen(
 
 
     // Follow theme changes made while the editor is open.
-    LaunchedEffect(themeController.theme) {
-        viewModel.onThemeChanged(themeController.theme)
+    LaunchedEffect(theme) {
+        viewModel.onThemeChanged(theme)
     }
 
-    BackHandler {
-        viewModel.onAction(EditorAction.CLoseScript)
-    }
+    BackHandler { viewModel.onAction(EditorAction.CLoseScript) }
 
     FileSaveDialog(
         state = saveDialog,

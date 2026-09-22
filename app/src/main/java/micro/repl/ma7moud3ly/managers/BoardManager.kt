@@ -7,6 +7,9 @@
 
 package micro.repl.ma7moud3ly.managers
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -43,6 +46,18 @@ class BoardManager(
 
     /** Current connection state of the board. */
     val status: StateFlow<ConnectionStatus> = _status.asStateFlow()
+
+    /**
+     * Whether a board is connected, as observable state.
+     *
+     */
+    var isConnected by mutableStateOf(false)
+        internal set
+
+    private fun setStatus(value: ConnectionStatus) {
+        _status.value = value
+        isConnected = value.isConnected
+    }
 
     // Devices to connect with
     // Only MicroPython is supported right now
@@ -86,7 +101,7 @@ class BoardManager(
 
         if (supportedDevice != null) approveDevice(supportedDevice)
         else if (deviceList.isNotEmpty()) {
-            _status.value = ConnectionStatus.Approve(devices = deviceList)
+            setStatus(ConnectionStatus.Approve(devices = deviceList))
         } else throwError(ConnectionError.NO_DEVICES)
     }
 
@@ -129,7 +144,7 @@ class BoardManager(
     private fun connectToSerial(microDevice: MicroDevice) {
         serialPort.connectToSerial(microDevice)
             .onSuccess {
-                _status.value = ConnectionStatus.Connected(microDevice)
+                setStatus(ConnectionStatus.Connected(microDevice))
                 microDevice.productId?.let { storeProductId(it) }
             }
             .onFailure { e ->
@@ -145,7 +160,7 @@ class BoardManager(
     private suspend fun onRunError(e: Exception) {
         val errorMessage = e.message ?: ""
         AppLog.e(TAG, "onRunError - $errorMessage")
-        _status.value = ConnectionStatus.Connecting
+        setStatus(ConnectionStatus.Connecting)
         delay(RECOVERY_DELAY.milliseconds)
         if (serialPort.connectedDevices().isEmpty()) {
             throwError(ConnectionError.CONNECTION_LOST, errorMessage)
@@ -154,7 +169,7 @@ class BoardManager(
 
     private fun throwError(error: ConnectionError, msg: String = "") {
         serialPort.release()
-        _status.value = ConnectionStatus.Error(error = error, msg = msg)
+        setStatus(ConnectionStatus.Error(error = error, msg = msg))
     }
 
     /**

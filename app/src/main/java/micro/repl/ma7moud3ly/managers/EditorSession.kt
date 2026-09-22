@@ -13,11 +13,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import io.ma7moud3ly.nemo.model.CodeState
 import io.ma7moud3ly.nemo.model.Language
-import micro.repl.ma7moud3ly.managers.port.ScriptsManager
-import micro.repl.ma7moud3ly.managers.port.StorageManager
 import micro.repl.ma7moud3ly.model.MicroScript
-import java.io.File
-import java.io.IOException
 
 /**
  * What the editor is working on: the buffer, the file it belongs to, and the
@@ -78,47 +74,13 @@ class EditorSession(
 
     companion object {
 
-        /**
-         * Builds a session for [script], restoring the most recent local script
-         * when the editor is opened without one.
-         */
-        suspend fun create(
-            script: MicroScript,
-            blank: Boolean,
-            scriptsManager: ScriptsManager,
-            storageManager: StorageManager
-        ): EditorSession {
-            val resolved = restoreRecentScript(script, blank, scriptsManager, storageManager)
-            return EditorSession(
-                codeState = CodeState(
-                    initialCode = resolved.content,
-                    language = Language.MICRO_PYTHON
-                ),
-                initialScript = resolved
-            )
-        }
-
-        /**
-         * Returns the recent local script when the editor is opened without a
-         * script; otherwise returns [script] unchanged.
-         */
-        private suspend fun restoreRecentScript(
-            script: MicroScript,
-            blank: Boolean,
-            scriptsManager: ScriptsManager,
-            storageManager: StorageManager
-        ): MicroScript {
-            if (blank || script.isLocal.not() || script.exists) return script
-            val recent = storageManager.recentScript
-            if (recent.isEmpty()) return script
-            val file = File(recent)
-            if (file.exists().not()) return script
-            return try {
-                script.copy(content = scriptsManager.read(file), path = recent)
-            } catch (e: IOException) {
-                e.printStackTrace()
-                script
-            }
-        }
+        /** Builds a session on [script]. */
+        fun create(script: MicroScript): EditorSession = EditorSession(
+            codeState = CodeState(
+                initialCode = script.content,
+                language = Language.MICRO_PYTHON
+            ),
+            initialScript = script
+        )
     }
 }

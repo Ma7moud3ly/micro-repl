@@ -13,10 +13,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.State
 import io.ma7moud3ly.nemo.model.CodeState
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.receiveAsFlow
 import io.ma7moud3ly.nemo.model.EditorSettings
 import io.ma7moud3ly.nemo.model.EditorTheme
-import micro.repl.ma7moud3ly.managers.port.ScriptsManager
+import micro.repl.ma7moud3ly.managers.port.LocalFilesManager
 import micro.repl.ma7moud3ly.managers.port.StorageManager
+import micro.repl.ma7moud3ly.model.EditorAction
+import micro.repl.ma7moud3ly.model.EditorCommand
 import micro.repl.ma7moud3ly.model.MicroScript
 import org.koin.core.annotation.Factory
 import java.io.File
@@ -28,25 +33,25 @@ import java.io.File
  * This class handles editor settings, code execution, file operations (save, undo/redo),
  * and coordinates between the UI and the underlying [EditorSession].
  *
- * Built empty - [open] loads the script handed over by the previous screen and
- * everything below it reads that session, so nothing but [isOpen] may be touched
- * before then.
  *
- * @param scriptsManager Manager for scripts stored on this device.
+ * @param localFilesManager Manager for scripts stored on this device.
+ * @param remoteFilesManager Manager for remote file operations on a MicroPython board.
+ * @param scriptManager The script the editor was opened on.
  * @param storageManager Persists the editor settings between launches.
- * @param filesManager Manager for remote file operations on a MicroPython board.
- * @param scriptStoreManager The script the editor was opened on.
+ * @param themesManager The theme the editor opens with.
+ * @param boardManager Tells the toolbar whether a script can be run right now.
  */
 @Factory
 class EditorManager(
-    private val scriptsManager: ScriptsManager,
+    private val localFilesManager: LocalFilesManager,
+    private val remoteFilesManager: RemoteFilesManager,
+    private val scriptManager: ScriptManager,
     private val storageManager: StorageManager,
-    private val filesManager: FilesManager,
-    private val scriptStoreManager: ScriptStoreManager
+    private val themesManager: ThemesManager,
+    private val boardManager: BoardManager
 ) {
 
     private lateinit var session: EditorSession
-    private lateinit var canRunState: State<Boolean>
 
     /** Whether [open] has finished. Until it has, the editor has nothing to show. */
     var isOpen by mutableStateOf(false)
@@ -56,30 +61,18 @@ class EditorManager(
     lateinit var settings: EditorSettings
         private set
 
-    /**
-     * Reads the handed-over script off disk and readies the editor.
-     *
-     * @param canRunState Whether the board is connected, as observable state so the
-     *                    toolbar follows a disconnect while the editor is open.
-     */
-    suspend fun open(theme: EditorTheme, canRunState: State<Boolean>) {
+    /** Reads the handed-over script off disk and readies the editor. */
+    suspend fun open() {
         if (isOpen) return
         open(
-            session = EditorSession.create(
-                script = scriptStoreManager.script,
-                blank = scriptStoreManager.blank,
-                scriptsManager = scriptsManager,
-                storageManager = storageManager
-            ),
-            theme = theme,
-            canRunState = canRunState
+            session = EditorSession.create(scriptManager.scriptToOpen()),
+            theme = themesManager.theme
         )
     }
 
     /** Opens on a session that is already built, for `@Preview`. */
-    internal fun open(session: EditorSession, theme: EditorTheme, canRunState: State<Boolean>) {
+    internal fun open(session: EditorSession, theme: EditorTheme) {
         this.session = session
-        this.canRunState = canRunState
         this.settings = EditorSettings(
             theme = theme,
             fontSize = storageManager.fontSize,
@@ -101,11 +94,8 @@ class EditorManager(
 
     /**
      * Whether the run button is available.
-     *
-     * Reading it in composition subscribes to [canRunState], so the toolbar goes
-     * back to read-only the moment the board disconnects.
      */
-    val canRun: Boolean get() = canRunState.value
+    val canRun: Boolean get() = boardManager.isConnected
 
     /** Whether there are edits that haven't been written back yet. */
     val isDirty: Boolean get() = session.isDirty
@@ -130,7 +120,90 @@ class EditorManager(
     val showLines: Boolean get() = settings.showLineNumbersState.value
 
     /** The live buffer as a script, for handing to the terminal. */
-    val asMicroScript: MicroScript get() = session.asMicroScript
+    private val asMicroScript: MicroScript get() = session.asMicroScript
+
+    private val _commands = Channel<EditorCommand>(Channel.BUFFERED)
+
+    /**
+     * What the editor wants shown or navigated to.
+     *
+     * A Channel rather than a SharedFlow so a command raised before anyone starts
+     * collecting is buffered instead of dropped.
+     */
+    val commands: Flow<EditorCommand> = _commands.receiveAsFlow()
+
+    /** The action waiting on a save or a prompt. */
+    private var pendingAction: EditorAction? = null
+
+    /**
+     * Entry point for every toolbar action and the back gesture.
+     *
+     * Decides whether the action can go straight through, needs a silent save first,
+     * or needs to ask.
+     */
+    suspend fun onAction(action: EditorAction) {
+        pendingAction = action
+        when {
+            saveExisting() -> when (action) {
+                // A plain save just reports back; nothing is pending afterward.
+                EditorAction.SaveScript -> {
+                    save()
+                    pendingAction = null
+                    _commands.trySend(EditorCommand.Saved)
+                }
+                // Running always uses the latest text, so save first instead of asking.
+                EditorAction.RunScript -> {
+                    save()
+                    finishPendingAction()
+                }
+                // Closing or starting a new script can discard work, so ask.
+                else -> _commands.trySend(EditorCommand.RequestSave)
+            }
+
+            saveNew() -> _commands.trySend(EditorCommand.RequestSaveAs)
+
+            else -> finishPendingAction()
+        }
+    }
+
+    ////// Save prompt
+
+    suspend fun onSaveConfirmed() {
+        save()
+        finishPendingAction()
+    }
+
+    fun onSaveDismissed() {
+        finishPendingAction()
+    }
+
+    ////// Save-as prompt
+
+    suspend fun onSaveAsConfirmed(name: String) {
+        saveFileAs(name)
+        finishPendingAction()
+    }
+
+    fun onSaveAsDismissed() {
+        finishPendingAction()
+    }
+
+    /** Persists settings, then turns the pending action into a command. */
+    private fun finishPendingAction() {
+        persistSettings()
+        val action = pendingAction
+        pendingAction = null
+        when (action) {
+            EditorAction.NewScript -> reset()
+            EditorAction.CLoseScript -> _commands.trySend(EditorCommand.Close)
+            EditorAction.RunScript -> {
+                scriptManager.open(asMicroScript)
+                _commands.trySend(EditorCommand.Run)
+            }
+
+            else -> {}
+        }
+    }
 
     /**
      * Editor actions
@@ -162,33 +235,33 @@ class EditorManager(
 
     /** Persists the editor settings. Called when the editor is disposed. */
     fun release() {
-        persistSettings()
+        if (isOpen) persistSettings()
     }
 
     /** Empties the buffer for a new, unnamed script. */
-    fun reset() {
+    private fun reset() {
         session.reset()
     }
 
     /** True if the script exists and has unsaved changes. */
-    fun saveExisting(): Boolean = session.isDirty
+    private fun saveExisting(): Boolean = session.isDirty
 
     /** True if the script is new (no path) and has content. */
-    fun saveNew(): Boolean = session.isNew
+    private fun saveNew(): Boolean = session.isNew
 
     /**
      * Saves the current script locally or to the MicroPython board.
      *
      * Both paths suspend: the managers move the actual IO off the caller's thread.
      */
-    suspend fun save() {
+    private suspend fun save() {
         if (script.isLocal) {
             val file = File(script.path)
             val content = codeState.code
-            val saved = scriptsManager.write(file, content)
+            val saved = localFilesManager.write(file, content)
             if (saved) session.markSaved()
         } else {
-            filesManager.write(path = script.path, content = codeState.code)
+            remoteFilesManager.write(path = script.path, content = codeState.code)
             session.markSaved()
         }
     }
@@ -196,8 +269,8 @@ class EditorManager(
     /**
      * Saves the current script under a new file name.
      */
-    suspend fun saveFileAs(name: String) {
-        scriptsManager.scriptDirectory()?.let {
+    private suspend fun saveFileAs(name: String) {
+        localFilesManager.scriptDirectory()?.let {
             session.moveTo(it.path + "/" + name)
             AppLog.v(TAG, "saveFileAs - ${script.path}")
             save()
@@ -205,7 +278,7 @@ class EditorManager(
     }
 
     /** Cheap enough to stay synchronous: the platform write itself is async. */
-    fun persistSettings() {
+    private fun persistSettings() {
         storageManager.showLineNumbers = settings.showLineNumbersState.value
         storageManager.fontSize = settings.fontSizeState.value
         if (script.isLocal && script.exists) {

@@ -55,7 +55,7 @@ import micro.repl.ma7moud3ly.ui.components.MyScreen
 import micro.repl.ma7moud3ly.ui.components.ProgressView
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.AppThemes
-import micro.repl.ma7moud3ly.ui.theme.LocalThemeController
+import micro.repl.ma7moud3ly.ui.theme.LocalEditorTheme
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
 
 @Preview
@@ -111,7 +111,7 @@ private fun HomeDisconnectedPreviewLight() {
 internal fun HomeScreenContent(
     connectionStatus: () -> ConnectionStatus,
     isPortrait: Boolean = true,
-    theme: EditorTheme = LocalThemeController.current.theme,
+    theme: EditorTheme = LocalEditorTheme.current,
     uiEvents: (HomeEvents) -> Unit
 ) {
     MyScreen(
@@ -226,14 +226,14 @@ private fun RuntimeLogo(@DrawableRes src: Int, isActive: Boolean) {
 }
 
 /**
- * [theme] defaults to the app-wide controller, so callers don't have to thread it
- * down; previews can still pass one explicitly.
+ * [theme] defaults to the app-wide theme, so callers don't have to thread it down;
+ * previews can still pass one explicitly.
  */
 @Composable
 private fun SectionControl(
     isPortrait: Boolean,
     uiEvents: (HomeEvents) -> Unit,
-    theme: EditorTheme = LocalThemeController.current.theme
+    theme: EditorTheme = LocalEditorTheme.current
 ) {
     Column {
         Row(

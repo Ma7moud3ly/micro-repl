@@ -23,7 +23,7 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.io.OutputStreamWriter
 import micro.repl.ma7moud3ly.R
-import micro.repl.ma7moud3ly.managers.port.ScriptsManager
+import micro.repl.ma7moud3ly.managers.port.LocalFilesManager
 import micro.repl.ma7moud3ly.model.MicroScript
 import org.koin.core.annotation.Single
 
@@ -40,8 +40,8 @@ import org.koin.core.annotation.Single
  * the available scripts. This list is updated whenever scripts are added,
  * deleted, or renamed.
  */
-@Single(binds = [ScriptsManager::class])
-class AndroidScriptsManager(private val context: Context) : ScriptsManager {
+@Single(binds = [LocalFilesManager::class])
+class AndroidLocalFilesManager(private val context: Context) : LocalFilesManager {
     companion object {
         private const val TAG = "ScriptsManager"
     }

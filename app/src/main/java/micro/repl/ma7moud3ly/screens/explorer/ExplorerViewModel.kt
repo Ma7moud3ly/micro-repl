@@ -18,8 +18,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import micro.repl.ma7moud3ly.managers.BoardManager
-import micro.repl.ma7moud3ly.managers.FilesManager
-import micro.repl.ma7moud3ly.managers.ScriptStoreManager
+import micro.repl.ma7moud3ly.managers.RemoteFilesManager
+import micro.repl.ma7moud3ly.managers.ScriptManager
 import micro.repl.ma7moud3ly.managers.TerminalManager
 import micro.repl.ma7moud3ly.model.ConnectionStatus
 import micro.repl.ma7moud3ly.model.EditorMode
@@ -34,23 +34,23 @@ import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
 class ExplorerViewModel(
-    private val filesManager: FilesManager,
+    private val remoteFilesManager: RemoteFilesManager,
     private val terminalManager: TerminalManager,
-    private val scriptStoreManager: ScriptStoreManager,
+    private val scriptManager: ScriptManager,
     boardManager: BoardManager
 ) : ViewModel() {
 
     init {
         viewModelScope.launch {
             terminalManager.terminateExecution()
-            filesManager.listDir(root.value)
+            remoteFilesManager.listDir(root.value)
         }
     }
 
     ////// Listing
 
     /** Contents of [root], refreshed by every operation below. */
-    val files: StateFlow<List<MicroFile>> = filesManager.files
+    val files: StateFlow<List<MicroFile>> = remoteFilesManager.files
 
     /** The directory currently being shown. */
     var root by mutableStateOf(MicroPath())
@@ -91,12 +91,12 @@ class ExplorerViewModel(
 
     private fun navigate(path: MicroPath) {
         root = path
-        viewModelScope.launch { filesManager.listDir(path.value) }
+        viewModelScope.launch { remoteFilesManager.listDir(path.value) }
     }
 
     fun refresh() {
         _commands.trySend(ExplorerCommand.Refreshing)
-        viewModelScope.launch { filesManager.listDir() }
+        viewModelScope.launch { remoteFilesManager.listDir() }
     }
 
     ////// Opening files
@@ -105,10 +105,10 @@ class ExplorerViewModel(
         viewModelScope.launch {
             val script = MicroScript(
                 path = file.fullPath,
-                content = filesManager.read(file.fullPath),
+                content = remoteFilesManager.read(file.fullPath),
                 editorMode = EditorMode.REMOTE
             )
-            scriptStoreManager.open(script)
+            scriptManager.open(script)
             _commands.trySend(ExplorerCommand.OpenTerminal)
         }
     }
@@ -117,10 +117,10 @@ class ExplorerViewModel(
         viewModelScope.launch {
             val script = MicroScript(
                 path = file.fullPath,
-                content = filesManager.read(file.fullPath),
+                content = remoteFilesManager.read(file.fullPath),
                 editorMode = EditorMode.REMOTE
             )
-            scriptStoreManager.open(script)
+            scriptManager.open(script)
             _commands.trySend(ExplorerCommand.OpenEditor)
         }
     }
@@ -148,11 +148,11 @@ class ExplorerViewModel(
 
     fun confirmDelete() {
         val file = selectedFile ?: return
-        viewModelScope.launch { filesManager.remove(file) }
+        viewModelScope.launch { remoteFilesManager.remove(file) }
     }
 
     fun confirmCreate(file: MicroFile) {
-        viewModelScope.launch { filesManager.new(file) }
+        viewModelScope.launch { remoteFilesManager.new(file) }
     }
 
     fun confirmRename(newName: String) {
@@ -162,15 +162,15 @@ class ExplorerViewModel(
             path = source.path,
             type = if (source.isFile) MicroFile.FILE else MicroFile.DIRECTORY
         )
-        viewModelScope.launch { filesManager.rename(src = source, dst = destination) }
+        viewModelScope.launch { remoteFilesManager.rename(src = source, dst = destination) }
     }
 
     /** Writes a file picked on the phone into the current directory. */
     fun importFile(fileName: String, bytes: ByteArray) {
         val destination = root
         viewModelScope.launch {
-            filesManager.writeBinary(path = destination.child(fileName).value, bytes = bytes)
-            filesManager.listDir()
+            remoteFilesManager.writeBinary(path = destination.child(fileName).value, bytes = bytes)
+            remoteFilesManager.listDir()
             _commands.trySend(ExplorerCommand.Imported(destination))
         }
     }

@@ -23,6 +23,11 @@ interface StorageManager {
     /** Called after a board is approved or forgotten. */
     fun saveApprovedProductIds(productIds: Set<Int>)
 
+    ////// Theme
+
+    /** Name of the selected theme, empty until one has been picked. */
+    var themeName: String
+
     ////// Editor
 
     /** Editor font size. Clamped to the 8..32 the editor accepts. */

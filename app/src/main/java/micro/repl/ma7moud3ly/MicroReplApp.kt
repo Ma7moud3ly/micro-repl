@@ -7,20 +7,16 @@
 
 package micro.repl.ma7moud3ly
 
-import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
-import micro.repl.ma7moud3ly.ui.theme.LocalThemeController
-import micro.repl.ma7moud3ly.ui.theme.rememberThemeController
+import micro.repl.ma7moud3ly.ui.theme.LocalEditorTheme
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun MicroReplApp(viewModel: MainViewModel = koinViewModel()) {
-    val activity = LocalActivity.current!!
-    val themeController = rememberThemeController(activity)
-    CompositionLocalProvider(LocalThemeController provides themeController) {
-        AppTheme(theme = themeController.theme) {
+    CompositionLocalProvider(LocalEditorTheme provides viewModel.theme) {
+        AppTheme(theme = viewModel.theme) {
             RootGraph(viewModel = viewModel)
         }
     }

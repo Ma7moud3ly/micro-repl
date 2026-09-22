@@ -44,10 +44,11 @@ import io.ma7moud3ly.nemo.model.EditorTheme
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.model.AppRoutes
 import micro.repl.ma7moud3ly.ui.components.MyDialog
+import micro.repl.ma7moud3ly.managers.ThemesManager
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.AppThemes
-import micro.repl.ma7moud3ly.ui.theme.LocalThemeController
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
+import org.koin.compose.koinInject
 
 // The dialog body is previewed directly — a real Dialog window renders empty
 // in the @Preview surface.
@@ -78,17 +79,19 @@ private fun ThemePickerPreviewLight() {
  * can open it by navigating to that route.
  */
 @Composable
-fun ThemeSelectorDialog(onDismiss: () -> Unit) {
-    val controller = LocalThemeController.current
+fun ThemeSelectorDialog(
+    onDismiss: () -> Unit,
+    themesManager: ThemesManager = koinInject()
+) {
     MyDialog(
         onDismiss = onDismiss,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
         ThemePicker(
-            selected = controller.theme,
-            themes = controller.themes,
+            selected = themesManager.theme,
+            themes = themesManager.themes,
             onSelect = {
-                controller.select(it)
+                themesManager.select(it)
                 onDismiss()
             }
         )
