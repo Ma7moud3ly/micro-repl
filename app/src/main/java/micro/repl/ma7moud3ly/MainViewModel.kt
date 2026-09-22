@@ -9,6 +9,7 @@ package micro.repl.ma7moud3ly
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.ma7moud3ly.nemo.model.EditorTheme
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import micro.repl.ma7moud3ly.managers.BoardManager
@@ -23,7 +24,8 @@ class MainViewModel(
 ) : ViewModel() {
 
     val status: StateFlow<ConnectionStatus> = boardManager.status
-    val theme = themesManager.theme
+
+    val theme: EditorTheme get() = themesManager.theme
 
     init {
         viewModelScope.launch { boardManager.start() }
