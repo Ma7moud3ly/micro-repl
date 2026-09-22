@@ -7,91 +7,64 @@
 
 package micro.repl.ma7moud3ly.screens.scripts
 
-import android.util.Log
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
-import micro.repl.ma7moud3ly.managers.ScriptsManager
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
+import micro.repl.ma7moud3ly.model.MicroScript
 import micro.repl.ma7moud3ly.screens.dialogs.FileDeleteDialog
 import micro.repl.ma7moud3ly.screens.dialogs.FileRenameDialog
-import micro.repl.ma7moud3ly.model.MicroScript
 import micro.repl.ma7moud3ly.ui.components.rememberMyDialogState
-
-private const val TAG = "ScriptsScreen"
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun ScriptsScreen(
+    viewModel: ScriptsViewModel = koinViewModel(),
     canRun: () -> Boolean,
     onBack: () -> Unit,
     onNewScript: () -> Unit,
     onOpenLocalScript: (MicroScript) -> Unit,
     onRunLocalScript: (MicroScript) -> Unit
 ) {
-    val context = LocalContext.current
-    val scriptsManager = remember { ScriptsManager(context) }
+    val coroutineScope = rememberCoroutineScope()
     val renameFileDialog = rememberMyDialogState()
     val deleteFileDialog = rememberMyDialogState()
-    var selectedScript by remember { mutableStateOf<MicroScript?>(null) }
-    val scripts = remember { scriptsManager.scripts }
 
     FileRenameDialog(
         state = renameFileDialog,
-        name = { selectedScript?.name.orEmpty() },
-        onOk = { newName ->
-            scriptsManager.renameScript(selectedScript!!, newName)
-        }
+        name = { viewModel.selectedScript?.name.orEmpty() },
+        onOk = { newName -> viewModel.renameSelectedScript(newName) }
     )
 
     FileDeleteDialog(
         state = deleteFileDialog,
-        name = { selectedScript?.name.orEmpty() },
-        onOk = {
-            scriptsManager.deleteScript(selectedScript!!)
-        }
+        name = { viewModel.selectedScript?.name.orEmpty() },
+        onOk = { viewModel.deleteSelectedScript() }
     )
 
-    fun readLocalScript(script: MicroScript) {
-        try {
-            val content = scriptsManager.read(script.file)
-            script.content = content
-            Log.v(TAG, script.toString())
-            onOpenLocalScript(script)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    fun runLocalScript(script: MicroScript) {
-        try {
-            val content = scriptsManager.read(script.file)
-            script.content = content
-            Log.v(TAG, script.toString())
-            onRunLocalScript(script)
-        } catch (e: Exception) {
-            e.printStackTrace()
+    /** Reads the script off disk before handing it to [onOpen]. */
+    fun openScript(script: MicroScript, onOpen: (MicroScript) -> Unit) {
+        coroutineScope.launch {
+            viewModel.loadScript(script)?.let(onOpen)
         }
     }
 
     ScriptsScreenContent(
         canRun = canRun(),
-        scripts = { scripts },
+        scripts = { viewModel.scripts },
         uiEvents = {
             when (it) {
                 is ScriptsEvents.Back -> onBack()
                 is ScriptsEvents.NewScript -> onNewScript()
-                is ScriptsEvents.Open -> readLocalScript(it.script)
-                is ScriptsEvents.Run -> runLocalScript(it.script)
-                is ScriptsEvents.Share -> scriptsManager.shareScript(it.script)
+                is ScriptsEvents.Open -> openScript(it.script, onOpenLocalScript)
+                is ScriptsEvents.Run -> openScript(it.script, onRunLocalScript)
+                is ScriptsEvents.Share -> viewModel.shareScript(it.script)
                 is ScriptsEvents.Delete -> {
-                    selectedScript = it.script
+                    viewModel.selectScript(it.script)
                     deleteFileDialog.show()
                 }
 
                 is ScriptsEvents.Rename -> {
-                    selectedScript = it.script
+                    viewModel.selectScript(it.script)
                     renameFileDialog.show()
                 }
             }
