@@ -11,8 +11,6 @@ import micro.repl.ma7moud3ly.managers.port.LocalFilesManager
 import micro.repl.ma7moud3ly.managers.port.StorageManager
 import micro.repl.ma7moud3ly.model.MicroScript
 import org.koin.core.annotation.Single
-import java.io.File
-import java.io.IOException
 
 /**
  * The script being handed from one screen to the next, and which one the editor
@@ -50,11 +48,10 @@ class ScriptManager(
         if (blank || script.isLocal.not() || script.exists) return script
         val recent = storageManager.recentScript
         if (recent.isEmpty()) return script
-        val file = File(recent)
-        if (file.exists().not()) return script
+        if (localFilesManager.exists(recent).not()) return script
         return try {
-            script.copy(content = localFilesManager.read(file), path = recent)
-        } catch (e: IOException) {
+            script.copy(content = localFilesManager.read(recent), path = recent)
+        } catch (e: Exception) {
             e.printStackTrace()
             script
         }

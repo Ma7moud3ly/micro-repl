@@ -1,7 +1,5 @@
 package micro.repl.ma7moud3ly.model
 
-import java.io.File
-
 data class MicroScript(
     var path: String = "",
     var content: String = "",
@@ -10,8 +8,7 @@ data class MicroScript(
 ) {
     val exists: Boolean get() = path.isEmpty().not()
     val hasContent: Boolean get() = exists && content.isEmpty().not()
-    val file: File get() = File(path)
-    val scriptDir: String get() = file.parent.orEmpty()
+    val scriptDir: String get() = path.substringBeforeLast('/', "")
     val nameWithoutExt: String get() = name.replace(".py", "")
     val name: String get() = path.substringAfterLast('/')
     val displayName: String

@@ -9,7 +9,6 @@ package micro.repl.ma7moud3ly.managers.port
 
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import micro.repl.ma7moud3ly.model.MicroScript
-import java.io.File
 
 /**
  * Scripts stored on the device the app runs on, as opposed to the ones on the board.
@@ -19,7 +18,8 @@ import java.io.File
  * user's documents folder and a share sheet elsewhere.
  *
  * Everything that touches the filesystem suspends, so callers never have to know
- * which thread the platform needs for it.
+ * which thread the platform needs for it. Files are addressed by path - what a
+ * path means, and how one is opened, stays on the platform side.
  */
 interface LocalFilesManager {
 
@@ -29,8 +29,8 @@ interface LocalFilesManager {
     /** Rescans the scripts directory. */
     suspend fun refresh()
 
-    /** The directory scripts are stored in, created if missing. */
-    suspend fun scriptDirectory(): File?
+    /** The directory scripts are stored in, created if missing. Empty if unavailable. */
+    suspend fun scriptDirectory(): String
 
     suspend fun deleteScript(script: MicroScript)
 
@@ -39,7 +39,11 @@ interface LocalFilesManager {
     /** Hands the script to whatever sharing mechanism the platform offers. */
     fun shareScript(script: MicroScript)
 
-    suspend fun read(file: File): String
+    /** Whether anything is stored at [path]. */
+    suspend fun exists(path: String): Boolean
 
-    suspend fun write(file: File, data: String): Boolean
+    /** The file's contents, or an empty string when there is nothing at [path]. */
+    suspend fun read(path: String): String
+
+    suspend fun write(path: String, data: String): Boolean
 }

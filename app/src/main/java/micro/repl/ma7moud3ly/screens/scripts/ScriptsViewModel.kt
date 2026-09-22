@@ -68,7 +68,7 @@ class ScriptsViewModel(
      * @return false if the file could not be read, in which case nothing is handed over.
      */
     suspend fun handOff(script: MicroScript): Boolean = try {
-        script.content = localFilesManager.read(script.file)
+        script.content = localFilesManager.read(script.path)
         AppLog.v(TAG, script.toString())
         scriptManager.open(script)
         true

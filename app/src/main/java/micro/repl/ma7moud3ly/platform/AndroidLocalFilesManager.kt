@@ -63,8 +63,8 @@ class AndroidLocalFilesManager(private val context: Context) : LocalFilesManager
      *
      * @return The scripts directory, or `null` if it could not be created.
      */
-    override suspend fun scriptDirectory(): File? =
-        withContext(Dispatchers.IO) { scriptsDir() }
+    override suspend fun scriptDirectory(): String =
+        withContext(Dispatchers.IO) { scriptsDir()?.absolutePath.orEmpty() }
 
     /** The same lookup, for the IO-confined helpers below. */
     private fun scriptsDir(): File? {
@@ -124,7 +124,7 @@ class AndroidLocalFilesManager(private val context: Context) : LocalFilesManager
      * @param script The MicroScript object representing the script to share.
      */
     override fun shareScript(script: MicroScript) {
-        val file = script.file
+        val file = File(script.path)
         if (!file.exists()) {
             // Handle the case where the file doesn't exist
             return
@@ -156,11 +156,15 @@ class AndroidLocalFilesManager(private val context: Context) : LocalFilesManager
     /**
      * Reads the content of a script file.
      *
-     * @param file The `File` object representing the script file to read.
+     * @param path Absolute path of the script file to read.
      * @return The content of the script file as a string.
      * @throws IOException If an I/O error occurs while reading the file.
      */
-    override suspend fun read(file: File): String = withContext(Dispatchers.IO) {
+    override suspend fun exists(path: String): Boolean =
+        withContext(Dispatchers.IO) { File(path).exists() }
+
+    override suspend fun read(path: String): String = withContext(Dispatchers.IO) {
+        val file = File(path)
         if (!file.exists()) "" else try {
             val dis = DataInputStream(FileInputStream(file))
             val byt = ByteArray(dis.available())
@@ -176,11 +180,12 @@ class AndroidLocalFilesManager(private val context: Context) : LocalFilesManager
     /**
      * Writes data to a script file.
      *
-     * @param file The `File` object representing the script file to write to.
+     * @param path Absolute path of the script file to write to.
      * @param data The data to write to the file as a string.
      * @return `true` if the write operation was successful, `false` otherwise.
      */
-    override suspend fun write(file: File, data: String): Boolean = withContext(Dispatchers.IO) {
+    override suspend fun write(path: String, data: String): Boolean = withContext(Dispatchers.IO) {
+        val file = File(path)
         if (file.parentFile?.exists() == false) file.mkdirs()
         try {
             if (file.exists().not()) file.createNewFile()
@@ -205,7 +210,7 @@ class AndroidLocalFilesManager(private val context: Context) : LocalFilesManager
      * @return `true` if the delete operation was successful, `false` otherwise.
      */
     private fun delete(script: MicroScript): Boolean {
-        val file = script.file
+        val file = File(script.path)
         return if (!file.exists()) false
         else try {
             return file.delete()
@@ -223,8 +228,8 @@ class AndroidLocalFilesManager(private val context: Context) : LocalFilesManager
      * @return `true` if the rename operation was successful, `false` otherwise.
      */
     private fun rename(script: MicroScript, newName: String): Boolean {
-        val newFile = File(script.file.parentFile, newName)
-        val oldFile = script.file
+        val oldFile = File(script.path)
+        val newFile = File(oldFile.parentFile, newName)
         return oldFile.exists() && try {
             oldFile.renameTo(newFile)
         } catch (e: Exception) {

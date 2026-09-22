@@ -28,7 +28,6 @@ import micro.repl.ma7moud3ly.model.EditorMode
 import micro.repl.ma7moud3ly.model.MicroDevice
 import micro.repl.ma7moud3ly.model.MicroScript
 import micro.repl.ma7moud3ly.ui.theme.AppThemes
-import java.io.File
 
 /**
  * Builds an [EditorManager] backed by in-memory fakes, for `@Preview` only.
@@ -70,12 +69,13 @@ internal fun previewEditorManager(
 private class FakeLocalFilesManager : LocalFilesManager {
     override val scripts: SnapshotStateList<MicroScript> = mutableStateListOf()
     override suspend fun refresh() = Unit
-    override suspend fun scriptDirectory(): File? = null
+    override suspend fun scriptDirectory(): String = ""
     override suspend fun deleteScript(script: MicroScript) = Unit
     override suspend fun renameScript(script: MicroScript, newName: String) = Unit
     override fun shareScript(script: MicroScript) = Unit
-    override suspend fun read(file: File): String = ""
-    override suspend fun write(file: File, data: String): Boolean = true
+    override suspend fun exists(path: String): Boolean = false
+    override suspend fun read(path: String): String = ""
+    override suspend fun write(path: String, data: String): Boolean = true
 }
 
 private class FakeStorageManager : StorageManager {

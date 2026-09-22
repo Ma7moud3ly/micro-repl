@@ -24,7 +24,6 @@ import micro.repl.ma7moud3ly.model.EditorAction
 import micro.repl.ma7moud3ly.model.EditorCommand
 import micro.repl.ma7moud3ly.model.MicroScript
 import org.koin.core.annotation.Factory
-import java.io.File
 
 
 /**
@@ -256,9 +255,7 @@ class EditorManager(
      */
     private suspend fun save() {
         if (script.isLocal) {
-            val file = File(script.path)
-            val content = codeState.code
-            val saved = localFilesManager.write(file, content)
+            val saved = localFilesManager.write(script.path, codeState.code)
             if (saved) session.markSaved()
         } else {
             remoteFilesManager.write(path = script.path, content = codeState.code)
@@ -270,11 +267,11 @@ class EditorManager(
      * Saves the current script under a new file name.
      */
     private suspend fun saveFileAs(name: String) {
-        localFilesManager.scriptDirectory()?.let {
-            session.moveTo(it.path + "/" + name)
-            AppLog.v(TAG, "saveFileAs - ${script.path}")
-            save()
-        }
+        val directory = localFilesManager.scriptDirectory()
+        if (directory.isEmpty()) return
+        session.moveTo("$directory/$name")
+        AppLog.v(TAG, "saveFileAs - ${script.path}")
+        save()
     }
 
     /** Cheap enough to stay synchronous: the platform write itself is async. */
