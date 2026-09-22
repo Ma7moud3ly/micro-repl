@@ -112,8 +112,8 @@ fun TerminalScreenContent(
             Header(
                 microScript = microScript,
                 uiEvents = uiEvents,
-                onZoomIn = { fontSize = zoom(fontSize, zoomIn = true) },
-                onZoomOut = { fontSize = zoom(fontSize, zoomIn = false) },
+                onZoomIn = { fontSize = fontSize.zoomIn() },
+                onZoomOut = { fontSize = fontSize.zoomOut() },
             )
         }
     ) {

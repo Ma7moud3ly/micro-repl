@@ -82,7 +82,6 @@ fun RootGraph(
             val microScript = remember { viewModel.script }
             TerminalScreen(
                 microScript = microScript,
-                viewModel = viewModel,
                 onBack = {
                     navController.popBackStack()
                 }

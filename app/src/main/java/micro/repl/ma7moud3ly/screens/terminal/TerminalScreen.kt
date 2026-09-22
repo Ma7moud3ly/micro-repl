@@ -1,161 +1,64 @@
 package micro.repl.ma7moud3ly.screens.terminal
 
-import android.app.Activity
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import micro.repl.ma7moud3ly.MainViewModel
+import androidx.compose.ui.res.stringResource
 import micro.repl.ma7moud3ly.R
-import micro.repl.ma7moud3ly.managers.CommandsManager
 import micro.repl.ma7moud3ly.model.MicroScript
-
-private const val TAG = "TerminalScreen"
-
+import micro.repl.ma7moud3ly.model.TerminalCommand
+import micro.repl.ma7moud3ly.model.asSuccessMessage
+import micro.repl.ma7moud3ly.ui.components.MessageToast
+import micro.repl.ma7moud3ly.ui.components.rememberMessageState
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun TerminalScreen(
     microScript: MicroScript,
-    viewModel: MainViewModel,
+    viewModel: TerminalViewModel = koinViewModel(),
     onBack: () -> Unit
 ) {
-    val activity = LocalActivity.current as Activity
-    val replManager = viewModel.replManager
-    val terminalManager = viewModel.terminalManager
-    val coroutineScope = rememberCoroutineScope()
-    var terminalInput by remember { viewModel.terminalInput }
-    var terminalOutput by remember { viewModel.terminalOutput }
+    val messageToast = rememberMessageState()
+    val terminateMessage = stringResource(R.string.terminal_terminate_msg)
+    val softResetMessage = stringResource(R.string.terminal_soft_reset_msg)
 
-    fun onRun() {
-        coroutineScope.launch {
-            val code = terminalInput
-            viewModel.history.push(code)
-            // for one statement, execute it instantly with
-            if (code.contains("\n").not()) terminalManager.eval(code)
-            // for multiline code, consider it as a script
-            else terminalManager.evalMultiLine(code)
-            terminalInput = ""
-            terminalOutput += "\n"
-        }
-    }
-
-    fun clear() {
-        terminalInput = ""
-        terminalOutput = ""
-    }
-
-    fun executeScript() {
-        coroutineScope.launch {
-            withContext(Dispatchers.IO) {
-                if (microScript.isLocal) {
-                    terminalManager.executeLocalScript(
-                        microScript = microScript,
-                        onClear = ::clear
-                    )
-                } else {
-                    terminalManager.executeScript(
-                        microScript = microScript,
-                        onClear = ::clear
-                    )
-                }
-            }
-        }
-    }
-
-    fun onTerminate(showMessage: Boolean = false) {
-        coroutineScope.launch { terminalManager.terminateExecution() }
-        if (showMessage) Toast.makeText(
-            activity,
-            activity.getString(R.string.terminal_terminate_msg),
-            Toast.LENGTH_SHORT
-        ).show()
-    }
-
-    fun onSoftReset() {
-        coroutineScope.launch {
-            terminalManager.softResetDevice {
-                Toast.makeText(
-                    activity,
-                    activity.getString(R.string.terminal_soft_reset_msg),
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
-    }
+    LaunchedEffect(Unit) { viewModel.initTerminal(microScript) }
 
     LaunchedEffect(Unit) {
-        viewModel.terminalOutput.value = ""
-        if (microScript.hasContent) {
-            executeScript()
-        } else {
-            replManager.writeCommand(CommandsManager.REPL_MODE)
+        viewModel.commands.collect { command ->
+            val text = when (command) {
+                TerminalCommand.Terminated -> terminateMessage
+                TerminalCommand.SoftReset -> softResetMessage
+            }
+            messageToast.show(text.asSuccessMessage)
         }
     }
 
-    DisposableEffect(LocalLifecycleOwner.current) {
-        onDispose {
-            clear()
-            onTerminate()
-        }
-    }
-
-    fun uiEvents(event: TerminalEvents) {
-        when (event) {
-            TerminalEvents.Run -> onRun()
-            TerminalEvents.SoftReset -> onSoftReset()
-            TerminalEvents.Terminate -> onTerminate(true)
-
-            TerminalEvents.Clear -> {
-                clear()
-            }
-
-            TerminalEvents.MoveDown -> {
-                viewModel.history.down()?.let {
-                    viewModel.terminalInput.value = it
-                }
-            }
-
-            TerminalEvents.MoveUp -> {
-                viewModel.history.up()?.let {
-                    viewModel.terminalInput.value = it
-                }
-            }
-
-            TerminalEvents.Back -> {
-                onBack()
-            }
-        }
+    DisposableEffect(Unit) {
+        onDispose { viewModel.stop() }
     }
 
     BackHandler(enabled = true, onBack)
 
+    MessageToast(state = messageToast)
+
     TerminalScreenContent(
         microScript = { microScript },
-        uiEvents = ::uiEvents,
-        terminalInput = { terminalInput },
-        onInputChanges = { terminalInput = it },
-        terminalOutput = { terminalOutput }
+        terminalInput = { viewModel.input },
+        terminalOutput = { viewModel.output },
+        onInputChanges = viewModel::onInputChange,
+        uiEvents = {
+            when (it) {
+                TerminalEvents.Run -> viewModel.run()
+                TerminalEvents.Terminate -> viewModel.terminate(notify = true)
+                TerminalEvents.SoftReset -> viewModel.softReset()
+                TerminalEvents.Clear -> viewModel.clear()
+                TerminalEvents.MoveUp -> viewModel.historyUp()
+                TerminalEvents.MoveDown -> viewModel.historyDown()
+                TerminalEvents.Back -> onBack()
+            }
+        }
     )
 }
 
-fun zoom(fontSize: TextUnit, zoomIn: Boolean): TextUnit {
-    return if (zoomIn) {
-        if (fontSize.value <= 25) (fontSize.value + 4).sp
-        else fontSize
-    } else {
-        if (fontSize.value >= 11) (fontSize.value - 4).sp
-        else fontSize
-    }
-}
