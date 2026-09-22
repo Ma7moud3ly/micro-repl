@@ -49,7 +49,7 @@ class ReplManager(
      */
     val output: Flow<BoardOutput> = serialPort.incoming
         .filter { executionMode.value == ExecutionMode.INTERACTIVE }
-        .map { removeEnding(it.toString(Charsets.UTF_8)) }
+        .map { removeEnding(it.decodeToString()) }
         .onEach { if (isDebug) AppLog.v(TAG, "onNewData - ${Json.encodeToString(it)}") }
         .filter { it.isNotEmpty() && it.trim() != ">>>" }
         .map { BoardOutput(data = it, clear = it.contains(CommandsManager.CLEAR)) }
@@ -63,7 +63,7 @@ class ReplManager(
     suspend fun write(code: String) {
         AppLog.v(TAG, "write: $code")
         val cmd = "\u000D" + code + "\u000D"
-        serialPort.write(cmd.toByteArray(Charsets.UTF_8))
+        serialPort.write(cmd.encodeToByteArray())
     }
 
     /**
@@ -71,7 +71,7 @@ class ReplManager(
      */
     suspend fun writeCommand(code: String) {
         if (isDebug) AppLog.i(TAG, "writeCommand - ${Json.encodeToString(code)}")
-        serialPort.write(code.toByteArray(Charsets.UTF_8))
+        serialPort.write(code.encodeToByteArray())
     }
 
     /**
@@ -93,7 +93,7 @@ class ReplManager(
                     write(code)
                     writeCommand(CommandsManager.RESET)
                 }
-                .onEach { syncData.append(it.toString(Charsets.UTF_8)) }
+                .onEach { syncData.append(it.decodeToString()) }
                 .first { isSilentExecutionDone(syncData.toString()) }
 
             val result = trimSilentResult(syncData.toString())
