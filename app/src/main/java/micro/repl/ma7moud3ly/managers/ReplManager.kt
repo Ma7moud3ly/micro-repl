@@ -7,7 +7,6 @@
 
 package micro.repl.ma7moud3ly.managers
 
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filter
@@ -17,6 +16,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import micro.repl.ma7moud3ly.managers.port.AppDispatchers
 import micro.repl.ma7moud3ly.managers.port.SerialPortManager
 import micro.repl.ma7moud3ly.managers.CommandsManager.isSilentExecutionDone
 import micro.repl.ma7moud3ly.managers.CommandsManager.trimSilentResult
@@ -32,7 +32,8 @@ import org.koin.core.annotation.Single
  */
 @Single
 class ReplManager(
-    private val serialPort: SerialPortManager
+    private val serialPort: SerialPortManager,
+    private val dispatchers: AppDispatchers
 ) {
 
     companion object {
@@ -80,7 +81,7 @@ class ReplManager(
      * In silent mode the board output is collected here instead of being echoed to
      * [output], so callers get the result of exactly the code they sent.
      */
-    suspend fun writeInSilentMode(code: String): String = withContext(Dispatchers.IO) {
+    suspend fun writeInSilentMode(code: String): String = withContext(dispatchers.io) {
         AppLog.i(TAG, "writeInSilentMode - $code")
         executionMode.value = ExecutionMode.SCRIPT
         val syncData = StringBuilder("")

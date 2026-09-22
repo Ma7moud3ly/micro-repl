@@ -21,6 +21,9 @@ import micro.repl.ma7moud3ly.managers.ReplManager
 import micro.repl.ma7moud3ly.managers.BoardManager
 import micro.repl.ma7moud3ly.managers.ScriptManager
 import micro.repl.ma7moud3ly.managers.ThemesManager
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import micro.repl.ma7moud3ly.managers.port.AppDispatchers
 import micro.repl.ma7moud3ly.managers.port.LocalFilesManager
 import micro.repl.ma7moud3ly.managers.port.SerialPortManager
 import micro.repl.ma7moud3ly.managers.port.StorageManager
@@ -55,7 +58,7 @@ internal fun previewEditorManager(
     return EditorManager(
         localFilesManager = scriptsManager,
         storageManager = storageManager,
-        remoteFilesManager = RemoteFilesManager(ReplManager(serialPort)),
+        remoteFilesManager = RemoteFilesManager(ReplManager(serialPort, PreviewDispatchers)),
         scriptManager = ScriptManager(scriptsManager, storageManager),
         themesManager = ThemesManager(storageManager),
         boardManager = BoardManager(serialPort, storageManager).apply {
@@ -99,4 +102,8 @@ private class FakeSerialPortManager : SerialPortManager {
 
     override suspend fun write(bytes: ByteArray) = Unit
     override fun release() = Unit
+}
+
+private object PreviewDispatchers : AppDispatchers {
+    override val io: CoroutineDispatcher = Dispatchers.Unconfined
 }
