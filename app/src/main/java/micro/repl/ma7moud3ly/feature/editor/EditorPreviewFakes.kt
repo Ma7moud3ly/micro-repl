@@ -14,8 +14,8 @@ import io.ma7moud3ly.nemo.model.EditorTheme
 import io.ma7moud3ly.nemo.model.Language
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
-import micro.repl.ma7moud3ly.managers.EditorManager
-import micro.repl.ma7moud3ly.managers.EditorSession
+import micro.repl.ma7moud3ly.feature.editor.manager.EditorManager
+import micro.repl.ma7moud3ly.feature.editor.manager.EditorSession
 import micro.repl.ma7moud3ly.managers.RemoteFilesManager
 import micro.repl.ma7moud3ly.managers.ReplManager
 import micro.repl.ma7moud3ly.managers.BoardManager

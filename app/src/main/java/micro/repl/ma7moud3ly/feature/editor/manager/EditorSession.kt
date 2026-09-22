@@ -5,7 +5,7 @@
  *
  */
 
-package micro.repl.ma7moud3ly.managers
+package micro.repl.ma7moud3ly.feature.editor.manager
 
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue

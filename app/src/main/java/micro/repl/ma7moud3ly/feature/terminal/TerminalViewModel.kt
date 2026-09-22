@@ -21,7 +21,7 @@ import kotlinx.coroutines.withContext
 import micro.repl.ma7moud3ly.managers.CommandsManager
 import micro.repl.ma7moud3ly.managers.ReplManager
 import micro.repl.ma7moud3ly.managers.ScriptManager
-import micro.repl.ma7moud3ly.managers.TerminalHistoryManager
+import micro.repl.ma7moud3ly.feature.terminal.manager.HistoryManager
 import micro.repl.ma7moud3ly.managers.TerminalManager
 import micro.repl.ma7moud3ly.model.MicroScript
 import org.koin.core.annotation.KoinViewModel
@@ -33,7 +33,7 @@ private const val MAX_OUTPUT_CHARS = 10_000
 class TerminalViewModel(
     private val replManager: ReplManager,
     private val terminalManager: TerminalManager,
-    private val terminalHistoryManager: TerminalHistoryManager,
+    private val historyManager: HistoryManager,
     scriptManager: ScriptManager
 ) : ViewModel() {
 
@@ -93,7 +93,7 @@ class TerminalViewModel(
     /** Sends the typed code; multiline input is run as a script. */
     fun run() {
         val code = input
-        terminalHistoryManager.push(code)
+        historyManager.push(code)
         viewModelScope.launch {
             if (code.contains("\n")) terminalManager.evalMultiLine(code)
             else terminalManager.eval(code)
@@ -123,11 +123,11 @@ class TerminalViewModel(
     }
 
     fun historyUp() {
-        terminalHistoryManager.up()?.let { input = it }
+        historyManager.up()?.let { input = it }
     }
 
     fun historyDown() {
-        terminalHistoryManager.down()?.let { input = it }
+        historyManager.down()?.let { input = it }
     }
 
 

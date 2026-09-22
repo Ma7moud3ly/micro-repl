@@ -36,7 +36,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.ma7moud3ly.nemo.NemoCodeEditor
 import micro.repl.ma7moud3ly.R
-import micro.repl.ma7moud3ly.managers.EditorManager
+import micro.repl.ma7moud3ly.feature.editor.manager.EditorManager
+import micro.repl.ma7moud3ly.feature.editor.model.EditorEvent
 import micro.repl.ma7moud3ly.ui.components.ActionButton
 import micro.repl.ma7moud3ly.ui.components.BackButton
 import micro.repl.ma7moud3ly.ui.components.BarToggle

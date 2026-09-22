@@ -5,23 +5,28 @@
  *
  */
 
-package micro.repl.ma7moud3ly.managers
+package micro.repl.ma7moud3ly.feature.editor.manager
 
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.State
 import io.ma7moud3ly.nemo.model.CodeState
+import io.ma7moud3ly.nemo.model.EditorSettings
+import io.ma7moud3ly.nemo.model.EditorTheme
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
-import io.ma7moud3ly.nemo.model.EditorSettings
-import io.ma7moud3ly.nemo.model.EditorTheme
+import micro.repl.ma7moud3ly.managers.AppLog
+import micro.repl.ma7moud3ly.managers.BoardManager
+import micro.repl.ma7moud3ly.managers.RemoteFilesManager
+import micro.repl.ma7moud3ly.managers.ScriptManager
+import micro.repl.ma7moud3ly.managers.ThemesManager
 import micro.repl.ma7moud3ly.managers.port.LocalFilesManager
 import micro.repl.ma7moud3ly.managers.port.StorageManager
-import micro.repl.ma7moud3ly.model.EditorAction
-import micro.repl.ma7moud3ly.model.EditorCommand
+import micro.repl.ma7moud3ly.feature.editor.model.EditorAction
+import micro.repl.ma7moud3ly.feature.editor.model.EditorCommand
 import micro.repl.ma7moud3ly.model.MicroScript
 import org.koin.core.annotation.Factory
 
@@ -194,7 +199,7 @@ class EditorManager(
         pendingAction = null
         when (action) {
             EditorAction.NewScript -> reset()
-            EditorAction.CLoseScript -> _commands.trySend(EditorCommand.Close)
+            EditorAction.CloseScript -> _commands.trySend(EditorCommand.Close)
             EditorAction.RunScript -> {
                 scriptManager.open(asMicroScript)
                 _commands.trySend(EditorCommand.Run)

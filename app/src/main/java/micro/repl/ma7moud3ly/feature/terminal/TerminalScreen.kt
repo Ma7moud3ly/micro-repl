@@ -8,7 +8,7 @@ import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.ui.components.asSuccessMessage
 import micro.repl.ma7moud3ly.ui.components.MessageToast
 import micro.repl.ma7moud3ly.ui.components.rememberMessageState
-import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun TerminalScreen(

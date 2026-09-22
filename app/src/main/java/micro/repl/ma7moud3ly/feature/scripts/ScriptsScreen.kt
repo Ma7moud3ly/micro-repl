@@ -14,7 +14,7 @@ import micro.repl.ma7moud3ly.model.MicroScript
 import micro.repl.ma7moud3ly.ui.dialog.FileDeleteDialog
 import micro.repl.ma7moud3ly.ui.dialog.FileRenameDialog
 import micro.repl.ma7moud3ly.ui.components.rememberMyDialogState
-import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun ScriptsScreen(

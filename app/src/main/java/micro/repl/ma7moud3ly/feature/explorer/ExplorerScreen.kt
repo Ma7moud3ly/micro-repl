@@ -14,7 +14,7 @@ import micro.repl.ma7moud3ly.ui.dialog.FileRenameDialog
 import micro.repl.ma7moud3ly.feature.explorer.dialog.ImportScriptDialog
 import micro.repl.ma7moud3ly.ui.components.MessageToast
 import micro.repl.ma7moud3ly.ui.components.rememberMessageState
-import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 /**
  * Files Explorer: browses and manages the files on the connected board.

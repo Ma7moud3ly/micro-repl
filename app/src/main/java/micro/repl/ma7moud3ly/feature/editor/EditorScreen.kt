@@ -11,13 +11,14 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import micro.repl.ma7moud3ly.model.EditorAction
-import micro.repl.ma7moud3ly.model.EditorCommand
+import micro.repl.ma7moud3ly.feature.editor.model.EditorAction
+import micro.repl.ma7moud3ly.feature.editor.model.EditorCommand
 import micro.repl.ma7moud3ly.feature.editor.dialog.FileSaveAsDialog
 import micro.repl.ma7moud3ly.feature.editor.dialog.FileSaveDialog
+import micro.repl.ma7moud3ly.feature.editor.model.EditorEvent
 import micro.repl.ma7moud3ly.ui.components.MessageToast
 import micro.repl.ma7moud3ly.ui.theme.LocalEditorTheme
-import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun EditorScreen(
@@ -50,7 +51,7 @@ fun EditorScreen(
         viewModel.onThemeChanged(theme)
     }
 
-    BackHandler { viewModel.onAction(EditorAction.CLoseScript) }
+    BackHandler { viewModel.onAction(EditorAction.CloseScript) }
 
     FileSaveDialog(
         state = saveDialog,
@@ -75,7 +76,7 @@ fun EditorScreen(
                 is EditorEvent.Run -> viewModel.onAction(EditorAction.RunScript)
                 is EditorEvent.Save -> viewModel.onAction(EditorAction.SaveScript)
                 is EditorEvent.New -> viewModel.onAction(EditorAction.NewScript)
-                is EditorEvent.Back -> viewModel.onAction(EditorAction.CLoseScript)
+                is EditorEvent.Back -> viewModel.onAction(EditorAction.CloseScript)
                 is EditorEvent.Lines -> editorManager.toggleLines()
                 is EditorEvent.Clear -> editorManager.clear()
                 is EditorEvent.Redo -> editorManager.redo()

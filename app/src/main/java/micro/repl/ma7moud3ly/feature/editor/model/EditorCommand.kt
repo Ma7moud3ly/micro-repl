@@ -1,6 +1,11 @@
-package micro.repl.ma7moud3ly.model
+package micro.repl.ma7moud3ly.feature.editor.model
 
-
+/**
+ * What the editor decided, for the UI to carry out.
+ *
+ * Goes from EditorManager back to the screen. The manager works out whether a save
+ * or a prompt is needed; these say only what to show, or where to go.
+ */
 sealed interface EditorCommand {
     /** Open the terminal on the script that was just stored. */
     data object Run : EditorCommand

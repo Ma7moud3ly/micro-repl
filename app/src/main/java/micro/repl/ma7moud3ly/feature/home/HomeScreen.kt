@@ -17,7 +17,7 @@ import micro.repl.ma7moud3ly.platform.rememberAppManager
 import micro.repl.ma7moud3ly.ui.components.MessageToast
 import micro.repl.ma7moud3ly.ui.components.rememberMessageState
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
-import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 /**
  * Home screen: connects a board, reports connection state, and opens the
@@ -35,7 +35,7 @@ fun HomeScreen(
     val appManager = rememberAppManager()
     val status = viewModel.status.collectAsStateWithLifecycle()
     val messageToast = rememberMessageState()
-    val context= LocalContext.current
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         viewModel.commands.collect { command ->
@@ -60,10 +60,12 @@ fun HomeScreen(
                     viewModel.newScript()
                     openTerminal()
                 }
+
                 is HomeEvents.OpenEditor -> {
                     viewModel.newScript()
                     openEditor()
                 }
+
                 is HomeEvents.OpenExplorer -> openExplorer()
                 is HomeEvents.OpenScripts -> openScripts()
                 is HomeEvents.Reset -> viewModel.reset()

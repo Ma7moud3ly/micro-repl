@@ -14,9 +14,9 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import micro.repl.ma7moud3ly.managers.EditorManager
-import micro.repl.ma7moud3ly.model.EditorAction
-import micro.repl.ma7moud3ly.model.EditorCommand
+import micro.repl.ma7moud3ly.feature.editor.manager.EditorManager
+import micro.repl.ma7moud3ly.feature.editor.model.EditorAction
+import micro.repl.ma7moud3ly.feature.editor.model.EditorCommand
 import micro.repl.ma7moud3ly.ui.components.asSuccessMessage
 import micro.repl.ma7moud3ly.ui.components.MessageToastState
 import micro.repl.ma7moud3ly.ui.components.MyDialogState

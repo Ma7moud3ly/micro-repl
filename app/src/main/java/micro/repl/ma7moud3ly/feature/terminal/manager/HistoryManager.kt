@@ -5,8 +5,9 @@
  *
  */
 
-package micro.repl.ma7moud3ly.managers
+package micro.repl.ma7moud3ly.feature.terminal.manager
 
+import micro.repl.ma7moud3ly.managers.AppLog
 import org.koin.core.annotation.Single
 
 
@@ -19,7 +20,7 @@ import org.koin.core.annotation.Single
  * using the `up()` and `down()` methods.
  */
 @Single
-class TerminalHistoryManager {
+class HistoryManager {
     companion object {
         private const val TAG = "TerminalHistory"
     }
