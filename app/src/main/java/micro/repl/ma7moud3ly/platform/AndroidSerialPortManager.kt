@@ -55,6 +55,10 @@ class AndroidSerialPortManager(
     private var serialInputOutputManager: SerialInputOutputManager? = null
     private var port: UsbSerialPort? = null
 
+    /** Set while we close the port ourselves, so the reader's error is ignored. */
+    @Volatile
+    private var closing = false
+
     private val _incoming = MutableSharedFlow<ByteArray>(extraBufferCapacity = 64)
     override val incoming: SharedFlow<ByteArray> = _incoming.asSharedFlow()
 
@@ -135,6 +139,7 @@ class AndroidSerialPortManager(
     }
 
     override fun connectToSerial(device: MicroDevice): Result<Unit> = runCatching {
+        closing = false
         val usbDevice: UsbDevice = device.usbDevice() ?: error("no usb device")
         val allDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(usbManager)
         if (allDrivers.isNullOrEmpty()) error("no drivers")
@@ -174,12 +179,14 @@ class AndroidSerialPortManager(
 
     override fun release() {
         Log.i(TAG, "release")
+        closing = true
         try {
             serialInputOutputManager?.stop()
             if (port?.isOpen == true) port?.close()
         } catch (e: Exception) {
             e.printStackTrace()
         }
+        serialInputOutputManager = null
         port = null
     }
 
@@ -188,6 +195,7 @@ class AndroidSerialPortManager(
     }
 
     override fun onRunError(e: Exception?) {
+        if (closing) return
         Log.e(TAG, "onRunError - ${e?.message}")
         _errors.tryEmit(e ?: Exception())
     }
