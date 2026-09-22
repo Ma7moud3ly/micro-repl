@@ -12,12 +12,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import micro.repl.ma7moud3ly.managers.CommandsManager
 import micro.repl.ma7moud3ly.managers.ReplManager
+import micro.repl.ma7moud3ly.managers.ScriptStoreManager
 import micro.repl.ma7moud3ly.managers.TerminalHistoryManager
 import micro.repl.ma7moud3ly.managers.TerminalManager
 import micro.repl.ma7moud3ly.model.MicroScript
@@ -30,10 +33,13 @@ private const val MAX_OUTPUT_CHARS = 10_000
 @KoinViewModel
 class TerminalViewModel(
     private val replManager: ReplManager,
-    private val terminalManager: TerminalManager
+    private val terminalManager: TerminalManager,
+    private val terminalHistoryManager: TerminalHistoryManager,
+    scriptStoreManager: ScriptStoreManager
 ) : ViewModel() {
 
-    private val history = TerminalHistoryManager()
+    /** The script this session was opened on, blank for a bare REPL. */
+    val script: MicroScript = scriptStoreManager.script
 
     /** The code being typed. */
     var input by mutableStateOf("")
@@ -49,6 +55,7 @@ class TerminalViewModel(
     val commands: Flow<TerminalCommand> = _commands.receiveAsFlow()
 
     init {
+        start()
         viewModelScope.launch {
             replManager.output.collect { (data, clear) ->
                 output = when {
@@ -61,7 +68,7 @@ class TerminalViewModel(
         }
     }
 
-    fun initTerminal(script: MicroScript) {
+    private fun start() {
         clear()
         viewModelScope.launch {
             when {
@@ -87,7 +94,7 @@ class TerminalViewModel(
     /** Sends the typed code; multiline input is run as a script. */
     fun run() {
         val code = input
-        history.push(code)
+        terminalHistoryManager.push(code)
         viewModelScope.launch {
             if (code.contains("\n")) terminalManager.evalMultiLine(code)
             else terminalManager.eval(code)
@@ -117,22 +124,21 @@ class TerminalViewModel(
     }
 
     fun historyUp() {
-        history.up()?.let { input = it }
+        terminalHistoryManager.up()?.let { input = it }
     }
 
     fun historyDown() {
-        history.down()?.let { input = it }
+        terminalHistoryManager.down()?.let { input = it }
     }
 
-    /**
-     * Stops whatever is running and empties the screen.
-     *
-     * Called while the ViewModel is still alive - [onCleared] would cancel the
-     * coroutine before the terminate command reached the board.
-     */
-    fun stop() {
-        clear()
-        terminate()
+
+    override fun onCleared() {
+        viewModelScope.launch {
+            withContext(NonCancellable) {
+                clear()
+                terminate()
+            }
+        }
     }
 
 }

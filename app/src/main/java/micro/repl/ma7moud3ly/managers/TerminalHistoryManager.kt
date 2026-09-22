@@ -7,6 +7,8 @@
 
 package micro.repl.ma7moud3ly.managers
 
+import org.koin.core.annotation.Single
+
 
 /**
  * Manages the command history for a terminal or REPL interface.
@@ -16,6 +18,7 @@ package micro.repl.ma7moud3ly.managers
  * of commands and allows the user to move up and down through the history
  * using the `up()` and `down()` methods.
  */
+@Single
 class TerminalHistoryManager {
     companion object {
         private const val TAG = "TerminalHistory"

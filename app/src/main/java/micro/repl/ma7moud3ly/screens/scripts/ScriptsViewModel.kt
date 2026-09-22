@@ -15,6 +15,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import micro.repl.ma7moud3ly.managers.port.ScriptsManager
 import micro.repl.ma7moud3ly.managers.AppLog
+import micro.repl.ma7moud3ly.managers.ScriptStoreManager
 import micro.repl.ma7moud3ly.model.MicroScript
 import org.koin.core.annotation.KoinViewModel
 
@@ -23,7 +24,8 @@ private const val TAG = "ScriptsViewModel"
 
 @KoinViewModel
 class ScriptsViewModel(
-    private val scriptsManager: ScriptsManager
+    private val scriptsManager: ScriptsManager,
+    private val scriptStoreManager: ScriptStoreManager
 ) : ViewModel() {
 
     /** Scripts on this device. Backed by a snapshot list, so edits recompose. */
@@ -51,18 +53,24 @@ class ScriptsViewModel(
         scriptsManager.shareScript(script)
     }
 
+    /** Hands a blank script to the editor, which should start empty. */
+    fun newScript() {
+        scriptStoreManager.open(MicroScript(), blank = true)
+    }
+
     /**
-     * Loads [script]'s content from disk.
+     * Reads [script] off disk and hands it to the screen being opened.
      *
-     * @return the script with its content filled in, or null if it could not be read.
+     * @return false if the file could not be read, in which case nothing is handed over.
      */
-    suspend fun loadScript(script: MicroScript): MicroScript? = try {
+    suspend fun handOff(script: MicroScript): Boolean = try {
         script.content = scriptsManager.read(script.file)
         AppLog.v(TAG, script.toString())
-        script
+        scriptStoreManager.open(script)
+        true
     } catch (e: Exception) {
         e.printStackTrace()
-        null
+        false
     }
 
     init {

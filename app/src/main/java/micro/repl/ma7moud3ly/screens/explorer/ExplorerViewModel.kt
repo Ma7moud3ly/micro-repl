@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import micro.repl.ma7moud3ly.managers.BoardManager
 import micro.repl.ma7moud3ly.managers.FilesManager
+import micro.repl.ma7moud3ly.managers.ScriptStoreManager
 import micro.repl.ma7moud3ly.managers.TerminalManager
 import micro.repl.ma7moud3ly.model.ConnectionStatus
 import micro.repl.ma7moud3ly.model.EditorMode
@@ -35,6 +36,7 @@ import org.koin.core.annotation.KoinViewModel
 class ExplorerViewModel(
     private val filesManager: FilesManager,
     private val terminalManager: TerminalManager,
+    private val scriptStoreManager: ScriptStoreManager,
     boardManager: BoardManager
 ) : ViewModel() {
 
@@ -106,8 +108,8 @@ class ExplorerViewModel(
                 content = filesManager.read(file.fullPath),
                 editorMode = EditorMode.REMOTE
             )
-            val command = ExplorerCommand.OpenTerminal(script)
-            _commands.trySend(command)
+            scriptStoreManager.open(script)
+            _commands.trySend(ExplorerCommand.OpenTerminal)
         }
     }
 
@@ -118,8 +120,8 @@ class ExplorerViewModel(
                 content = filesManager.read(file.fullPath),
                 editorMode = EditorMode.REMOTE
             )
-            val command = ExplorerCommand.OpenEditor(script)
-            _commands.trySend(command)
+            scriptStoreManager.open(script)
+            _commands.trySend(ExplorerCommand.OpenEditor)
         }
     }
 

@@ -57,9 +57,15 @@ fun HomeScreen(
         connectionStatus = { status.value },
         uiEvents = {
             when (it) {
-                is HomeEvents.OpenTerminal -> openTerminal()
+                is HomeEvents.OpenTerminal -> {
+                    viewModel.newScript()
+                    openTerminal()
+                }
+                is HomeEvents.OpenEditor -> {
+                    viewModel.newScript()
+                    openEditor()
+                }
                 is HomeEvents.OpenExplorer -> openExplorer()
-                is HomeEvents.OpenEditor -> openEditor()
                 is HomeEvents.OpenScripts -> openScripts()
                 is HomeEvents.Reset -> viewModel.reset()
                 is HomeEvents.SoftReset -> viewModel.softReset()

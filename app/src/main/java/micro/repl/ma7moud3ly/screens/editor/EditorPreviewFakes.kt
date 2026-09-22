@@ -19,6 +19,7 @@ import micro.repl.ma7moud3ly.managers.EditorManager
 import micro.repl.ma7moud3ly.managers.EditorSession
 import micro.repl.ma7moud3ly.managers.FilesManager
 import micro.repl.ma7moud3ly.managers.ReplManager
+import micro.repl.ma7moud3ly.managers.ScriptStoreManager
 import micro.repl.ma7moud3ly.managers.port.ScriptsManager
 import micro.repl.ma7moud3ly.managers.port.SerialPortManager
 import micro.repl.ma7moud3ly.managers.port.StorageManager
@@ -49,13 +50,13 @@ internal fun previewEditorManager(
         )
     )
     return EditorManager(
-        session = session,
         scriptsManager = FakeScriptsManager(),
         storageManager = FakeStorageManager(),
         filesManager = FilesManager(ReplManager(FakeSerialPortManager())),
-        theme = theme,
-        canRunState = mutableStateOf(canRun)
-    )
+        scriptStoreManager = ScriptStoreManager()
+    ).apply {
+        open(session = session, theme = theme, canRunState = mutableStateOf(canRun))
+    }
 }
 
 private class FakeScriptsManager : ScriptsManager {

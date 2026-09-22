@@ -11,10 +11,8 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import micro.repl.ma7moud3ly.model.EditorAction
 import micro.repl.ma7moud3ly.model.EditorCommand
-import micro.repl.ma7moud3ly.model.MicroScript
 import micro.repl.ma7moud3ly.screens.dialogs.FileSaveAsDialog
 import micro.repl.ma7moud3ly.screens.dialogs.FileSaveDialog
 import micro.repl.ma7moud3ly.ui.components.MessageToast
@@ -24,10 +22,8 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun EditorScreen(
     viewModel: EditorViewModel = koinViewModel(),
-    script: MicroScript,
-    blank: Boolean,
     openThemePicker: () -> Unit,
-    onRemoteRun: (MicroScript) -> Unit,
+    onRemoteRun: () -> Unit,
     onBack: () -> Unit
 ) {
     val messageToast = remember { viewModel.messageToastState }
@@ -35,27 +31,21 @@ fun EditorScreen(
     val saveAsNewDialog = remember { viewModel.saveAsNewDialogState }
     val themeController = LocalThemeController.current
 
-    val canRun = viewModel.canRun.collectAsStateWithLifecycle()
-
     LaunchedEffect(Unit) {
-        viewModel.open(
-            script = script,
-            blank = blank,
-            theme = themeController.theme,
-            canRunState = canRun
-        )
+        viewModel.open(theme = themeController.theme)
     }
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                is EditorCommand.Run -> onRemoteRun(event.script)
+                is EditorCommand.Run -> onRemoteRun()
                 is EditorCommand.Close -> onBack()
             }
         }
     }
 
-    val editorManager = viewModel.editorManager ?: return
+    val editorManager = viewModel.editorManager
+    if (editorManager.isOpen.not()) return
 
 
     // Follow theme changes made while the editor is open.

@@ -22,8 +22,8 @@ fun ScriptsScreen(
     canRun: () -> Boolean,
     onBack: () -> Unit,
     onNewScript: () -> Unit,
-    onOpenLocalScript: (MicroScript) -> Unit,
-    onRunLocalScript: (MicroScript) -> Unit
+    onOpenLocalScript: () -> Unit,
+    onRunLocalScript: () -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
     val renameFileDialog = rememberMyDialogState()
@@ -41,10 +41,10 @@ fun ScriptsScreen(
         onOk = { viewModel.deleteSelectedScript() }
     )
 
-    /** Reads the script off disk before handing it to [onOpen]. */
-    fun openScript(script: MicroScript, onOpen: (MicroScript) -> Unit) {
+    /** Reads the script off disk before opening the screen that will show it. */
+    fun openScript(script: MicroScript, onOpen: () -> Unit) {
         coroutineScope.launch {
-            viewModel.loadScript(script)?.let(onOpen)
+            if (viewModel.handOff(script)) onOpen()
         }
     }
 
@@ -54,7 +54,10 @@ fun ScriptsScreen(
         uiEvents = {
             when (it) {
                 is ScriptsEvents.Back -> onBack()
-                is ScriptsEvents.NewScript -> onNewScript()
+                is ScriptsEvents.NewScript -> {
+                    viewModel.newScript()
+                    onNewScript()
+                }
                 is ScriptsEvents.Open -> openScript(it.script, onOpenLocalScript)
                 is ScriptsEvents.Run -> openScript(it.script, onRunLocalScript)
                 is ScriptsEvents.Share -> viewModel.shareScript(it.script)

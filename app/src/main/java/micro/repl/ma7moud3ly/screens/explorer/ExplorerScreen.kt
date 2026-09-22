@@ -8,7 +8,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.model.ExplorerCommand
-import micro.repl.ma7moud3ly.model.MicroScript
 import micro.repl.ma7moud3ly.model.asSuccessMessage
 import micro.repl.ma7moud3ly.screens.dialogs.FileCreateDialog
 import micro.repl.ma7moud3ly.screens.dialogs.FileDeleteDialog
@@ -21,15 +20,15 @@ import org.koin.androidx.compose.koinViewModel
 /**
  * Files Explorer: browses and manages the files on the connected board.
  *
- * @param openTerminal Opens a terminal session on the given script.
- * @param openEditor Opens the editor on the given script.
+ * @param openTerminal Opens a terminal session on the stored script.
+ * @param openEditor Opens the editor on the stored script.
  * @param onBack Leaves the explorer.
  */
 @Composable
 fun FilesExplorerScreen(
     viewModel: ExplorerViewModel = koinViewModel(),
-    openTerminal: (MicroScript) -> Unit,
-    openEditor: (MicroScript) -> Unit,
+    openTerminal: () -> Unit,
+    openEditor: () -> Unit,
     onBack: () -> Unit
 ) {
     val files = viewModel.files.collectAsStateWithLifecycle()
@@ -46,8 +45,8 @@ fun FilesExplorerScreen(
     LaunchedEffect(Unit) {
         viewModel.commands.collect { command ->
             when (command) {
-                is ExplorerCommand.OpenTerminal -> openTerminal(command.script)
-                is ExplorerCommand.OpenEditor -> openEditor(command.script)
+                is ExplorerCommand.OpenTerminal -> openTerminal()
+                is ExplorerCommand.OpenEditor -> openEditor()
                 is ExplorerCommand.Back -> onBack()
                 is ExplorerCommand.Refreshing ->
                     messageToast.show(refreshMessage.asSuccessMessage)

@@ -9,6 +9,8 @@ package micro.repl.ma7moud3ly.managers
 
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.State
 import io.ma7moud3ly.nemo.model.CodeState
 import io.ma7moud3ly.nemo.model.EditorSettings
@@ -16,6 +18,7 @@ import io.ma7moud3ly.nemo.model.EditorTheme
 import micro.repl.ma7moud3ly.managers.port.ScriptsManager
 import micro.repl.ma7moud3ly.managers.port.StorageManager
 import micro.repl.ma7moud3ly.model.MicroScript
+import org.koin.core.annotation.Factory
 import java.io.File
 
 
@@ -25,29 +28,65 @@ import java.io.File
  * This class handles editor settings, code execution, file operations (save, undo/redo),
  * and coordinates between the UI and the underlying [EditorSession].
  *
- * @param session The current editor session containing code and script metadata.
+ * Built empty - [open] loads the script handed over by the previous screen and
+ * everything below it reads that session, so nothing but [isOpen] may be touched
+ * before then.
+ *
  * @param scriptsManager Manager for scripts stored on this device.
  * @param storageManager Persists the editor settings between launches.
  * @param filesManager Manager for remote file operations on a MicroPython board.
- * @param theme The theme the editor opens with.
- * @param canRunState Whether the board is connected, as observable state so the
- *                    toolbar follows a disconnect while the editor is open.
+ * @param scriptStoreManager The script the editor was opened on.
  */
+@Factory
 class EditorManager(
-    private val session: EditorSession,
     private val scriptsManager: ScriptsManager,
     private val storageManager: StorageManager,
     private val filesManager: FilesManager,
-    theme: EditorTheme,
-    private val canRunState: State<Boolean>
+    private val scriptStoreManager: ScriptStoreManager
 ) {
 
+    private lateinit var session: EditorSession
+    private lateinit var canRunState: State<Boolean>
+
+    /** Whether [open] has finished. Until it has, the editor has nothing to show. */
+    var isOpen by mutableStateOf(false)
+        private set
+
     /** The configuration for the editor, restored from [storageManager]. */
-    val settings = EditorSettings(
-        theme = theme,
-        fontSize = storageManager.fontSize,
-        showLineNumbers = storageManager.showLineNumbers
-    )
+    lateinit var settings: EditorSettings
+        private set
+
+    /**
+     * Reads the handed-over script off disk and readies the editor.
+     *
+     * @param canRunState Whether the board is connected, as observable state so the
+     *                    toolbar follows a disconnect while the editor is open.
+     */
+    suspend fun open(theme: EditorTheme, canRunState: State<Boolean>) {
+        if (isOpen) return
+        open(
+            session = EditorSession.create(
+                script = scriptStoreManager.script,
+                blank = scriptStoreManager.blank,
+                scriptsManager = scriptsManager,
+                storageManager = storageManager
+            ),
+            theme = theme,
+            canRunState = canRunState
+        )
+    }
+
+    /** Opens on a session that is already built, for `@Preview`. */
+    internal fun open(session: EditorSession, theme: EditorTheme, canRunState: State<Boolean>) {
+        this.session = session
+        this.canRunState = canRunState
+        this.settings = EditorSettings(
+            theme = theme,
+            fontSize = storageManager.fontSize,
+            showLineNumbers = storageManager.showLineNumbers
+        )
+        isOpen = true
+    }
 
 
     val codeState: CodeState get() = session.codeState
