@@ -26,10 +26,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -37,15 +35,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.ma7moud3ly.nemo.NemoCodeEditor
-import io.ma7moud3ly.nemo.model.CodeState
-import io.ma7moud3ly.nemo.model.EditorSettings
-import io.ma7moud3ly.nemo.model.EditorThemes
-import io.ma7moud3ly.nemo.model.Language
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.managers.EditorManager
-import micro.repl.ma7moud3ly.managers.EditorSession
-import micro.repl.ma7moud3ly.model.EditorMode
-import micro.repl.ma7moud3ly.model.MicroScript
 import micro.repl.ma7moud3ly.ui.components.ActionButton
 import micro.repl.ma7moud3ly.ui.components.BackButton
 import micro.repl.ma7moud3ly.ui.components.BarToggle
@@ -55,29 +46,13 @@ import micro.repl.ma7moud3ly.ui.components.SegmentLabel
 import micro.repl.ma7moud3ly.ui.components.SegmentPair
 import micro.repl.ma7moud3ly.ui.components.ThemeButton
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
+import micro.repl.ma7moud3ly.ui.theme.AppThemes
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
 
 @Preview
 @Composable
 private fun EditorScreenPreviewLight() {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val editorManager = remember {
-        EditorManager(
-            context = context,
-            coroutineScope = scope,
-            session = EditorSession(
-                codeState = CodeState("print('Hello World')", Language.PYTHON),
-                initialScript = MicroScript(
-                    path = "lib/path/path/path/path/path/main.py",
-                    editorMode = EditorMode.REMOTE,
-                    microPython = true
-                )
-            ),
-            settings = EditorSettings(theme = EditorThemes.VS_CODE_LIGHT),
-            runnable = { true }
-        )
-    }
+    val editorManager = remember { previewEditorManager(theme = AppThemes.DEFAULT_LIGHT) }
     AppTheme(darkTheme = false) {
         EditorScreenContent(
             editorManager = editorManager,
@@ -89,24 +64,7 @@ private fun EditorScreenPreviewLight() {
 @Preview
 @Composable
 private fun EditorScreenPreviewDark() {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val editorManager = remember {
-        EditorManager(
-            context = context,
-            coroutineScope = scope,
-            session = EditorSession(
-                codeState = CodeState("print('Hello World')", Language.PYTHON),
-                initialScript = MicroScript(
-                    path = "lib/path/path/path/path/path/main.py",
-                    editorMode = EditorMode.REMOTE,
-                    microPython = true
-                )
-            ),
-            settings = EditorSettings(),
-            runnable = { true }
-        )
-    }
+    val editorManager = remember { previewEditorManager(theme = AppThemes.DEFAULT_DARK) }
     AppTheme(darkTheme = true) {
         EditorScreenContent(
             editorManager = editorManager,
@@ -119,7 +77,7 @@ private fun EditorScreenPreviewDark() {
 @Composable
 fun EditorScreenContent(
     editorManager: EditorManager,
-    uiEvents: (EditorEvents) -> Unit
+    uiEvents: (EditorEvent) -> Unit
 ) {
     MyScreen(
         modifier = Modifier.padding(0.dp),
@@ -141,7 +99,7 @@ fun EditorScreenContent(
 @Composable
 private fun Header(
     editorManager: EditorManager,
-    uiEvents: (EditorEvents) -> Unit
+    uiEvents: (EditorEvent) -> Unit
 ) {
     Surface(color = MaterialTheme.colorScheme.surface) {
         Column(Modifier.statusBarsPadding()) {
@@ -156,7 +114,7 @@ private fun Header(
 @Composable
 private fun EditorAppBar(
     editorManager: EditorManager,
-    uiEvents: (EditorEvents) -> Unit
+    uiEvents: (EditorEvent) -> Unit
 ) {
     val title by editorManager.title
     val source = stringResource(
@@ -173,13 +131,13 @@ private fun EditorAppBar(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        BackButton { uiEvents(EditorEvents.Back) }
+        BackButton { uiEvents(EditorEvent.Back) }
         ScriptTitle(
             source = source,
             name = title,
             modifier = Modifier.weight(1f)
         )
-        ThemeButton(onClick = { uiEvents(EditorEvents.ShowThemeDialog) })
+        ThemeButton(onClick = { uiEvents(EditorEvent.ShowThemeDialog) })
     }
 }
 
@@ -188,7 +146,7 @@ private fun EditorAppBar(
 @Composable
 private fun EditorActions(
     editorManager: EditorManager,
-    uiEvents: (EditorEvents) -> Unit
+    uiEvents: (EditorEvent) -> Unit
 ) {
     val canRun = editorManager.canRun
     val isDirty = editorManager.isDirty
@@ -216,7 +174,7 @@ private fun EditorActions(
                     text = R.string.terminal_run,
                     filled = true,
                     textModifier = Modifier.padding(horizontal = 14.dp),
-                    onClick = { uiEvents(EditorEvents.Run) }
+                    onClick = { uiEvents(EditorEvent.Run) }
                 )
                 // A remote script has nowhere to save without the board connected,
                 // so the write would fail silently.
@@ -224,7 +182,7 @@ private fun EditorActions(
                     ActionButton(
                         text = R.string.editor_save,
                         textModifier = Modifier.padding(horizontal = 14.dp),
-                        onClick = { uiEvents(EditorEvents.Save) }
+                        onClick = { uiEvents(EditorEvent.Save) }
                     )
                     if (isDirty) Box(
                         modifier = Modifier
@@ -238,7 +196,7 @@ private fun EditorActions(
                 if (editorManager.isLocal) ActionButton(
                     text = R.string.editor_new,
                     textModifier = Modifier.padding(horizontal = 14.dp),
-                    onClick = { uiEvents(EditorEvents.New) }
+                    onClick = { uiEvents(EditorEvent.New) }
                 )
             }
             // keeps the two groups apart once the row overflows and SpaceBetween
@@ -250,8 +208,8 @@ private fun EditorActions(
             ) {
                 SegmentPair(
                     cellWidth = 28.dp, cellHeight = 24.dp,
-                    onStart = { uiEvents(EditorEvents.Undo) },
-                    onEnd = { uiEvents(EditorEvents.Redo) },
+                    onStart = { uiEvents(EditorEvent.Undo) },
+                    onEnd = { uiEvents(EditorEvent.Redo) },
                     startEnabled = canUndo,
                     endEnabled = canRedo,
                     start = { SegmentIcon(R.drawable.undo, MaterialTheme.colorScheme.onSurface) },
@@ -260,15 +218,15 @@ private fun EditorActions(
                 // font size
                 SegmentPair(
                     cellWidth = 28.dp, cellHeight = 24.dp,
-                    onStart = { uiEvents(EditorEvents.ZoomOut) },
-                    onEnd = { uiEvents(EditorEvents.ZoomIn) },
+                    onStart = { uiEvents(EditorEvent.ZoomOut) },
+                    onEnd = { uiEvents(EditorEvent.ZoomIn) },
                     start = { SegmentLabel("A−", MaterialTheme.colorScheme.onSurface) },
                     end = { SegmentLabel("A+", MaterialTheme.colorScheme.onSurface) }
                 )
                 BarToggle(
                     icon = R.drawable.lines,
                     selected = showLines,
-                    onClick = { uiEvents(EditorEvents.Lines) }
+                    onClick = { uiEvents(EditorEvent.Lines) }
                 )
             }
         }

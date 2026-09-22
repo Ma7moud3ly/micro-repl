@@ -7,14 +7,14 @@
 
 package micro.repl.ma7moud3ly.managers
 
-import android.app.Activity
-import android.content.Context
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import io.ma7moud3ly.nemo.model.CodeState
 import io.ma7moud3ly.nemo.model.Language
+import micro.repl.ma7moud3ly.managers.port.ScriptsManager
+import micro.repl.ma7moud3ly.managers.port.StorageManager
 import micro.repl.ma7moud3ly.model.MicroScript
 import java.io.File
 import java.io.IOException
@@ -81,15 +81,14 @@ class EditorSession(
         /**
          * Builds a session for [script], restoring the most recent local script
          * when the editor is opened without one.
-         *
-         * [context] is only read here; nothing keeps a reference to it.
          */
-        fun create(
-            context: Context,
+        suspend fun create(
             script: MicroScript,
-            blank: Boolean
+            blank: Boolean,
+            scriptsManager: ScriptsManager,
+            storageManager: StorageManager
         ): EditorSession {
-            val resolved = restoreRecentScript(context, script, blank)
+            val resolved = restoreRecentScript(script, blank, scriptsManager, storageManager)
             return EditorSession(
                 codeState = CodeState(
                     initialCode = resolved.content,
@@ -103,20 +102,19 @@ class EditorSession(
          * Returns the recent local script when the editor is opened without a
          * script; otherwise returns [script] unchanged.
          */
-        private fun restoreRecentScript(
-            context: Context,
+        private suspend fun restoreRecentScript(
             script: MicroScript,
-            blank: Boolean
+            blank: Boolean,
+            scriptsManager: ScriptsManager,
+            storageManager: StorageManager
         ): MicroScript {
             if (blank || script.isLocal.not() || script.exists) return script
-            val activity = context as? Activity ?: return script
-            val recent = activity.getPreferences(Context.MODE_PRIVATE)
-                .getString(EditorManager.KEY_SCRIPT, "").orEmpty()
+            val recent = storageManager.recentScript
             if (recent.isEmpty()) return script
             val file = File(recent)
             if (file.exists().not()) return script
             return try {
-                script.copy(content = ScriptsManager(context).read(file), path = recent)
+                script.copy(content = scriptsManager.read(file), path = recent)
             } catch (e: IOException) {
                 e.printStackTrace()
                 script

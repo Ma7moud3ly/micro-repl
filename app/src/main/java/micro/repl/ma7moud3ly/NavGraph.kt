@@ -94,10 +94,8 @@ fun RootGraph(
             val editor: AppRoutes.Editor = backStackEntry.toRoute()
             val script = remember { viewModel.script }
             EditorScreen(
-                canRun = { canRun },
                 script = script,
                 blank = editor.blank,
-                viewModel = viewModel,
                 openThemePicker = {
                     navController.navigate(AppRoutes.ThemePicker)
                 },

@@ -1,15 +1,15 @@
 package micro.repl.ma7moud3ly.screens.editor
 
-sealed interface EditorEvents {
-    data object Back : EditorEvents
-    data object Run : EditorEvents
-    data object Undo : EditorEvents
-    data object Redo : EditorEvents
-    data object New : EditorEvents
-    data object Save : EditorEvents
-    data object Clear : EditorEvents
-    data object Lines : EditorEvents
-    data object ZoomIn : EditorEvents
-    data object ZoomOut : EditorEvents
-    data object ShowThemeDialog : EditorEvents
+sealed interface EditorEvent {
+    data object Back : EditorEvent
+    data object Run : EditorEvent
+    data object Undo : EditorEvent
+    data object Redo : EditorEvent
+    data object New : EditorEvent
+    data object Save : EditorEvent
+    data object Clear : EditorEvent
+    data object Lines : EditorEvent
+    data object ZoomIn : EditorEvent
+    data object ZoomOut : EditorEvent
+    data object ShowThemeDialog : EditorEvent
 }

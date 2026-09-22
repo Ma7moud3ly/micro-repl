@@ -7,20 +7,15 @@
 
 package micro.repl.ma7moud3ly.managers
 
-import android.app.Activity
-import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.State
-import androidx.core.content.edit
 import io.ma7moud3ly.nemo.model.CodeState
 import io.ma7moud3ly.nemo.model.EditorSettings
 import io.ma7moud3ly.nemo.model.EditorTheme
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import micro.repl.ma7moud3ly.managers.port.ScriptsManager
+import micro.repl.ma7moud3ly.managers.port.StorageManager
 import micro.repl.ma7moud3ly.model.MicroScript
 import java.io.File
 
@@ -31,27 +26,30 @@ import java.io.File
  * This class handles editor settings, code execution, file operations (save, undo/redo),
  * and coordinates between the UI and the underlying [EditorSession].
  *
- * @param context The Android context.
- * @param coroutineScope The scope for running asynchronous operations like file I/O.
  * @param session The current editor session containing code and script metadata.
- * @param filesManager Optional manager for remote file operations on a MicroPython board.
- * @param runnable A function that returns true if the script can currently be executed.
- * @param settings The configuration for the editor (theme, font size, etc.).
- * @param onRun Callback invoked when the user requests to run the script.
- * @param afterEdit Callback invoked after a script is closed or edit is finished.
+ * @param scriptsManager Manager for scripts stored on this device.
+ * @param storageManager Persists the editor settings between launches.
+ * @param filesManager Manager for remote file operations on a MicroPython board.
+ * @param theme The theme the editor opens with.
+ * @param canRunState Whether the board is connected, as observable state so the
+ *                    toolbar follows a disconnect while the editor is open.
  */
 class EditorManager(
-    private val context: Context,
-    private val coroutineScope: CoroutineScope,
     private val session: EditorSession,
-    private val filesManager: FilesManager? = null,
-    private val runnable: () -> Boolean = { false },
-    val settings: EditorSettings,
-    private val onRun: ((MicroScript) -> Unit)? = null,
-    private val afterEdit: (() -> Unit)? = null
+    private val scriptsManager: ScriptsManager,
+    private val storageManager: StorageManager,
+    private val filesManager: FilesManager,
+    theme: EditorTheme,
+    private val canRunState: State<Boolean>
 ) {
-    // Built lazily so the constructor stays preview-safe.
-    private val scriptsManager by lazy { ScriptsManager(context) }
+
+    /** The configuration for the editor, restored from [storageManager]. */
+    val settings = EditorSettings(
+        theme = theme,
+        fontSize = storageManager.fontSize,
+        showLineNumbers = storageManager.showLineNumbers
+    )
+
 
     val codeState: CodeState get() = session.codeState
     val script: MicroScript get() = session.script
@@ -63,15 +61,13 @@ class EditorManager(
     /** The editor title (file name / path), shown in the header. */
     val title: State<String> = derivedStateOf { script.displayName }
 
-    var actionAfterSave: EditorAction? = null
-
     /**
      * Whether the run button is available.
      *
-     * Derived rather than mirrored: reading it in composition tracks the
-     * connection state directly, so it goes false again on disconnect.
+     * Reading it in composition subscribes to [canRunState], so the toolbar goes
+     * back to read-only the moment the board disconnects.
      */
-    val canRun: Boolean get() = runnable()
+    val canRun: Boolean get() = canRunState.value
 
     /** Whether there are edits that haven't been written back yet. */
     val isDirty: Boolean get() = session.isDirty
@@ -95,7 +91,8 @@ class EditorManager(
     /** Line-numbers visibility, owned by [settings]. */
     val showLines: Boolean get() = settings.showLineNumbersState.value
 
-    private val asMicroScript: MicroScript get() = session.asMicroScript
+    /** The live buffer as a script, for handing to the terminal. */
+    val asMicroScript: MicroScript get() = session.asMicroScript
 
     /**
      * Editor actions
@@ -130,21 +127,9 @@ class EditorManager(
         persistSettings()
     }
 
-    /**
-     * Executes the pending [actionAfterSave] (typically after a save completes).
-     */
-    fun actionAfterSave() {
-        Log.v(TAG, "actionAfterSave")
-        persistSettings()
-        val action = this.actionAfterSave
-        actionAfterSave = null
-        when (action) {
-            EditorAction.NewScript -> session.reset()
-
-            EditorAction.CLoseScript -> afterEdit?.invoke()
-            EditorAction.RunScript -> onRun?.invoke(asMicroScript)
-            else -> {}
-        }
+    /** Empties the buffer for a new, unnamed script. */
+    fun reset() {
+        session.reset()
     }
 
     /** True if the script exists and has unsaved changes. */
@@ -156,98 +141,42 @@ class EditorManager(
     /**
      * Saves the current script locally or to the MicroPython board.
      *
-     * The local write is real file I/O, so it runs off the main thread; [onDone]
-     * is always invoked on Main, matching the remote path.
+     * Both paths suspend: the managers move the actual IO off the caller's thread.
      */
-    fun save(onDone: () -> Unit) {
+    suspend fun save() {
         if (script.isLocal) {
             val file = File(script.path)
             val content = codeState.code
-            coroutineScope.launch {
-                val saved = withContext(Dispatchers.IO) { scriptsManager.write(file, content) }
-                if (saved) session.markSaved()
-                onDone()
-            }
+            val saved = scriptsManager.write(file, content)
+            if (saved) session.markSaved()
         } else {
-            coroutineScope.launch {
-                filesManager?.write(path = script.path, content = codeState.code)
-                session.markSaved()
-                withContext(Dispatchers.Main) { onDone() }
-            }
+            filesManager.write(path = script.path, content = codeState.code)
+            session.markSaved()
         }
     }
 
     /**
      * Saves the current script under a new file name.
      */
-    fun saveFileAs(name: String, onDone: () -> Unit) {
+    suspend fun saveFileAs(name: String) {
         scriptsManager.scriptDirectory()?.let {
             session.moveTo(it.path + "/" + name)
             Log.v(TAG, "saveFileAs - ${script.path}")
-            save(onDone)
+            save()
         }
     }
 
-    private fun persistSettings() {
-        val activity = context as? Activity ?: return
-        activity.getPreferences(Context.MODE_PRIVATE).edit {
-            putBoolean(KEY_SHOW_LINES, settings.showLineNumbersState.value)
-            putInt(KEY_FONT_SIZE, settings.fontSizeState.value)
-            if (script.isLocal && script.exists) {
-                Log.v(TAG, "persistSettings - hasScript")
-                putString(KEY_SCRIPT, script.path)
-            }
+    /** Cheap enough to stay synchronous: the platform write itself is async. */
+    fun persistSettings() {
+        storageManager.showLineNumbers = settings.showLineNumbersState.value
+        storageManager.fontSize = settings.fontSizeState.value
+        if (script.isLocal && script.exists) {
+            Log.v(TAG, "persistSettings - hasScript")
+            storageManager.recentScript = script.path
         }
     }
 
     companion object {
         private const val TAG = "EditorManager"
-        private const val KEY_SHOW_LINES = "show_lines"
-        private const val KEY_FONT_SIZE = "font_size"
-        internal const val KEY_SCRIPT = "script"
-
-        /**
-         * Builds an [EditorManager] around an existing [session].
-         *
-         * The session is passed in rather than created here so the caller can
-         * `retain` it across a rotation; everything built here (scope, callbacks,
-         * the FilesManager) is tied to the current Activity and must not be.
-         */
-        fun create(
-            context: Context,
-            coroutineScope: CoroutineScope,
-            session: EditorSession,
-            theme: EditorTheme,
-            runnable: () -> Boolean = { false },
-            filesManager: FilesManager? = null,
-            onRun: ((MicroScript) -> Unit)? = null,
-            afterEdit: (() -> Unit)? = null
-        ): EditorManager {
-            val activity = context as Activity
-            val sharedPref = activity.getPreferences(Context.MODE_PRIVATE)
-            val settings = EditorSettings(
-                theme = theme,
-                // EditorSettings requires fontSize in 8..32.
-                fontSize = sharedPref.getInt(KEY_FONT_SIZE, 14).coerceIn(8, 32),
-                showLineNumbers = sharedPref.getBoolean(KEY_SHOW_LINES, true)
-            )
-            return EditorManager(
-                context = context,
-                coroutineScope = coroutineScope,
-                session = session,
-                settings = settings,
-                filesManager = filesManager,
-                runnable = runnable,
-                onRun = onRun,
-                afterEdit = afterEdit
-            )
-        }
     }
-}
-
-sealed interface EditorAction {
-    data object RunScript : EditorAction
-    data object SaveScript : EditorAction
-    data object NewScript : EditorAction
-    data object CLoseScript : EditorAction
 }
