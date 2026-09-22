@@ -159,6 +159,11 @@ dependencies {
     implementation(libs.nemo.editor)
 
     /**
+     * FileKit - https://github.com/vinceglb/filekit
+     */
+    implementation(libs.filekit.dialogs.compose)
+
+    /**
      * Compose Dependencies
      */
     implementation(platform(libs.androidx.compose.bom))

@@ -31,7 +31,7 @@ fun FilesExplorerScreen(
     onBack: () -> Unit
 ) {
     val files = viewModel.files.collectAsStateWithLifecycle()
-    val filesPicker = rememberFilesPickerResult()
+    val pickFile = rememberFilesPicker(viewModel::importFile)
     val messageToast = rememberMessageState()
 
     val importDialogState = remember { viewModel.importDialogState }
@@ -80,7 +80,7 @@ fun FilesExplorerScreen(
 
     ImportScriptDialog(
         state = importDialogState,
-        onOk = { filesPicker.pickFile(viewModel::importFile) }
+        onOk = { pickFile() }
     )
 
     ExplorerScreenContent(

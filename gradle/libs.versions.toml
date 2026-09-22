@@ -19,6 +19,7 @@ googleServices = "4.5.0"
 koin = "4.2.2"
 koinPlugin = "1.2.1"
 
+fileKit = "0.16.0"
 nemoEditor = "1.0.4"
 usbSerialForAndroid = "3.9.0"
 serialization = "1.11.0"
@@ -65,6 +66,7 @@ koin-compose-viewmodel = { group = "io.insert-koin", name = "koin-compose-viewmo
 koin-compose-viewmodel-navigation = { group = "io.insert-koin", name = "koin-compose-viewmodel-navigation" }
 koin-annotations = { group = "io.insert-koin", name = "koin-annotations", version.ref = "koin" }
 
+filekit-dialogs-compose = { module = "io.github.vinceglb:filekit-dialogs-compose", version.ref = "fileKit" }
 nemo-editor = { module = "io.github.ma7moud3ly:nemo-editor", version.ref = "nemoEditor" }
 usb-serial-forandroid = { module = "com.github.mik3y:usb-serial-for-android", version.ref = "usbSerialForAndroid" }
 
