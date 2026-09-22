@@ -5,7 +5,7 @@
  *
  */
 
-package micro.repl.ma7moud3ly.managers
+package micro.repl.ma7moud3ly.platform
 
 import android.content.Context
 import android.content.Intent
@@ -13,6 +13,8 @@ import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.mutableStateListOf
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import androidx.core.content.FileProvider
 import java.io.DataInputStream
 import java.io.File
@@ -21,7 +23,9 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.io.OutputStreamWriter
 import micro.repl.ma7moud3ly.R
+import micro.repl.ma7moud3ly.managers.port.ScriptsManager
 import micro.repl.ma7moud3ly.model.MicroScript
+import org.koin.core.annotation.Single
 
 
 /**
@@ -32,11 +36,12 @@ import micro.repl.ma7moud3ly.model.MicroScript
  * reading, writing, deleting, and renaming script files. The scripts are stored
  * in the directory `/storage/emulated/0/Android/data/package-name/files/scripts/`.
  *
- * The `ScriptsManager` maintains a list of `MicroScript` objects representing
+ * The `AndroidScriptsManager` maintains a list of `MicroScript` objects representing
  * the available scripts. This list is updated whenever scripts are added,
  * deleted, or renamed.
  */
-class ScriptsManager(private val context: Context) {
+@Single(binds = [ScriptsManager::class])
+class AndroidScriptsManager(private val context: Context) : ScriptsManager {
     companion object {
         private const val TAG = "ScriptsManager"
     }
@@ -44,10 +49,11 @@ class ScriptsManager(private val context: Context) {
     /**
      * A list of `MicroScript` objects representing the available scripts.
      */
-    val scripts = mutableStateListOf<MicroScript>()
+    override val scripts = mutableStateListOf<MicroScript>()
 
-    init {
-        updateScriptsList()
+
+    override suspend fun refresh() {
+        withContext(Dispatchers.IO) { updateScriptsList() }
     }
 
     /**
@@ -57,10 +63,13 @@ class ScriptsManager(private val context: Context) {
      *
      * @return The scripts directory, or `null` if it could not be created.
      */
-    fun scriptDirectory(): File? {
+    override suspend fun scriptDirectory(): File? =
+        withContext(Dispatchers.IO) { scriptsDir() }
+
+    /** The same lookup, for the IO-confined helpers below. */
+    private fun scriptsDir(): File? {
         if (context.getExternalFilesDir("scripts")?.exists() == false) {
-            val outFile = context.getExternalFilesDir("scripts")
-            outFile?.mkdirs()
+            context.getExternalFilesDir("scripts")?.mkdirs()
         }
         return context.getExternalFilesDir("scripts")
     }
@@ -73,7 +82,7 @@ class ScriptsManager(private val context: Context) {
      */
     private fun updateScriptsList() {
         val list = mutableListOf<MicroScript>()
-        scriptDirectory()?.let { it ->
+        scriptsDir()?.let { it ->
             it.listFiles()?.forEach { file ->
                 val path = file.absolutePath
                 val script = MicroScript(path = path)
@@ -89,9 +98,11 @@ class ScriptsManager(private val context: Context) {
      *
      * @param script The `MicroScript` object representing the script to delete.
      */
-    fun deleteScript(script: MicroScript) {
-        val b = delete(script)
-        if (b) updateScriptsList()
+    override suspend fun deleteScript(script: MicroScript) {
+        withContext(Dispatchers.IO) {
+            val b = delete(script)
+            if (b) updateScriptsList()
+        }
     }
 
     /**
@@ -100,9 +111,11 @@ class ScriptsManager(private val context: Context) {
      * @param script The `MicroScript` object representing the script to rename.
      * @param newName The new name for the script.
      */
-    fun renameScript(script: MicroScript, newName: String) {
-        val b = rename(script, newName)
-        if (b) updateScriptsList()
+    override suspend fun renameScript(script: MicroScript, newName: String) {
+        withContext(Dispatchers.IO) {
+            val b = rename(script, newName)
+            if (b) updateScriptsList()
+        }
     }
 
     /**
@@ -110,7 +123,7 @@ class ScriptsManager(private val context: Context) {
      *
      * @param script The MicroScript object representing the script to share.
      */
-    fun shareScript(script: MicroScript) {
+    override fun shareScript(script: MicroScript) {
         val file = script.file
         if (!file.exists()) {
             // Handle the case where the file doesn't exist
@@ -147,8 +160,8 @@ class ScriptsManager(private val context: Context) {
      * @return The content of the script file as a string.
      * @throws IOException If an I/O error occurs while reading the file.
      */
-    fun read(file: File): String {
-        return if (!file.exists()) "" else try {
+    override suspend fun read(file: File): String = withContext(Dispatchers.IO) {
+        if (!file.exists()) "" else try {
             val dis = DataInputStream(FileInputStream(file))
             val byt = ByteArray(dis.available())
             dis.readFully(byt)
@@ -167,9 +180,9 @@ class ScriptsManager(private val context: Context) {
      * @param data The data to write to the file as a string.
      * @return `true` if the write operation was successful, `false` otherwise.
      */
-    fun write(file: File, data: String): Boolean {
+    override suspend fun write(file: File, data: String): Boolean = withContext(Dispatchers.IO) {
         if (file.parentFile?.exists() == false) file.mkdirs()
-        return try {
+        try {
             if (file.exists().not()) file.createNewFile()
             val out = FileOutputStream(file)
             val writer = OutputStreamWriter(out)
@@ -212,8 +225,7 @@ class ScriptsManager(private val context: Context) {
     private fun rename(script: MicroScript, newName: String): Boolean {
         val newFile = File(script.file.parentFile, newName)
         val oldFile = script.file
-        if (!oldFile.exists()) return false
-        return try {
+        return oldFile.exists() && try {
             oldFile.renameTo(newFile)
         } catch (e: Exception) {
             e.printStackTrace()

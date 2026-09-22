@@ -11,15 +11,14 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import kotlinx.serialization.json.Json
-import micro.repl.ma7moud3ly.managers.port.ApprovedBoards
+import micro.repl.ma7moud3ly.managers.port.StorageManager
 import org.koin.core.annotation.Single
 
 /**
- * Approved boards, kept in shared preferences.
- *
+ * App state kept in a single shared preferences file.
  */
-@Single(binds = [ApprovedBoards::class])
-class AndroidApprovedBoards(private val context: Context) : ApprovedBoards {
+@Single(binds = [StorageManager::class])
+class AndroidStorageManager(private val context: Context) : StorageManager {
 
     private val preferences: SharedPreferences
         get() = context.getSharedPreferences("micro-repl", Context.MODE_PRIVATE)
@@ -39,7 +38,23 @@ class AndroidApprovedBoards(private val context: Context) : ApprovedBoards {
         preferences.edit { putString(KEY_PRODUCTS, Json.encodeToString(productIds)) }
     }
 
+    override var fontSize: Int
+        // EditorSettings requires fontSize in 8..32.
+        get() = preferences.getInt(KEY_FONT_SIZE, 14).coerceIn(8, 32)
+        set(value) = preferences.edit { putInt(KEY_FONT_SIZE, value) }
+
+    override var showLineNumbers: Boolean
+        get() = preferences.getBoolean(KEY_SHOW_LINES, true)
+        set(value) = preferences.edit { putBoolean(KEY_SHOW_LINES, value) }
+
+    override var recentScript: String
+        get() = preferences.getString(KEY_SCRIPT, "").orEmpty()
+        set(value) = preferences.edit { putString(KEY_SCRIPT, value) }
+
     private companion object {
         const val KEY_PRODUCTS = "products"
+        const val KEY_SHOW_LINES = "show_lines"
+        const val KEY_FONT_SIZE = "font_size"
+        const val KEY_SCRIPT = "script"
     }
 }

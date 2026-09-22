@@ -12,7 +12,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import micro.repl.ma7moud3ly.managers.port.ApprovedBoards
+import micro.repl.ma7moud3ly.managers.port.StorageManager
 import micro.repl.ma7moud3ly.managers.port.SerialPortManager
 import micro.repl.ma7moud3ly.model.ConnectionError
 import micro.repl.ma7moud3ly.model.ConnectionStatus
@@ -32,7 +32,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @Single
 class BoardManager(
     private val serialPort: SerialPortManager,
-    private val approvedBoards: ApprovedBoards
+    private val storageManager: StorageManager
 ) {
 
     companion object {
@@ -50,7 +50,7 @@ class BoardManager(
     private val supportedManufacturers = mutableListOf(
         "MicroPython" // for micro python
     )
-    private var supportedProducts = approvedBoards.approvedProductIds()
+    private var supportedProducts = storageManager.approvedProductIds()
 
     /**
      * Scans once, then keeps watching the port for read failures.
@@ -165,14 +165,14 @@ class BoardManager(
     private fun removeProduct(productId: Int) {
         supportedProducts.remove(productId)
         supportedManufacturers.clear()
-        approvedBoards.saveApprovedProductIds(supportedProducts)
+        storageManager.saveApprovedProductIds(supportedProducts)
         Log.v(TAG, "remove ProductId ---> $productId")
     }
 
     private fun storeProductId(productId: Int) {
         if (supportedProducts.contains(productId)) return
         supportedProducts.add(productId)
-        approvedBoards.saveApprovedProductIds(supportedProducts)
+        storageManager.saveApprovedProductIds(supportedProducts)
         Log.i(TAG, "store ProductId ---> $productId")
     }
 }
