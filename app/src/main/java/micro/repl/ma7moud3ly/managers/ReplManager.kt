@@ -7,7 +7,6 @@
 
 package micro.repl.ma7moud3ly.managers
 
-import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,7 +17,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import micro.repl.ma7moud3ly.BuildConfig
 import micro.repl.ma7moud3ly.managers.port.SerialPortManager
 import micro.repl.ma7moud3ly.managers.CommandsManager.isSilentExecutionDone
 import micro.repl.ma7moud3ly.managers.CommandsManager.trimSilentResult
@@ -52,9 +50,7 @@ class ReplManager(
     val output: Flow<BoardOutput> = serialPort.incoming
         .filter { executionMode.value == ExecutionMode.INTERACTIVE }
         .map { removeEnding(it.toString(Charsets.UTF_8)) }
-        // Guarded, not just -assumenosideeffects: R8 strips the Log call but keeps
-        // encodeToString, which would then run for every chunk of serial data.
-        .onEach { if (BuildConfig.DEBUG) Log.v(TAG, "onNewData - ${Json.encodeToString(it)}") }
+        .onEach { if (isDebug) AppLog.v(TAG, "onNewData - ${Json.encodeToString(it)}") }
         .filter { it.isNotEmpty() && it.trim() != ">>>" }
         .map { BoardOutput(data = it, clear = it.contains(CommandsManager.CLEAR)) }
 
@@ -65,7 +61,7 @@ class ReplManager(
      *  - and again after code to echo the response
      */
     suspend fun write(code: String) {
-        Log.v(TAG, "write: $code")
+        AppLog.v(TAG, "write: $code")
         val cmd = "\u000D" + code + "\u000D"
         serialPort.write(cmd.toByteArray(Charsets.UTF_8))
     }
@@ -74,7 +70,7 @@ class ReplManager(
      * Writes a REPL command (control characters and the like) to the serial port.
      */
     suspend fun writeCommand(code: String) {
-        if (BuildConfig.DEBUG) Log.i(TAG, "writeCommand - ${Json.encodeToString(code)}")
+        if (isDebug) AppLog.i(TAG, "writeCommand - ${Json.encodeToString(code)}")
         serialPort.write(code.toByteArray(Charsets.UTF_8))
     }
 
@@ -85,7 +81,7 @@ class ReplManager(
      * [output], so callers get the result of exactly the code they sent.
      */
     suspend fun writeInSilentMode(code: String): String = withContext(Dispatchers.IO) {
-        Log.i(TAG, "writeInSilentMode - $code")
+        AppLog.i(TAG, "writeInSilentMode - $code")
         executionMode.value = ExecutionMode.SCRIPT
         val syncData = StringBuilder("")
         try {
@@ -101,7 +97,7 @@ class ReplManager(
                 .first { isSilentExecutionDone(syncData.toString()) }
 
             val result = trimSilentResult(syncData.toString())
-            Log.v(TAG, "syncResult - $result")
+            AppLog.v(TAG, "syncResult - $result")
             return@withContext result
         } finally {
             executionMode.value = ExecutionMode.INTERACTIVE

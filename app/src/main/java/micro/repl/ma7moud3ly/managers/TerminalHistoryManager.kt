@@ -7,7 +7,6 @@
 
 package micro.repl.ma7moud3ly.managers
 
-import android.util.Log
 
 /**
  * Manages the command history for a terminal or REPL interface.
@@ -41,7 +40,7 @@ class TerminalHistoryManager {
      * @param value The command to add to the history.
      */
     fun push(value: String) {
-        Log.i(TAG, "push")
+        AppLog.i(TAG, "push")
         if (history.contains(value).not()) {
             history.add(value)
             historyIndex = history.size - 1
@@ -59,7 +58,7 @@ class TerminalHistoryManager {
      *         previous commands.
      */
     fun up(): String? {
-        Log.i(TAG, "up----> ${history.size} | $historyIndex")
+        AppLog.i(TAG, "up----> ${history.size} | $historyIndex")
         return if (history.isNotEmpty() && historyIndex >= 0) history[historyIndex--] else null
     }
 
@@ -74,7 +73,7 @@ class TerminalHistoryManager {
      *         next commands.
      */
     fun down(): String? {
-        Log.i(TAG, "down----> ${history.size} | $historyIndex")
+        AppLog.i(TAG, "down----> ${history.size} | $historyIndex")
         if (historyIndex == -1) historyIndex = 0
         if (historyIndex + 1 < history.size) historyIndex++
         return if (history.isNotEmpty()) history[historyIndex] else null

@@ -7,7 +7,6 @@
 
 package micro.repl.ma7moud3ly.managers
 
-import android.util.Log
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -67,7 +66,7 @@ class BoardManager(
      * Closes the port.
      */
     fun release() {
-        Log.i(TAG, "release")
+        AppLog.i(TAG, "release")
         serialPort.release()
     }
 
@@ -77,7 +76,7 @@ class BoardManager(
      */
     suspend fun detectUsbDevices() {
         val deviceList = serialPort.connectedDevices()
-        Log.i(TAG, "detectUsbDevices - deviceList =  ${deviceList.size}")
+        AppLog.i(TAG, "detectUsbDevices - deviceList =  ${deviceList.size}")
 
         val supportedDevice: MicroDevice? = deviceList.filter { device ->
             val productId = device.productId
@@ -95,7 +94,7 @@ class BoardManager(
      * Approves the given device and attempts to connect to it.
      */
     suspend fun approveDevice(microDevice: MicroDevice) {
-        Log.v(TAG, "supportedDevice - ${microDevice.port}")
+        AppLog.v(TAG, "supportedDevice - ${microDevice.port}")
         if (serialPort.hasPermission(microDevice)) connectToSerial(microDevice)
         else if (serialPort.requestUsbPermission(microDevice)) connectToSerial(microDevice)
         else throwError(ConnectionError.PERMISSION_DENIED)
@@ -145,7 +144,7 @@ class BoardManager(
      */
     private suspend fun onRunError(e: Exception) {
         val errorMessage = e.message ?: ""
-        Log.e(TAG, "onRunError - $errorMessage")
+        AppLog.e(TAG, "onRunError - $errorMessage")
         _status.value = ConnectionStatus.Connecting
         delay(RECOVERY_DELAY.milliseconds)
         if (serialPort.connectedDevices().isEmpty()) {
@@ -166,13 +165,13 @@ class BoardManager(
         supportedProducts.remove(productId)
         supportedManufacturers.clear()
         storageManager.saveApprovedProductIds(supportedProducts)
-        Log.v(TAG, "remove ProductId ---> $productId")
+        AppLog.v(TAG, "remove ProductId ---> $productId")
     }
 
     private fun storeProductId(productId: Int) {
         if (supportedProducts.contains(productId)) return
         supportedProducts.add(productId)
         storageManager.saveApprovedProductIds(supportedProducts)
-        Log.i(TAG, "store ProductId ---> $productId")
+        AppLog.i(TAG, "store ProductId ---> $productId")
     }
 }

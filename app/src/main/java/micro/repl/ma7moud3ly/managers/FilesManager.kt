@@ -7,7 +7,6 @@
 
 package micro.repl.ma7moud3ly.managers
 
-import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -59,7 +58,7 @@ class FilesManager(
      * [files] flow.
      */
     suspend fun listDir(path: String) {
-        Log.v(TAG, "path: $path")
+        AppLog.v(TAG, "path: $path")
         this.path = path
         val code = CommandsManager.listDir(path)
         decodeFiles(replManager.writeInSilentMode(code))
@@ -126,7 +125,7 @@ class FilesManager(
     suspend fun write(path: String, content: String) {
         val code = CommandsManager.writeFile(path, content)
         val result = replManager.writeInSilentMode(code)
-        Log.i(TAG, "result $result")
+        AppLog.i(TAG, "result $result")
     }
 
     /**
@@ -136,10 +135,10 @@ class FilesManager(
      * @param bytes The bytes to write to the file.
      */
     suspend fun writeBinary(path: String, bytes: ByteArray) {
-        Log.v(TAG, "writeBinary-to: $path")
+        AppLog.v(TAG, "writeBinary-to: $path")
         val code = CommandsManager.writeBinaryFile(path, bytes)
         val result = replManager.writeInSilentMode(code)
-        Log.i(TAG, "result $result")
+        AppLog.i(TAG, "result $result")
     }
 
     /**
@@ -181,7 +180,7 @@ class FilesManager(
                 1 // Other files come after
             }
         }
-        Log.i(TAG, sortedFiles.toString())
+        AppLog.i(TAG, sortedFiles.toString())
         _files.value = sortedFiles
     }
 }

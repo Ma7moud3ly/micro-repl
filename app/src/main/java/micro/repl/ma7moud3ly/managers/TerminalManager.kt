@@ -7,7 +7,6 @@
 
 package micro.repl.ma7moud3ly.managers
 
-import android.util.Log
 import kotlinx.coroutines.delay
 import org.koin.core.annotation.Single
 import micro.repl.ma7moud3ly.model.MicroDevice
@@ -37,7 +36,7 @@ class TerminalManager(
      * stopping any ongoing code execution.
      */
     suspend fun terminateExecution() {
-        Log.v(TAG, "terminateExecution")
+        AppLog.v(TAG, "terminateExecution")
         replManager.writeCommand(CommandsManager.TERMINATE)
     }
 
@@ -86,7 +85,7 @@ class TerminalManager(
      *               code has been evaluated.
      */
     suspend fun eval(code: String, onEval: (() -> Unit)? = null) {
-        Log.i(TAG, "eval - $code")
+        AppLog.i(TAG, "eval - $code")
         replManager.write(code.trim())
         onEval?.invoke()
     }

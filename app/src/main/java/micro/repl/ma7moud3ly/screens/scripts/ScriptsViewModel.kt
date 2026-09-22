@@ -7,7 +7,6 @@
 
 package micro.repl.ma7moud3ly.screens.scripts
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -15,6 +14,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import micro.repl.ma7moud3ly.managers.port.ScriptsManager
+import micro.repl.ma7moud3ly.managers.AppLog
 import micro.repl.ma7moud3ly.model.MicroScript
 import org.koin.core.annotation.KoinViewModel
 
@@ -58,7 +58,7 @@ class ScriptsViewModel(
      */
     suspend fun loadScript(script: MicroScript): MicroScript? = try {
         script.content = scriptsManager.read(script.file)
-        Log.v(TAG, script.toString())
+        AppLog.v(TAG, script.toString())
         script
     } catch (e: Exception) {
         e.printStackTrace()

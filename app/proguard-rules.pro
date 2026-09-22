@@ -1,4 +1,14 @@
-# stop logs on release
+# stop logs on release - both the Logger calls themselves and the logcat
+# calls behind them. R8 drops the invocation, then the arguments with it when
+# it can prove computing them has no side effect.
+-assumenosideeffects class micro.repl.ma7moud3ly.managers.port.Logger {
+    public *** v(...);
+    public *** d(...);
+    public *** w(...);
+    public *** i(...);
+    public *** e(...);
+}
+
 -assumenosideeffects  class android.util.Log {
     public static *** d(...);
     public static *** w(...);

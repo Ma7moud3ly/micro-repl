@@ -7,7 +7,6 @@
 
 package micro.repl.ma7moud3ly.managers
 
-import android.util.Log
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.State
@@ -161,7 +160,7 @@ class EditorManager(
     suspend fun saveFileAs(name: String) {
         scriptsManager.scriptDirectory()?.let {
             session.moveTo(it.path + "/" + name)
-            Log.v(TAG, "saveFileAs - ${script.path}")
+            AppLog.v(TAG, "saveFileAs - ${script.path}")
             save()
         }
     }
@@ -171,7 +170,7 @@ class EditorManager(
         storageManager.showLineNumbers = settings.showLineNumbersState.value
         storageManager.fontSize = settings.fontSizeState.value
         if (script.isLocal && script.exists) {
-            Log.v(TAG, "persistSettings - hasScript")
+            AppLog.v(TAG, "persistSettings - hasScript")
             storageManager.recentScript = script.path
         }
     }
