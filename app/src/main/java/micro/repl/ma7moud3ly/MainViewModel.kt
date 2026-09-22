@@ -30,4 +30,8 @@ class MainViewModel(
     init {
         viewModelScope.launch { boardManager.start() }
     }
+
+    override fun onCleared() {
+        boardManager.release()
+    }
 }
