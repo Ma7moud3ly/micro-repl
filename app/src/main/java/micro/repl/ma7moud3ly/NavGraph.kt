@@ -14,12 +14,12 @@ import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import micro.repl.ma7moud3ly.model.AppRoutes
 import micro.repl.ma7moud3ly.model.ConnectionStatus
-import micro.repl.ma7moud3ly.screens.dialogs.ThemeSelectorDialog
-import micro.repl.ma7moud3ly.screens.editor.EditorScreen
-import micro.repl.ma7moud3ly.screens.explorer.FilesExplorerScreen
-import micro.repl.ma7moud3ly.screens.home.HomeScreen
-import micro.repl.ma7moud3ly.screens.scripts.ScriptsScreen
-import micro.repl.ma7moud3ly.screens.terminal.TerminalScreen
+import micro.repl.ma7moud3ly.feature.dialogs.ThemeSelectorDialog
+import micro.repl.ma7moud3ly.feature.editor.EditorScreen
+import micro.repl.ma7moud3ly.feature.explorer.FilesExplorerScreen
+import micro.repl.ma7moud3ly.feature.home.HomeScreen
+import micro.repl.ma7moud3ly.feature.scripts.ScriptsScreen
+import micro.repl.ma7moud3ly.feature.terminal.TerminalScreen
 
 @Composable
 fun RootGraph(
