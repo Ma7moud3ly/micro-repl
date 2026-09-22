@@ -31,7 +31,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import micro.repl.ma7moud3ly.managers.port.SerialPortManager
 import micro.repl.ma7moud3ly.model.MicroDevice
-import micro.repl.ma7moud3ly.model.toMicroDevice
+import micro.repl.ma7moud3ly.model.MicroDeviceDetails
 import org.koin.core.annotation.Single
 import kotlin.coroutines.resume
 
@@ -67,9 +67,29 @@ class AndroidSerialPortManager(
         usbManager.deviceList.values.map { it.toMicroDevice() }
 
     override fun hasPermission(device: MicroDevice): Boolean {
-        val usbDevice = device.usbDevice ?: return false
+        val usbDevice = device.usbDevice() ?: return false
         return usbManager.hasPermission(usbDevice)
     }
+
+    /**
+     * The live [UsbDevice] behind [MicroDevice.port].
+     *
+     * Looked up each time rather than carried on the model: unplugging and
+     * replugging a board hands out a new [UsbDevice], and a stored one goes stale.
+     */
+    private fun MicroDevice.usbDevice(): UsbDevice? = usbManager.deviceList[port]
+
+    private fun UsbDevice.toMicroDevice(): MicroDevice = MicroDevice(
+        port = deviceName,
+        board = "$manufacturerName - $productName",
+        isMicroPython = true,
+        details = MicroDeviceDetails(
+            productName = productName.orEmpty(),
+            manufacturerName = manufacturerName.orEmpty(),
+            vendorId = vendorId.toString(),
+            productId = productId.toString()
+        )
+    )
 
     /**
      * Registers a receiver, fires the system prompt and resumes with the answer.
@@ -79,7 +99,7 @@ class AndroidSerialPortManager(
      */
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     override suspend fun requestUsbPermission(device: MicroDevice): Boolean {
-        val usbDevice = device.usbDevice ?: return false
+        val usbDevice = device.usbDevice() ?: return false
         Log.i(TAG, "requestUsbPermission")
 
         return suspendCancellableCoroutine { continuation ->
@@ -115,7 +135,7 @@ class AndroidSerialPortManager(
     }
 
     override fun connectToSerial(device: MicroDevice): Result<Unit> = runCatching {
-        val usbDevice: UsbDevice = device.usbDevice ?: error("no usb device")
+        val usbDevice: UsbDevice = device.usbDevice() ?: error("no usb device")
         val allDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(usbManager)
         if (allDrivers.isNullOrEmpty()) error("no drivers")
 

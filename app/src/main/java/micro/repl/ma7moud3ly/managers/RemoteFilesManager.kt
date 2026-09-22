@@ -10,8 +10,12 @@ package micro.repl.ma7moud3ly.managers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.jsonArray
 import micro.repl.ma7moud3ly.model.MicroFile
-import org.json.JSONArray
 import org.koin.core.annotation.Single
 
 
@@ -152,22 +156,22 @@ class RemoteFilesManager(
      */
     private fun decodeFiles(json: String) {
         val list = mutableListOf<MicroFile>()
-        val jsonFormated = json.replace("(", "[").replace(")", "]")
-        val items: JSONArray?
+        val jsonFormated = json.replace("(", "[").replace(")", "]").replace("'", "\"")
+        val items: JsonArray?
         try {
-            items = JSONArray(jsonFormated)
+            items = Json.parseToJsonElement(jsonFormated).jsonArray
         } catch (e: Exception) {
             e.printStackTrace()
             return
         }
-        for (i in 0 until items.length()) {
-            val item = items[i] as? JSONArray ?: continue
-            val length = item.length()
+        for (i in items.indices) {
+            val item = items[i] as? JsonArray ?: continue
+            val length = item.size
 
             if (length >= 3) {
-                val name = (item[0] as? String).orEmpty()
-                val type = (item[1] as? Int) ?: 0x8000
-                val size = if (length == 4) ((item[3] as? Int) ?: 0)
+                val name = (item[0] as? JsonPrimitive)?.content.orEmpty()
+                val type = (item[1] as? JsonPrimitive)?.intOrNull ?: 0x8000
+                val size = if (length == 4) ((item[3] as? JsonPrimitive)?.intOrNull ?: 0)
                 else 0
                 list.add(MicroFile(name = name, path = this.path, type = type, size = size))
             }
