@@ -7,25 +7,18 @@
 
 package micro.repl.ma7moud3ly.screens.home
 
-import android.app.Activity
-import android.content.Intent
-import android.util.Log
-import android.widget.Toast
-import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.core.net.toUri
-import kotlinx.coroutines.launch
-import micro.repl.ma7moud3ly.MainViewModel
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import micro.repl.ma7moud3ly.R
-import micro.repl.ma7moud3ly.managers.isPortrait
-import micro.repl.ma7moud3ly.managers.toggleOrientationMode
-import micro.repl.ma7moud3ly.model.MicroDevice
+import micro.repl.ma7moud3ly.model.HomeCommand
+import micro.repl.ma7moud3ly.model.asSuccessMessage
+import micro.repl.ma7moud3ly.platform.rememberAppManager
+import micro.repl.ma7moud3ly.ui.components.MessageToast
+import micro.repl.ma7moud3ly.ui.components.rememberMessageState
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
-
-private const val TAG = "HomeScreen"
+import org.koin.androidx.compose.koinViewModel
 
 /**
  * Home screen: connects a board, reports connection state, and opens the
@@ -33,99 +26,52 @@ private const val TAG = "HomeScreen"
  */
 @Composable
 fun HomeScreen(
-    viewModel: MainViewModel,
+    viewModel: HomeViewModel = koinViewModel(),
     openThemePicker: () -> Unit,
     openTerminal: () -> Unit,
     openEditor: () -> Unit,
     openScripts: () -> Unit,
     openExplorer: () -> Unit
 ) {
-    val activity = LocalActivity.current as Activity
-    val isPortrait = remember { activity.isPortrait() }
-    val terminalManager = viewModel.terminalManager
-    val coroutineScope = rememberCoroutineScope()
+    val appManager = rememberAppManager()
+    val status = viewModel.status.collectAsStateWithLifecycle()
+    val messageToast = rememberMessageState()
+    val context= LocalContext.current
 
-    fun onApproveDevice(microDevice: MicroDevice) {
-        viewModel.approveDevice(microDevice)
-    }
-
-    fun onForgetDevice(microDevice: MicroDevice) {
-        viewModel.onForgetDevice(microDevice)
-    }
-
-    fun onReset() {
-        viewModel.microDevice?.let {
-            coroutineScope.launch {
-                terminalManager.resetDevice(it) {
-                    Toast.makeText(
-                        activity,
-                        activity.getString(R.string.terminal_reset_msg),
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
+    LaunchedEffect(Unit) {
+        viewModel.commands.collect { command ->
+            val text = when (command) {
+                HomeCommand.DeviceReset -> R.string.terminal_reset_msg
+                HomeCommand.DeviceSoftReset -> R.string.terminal_soft_reset_msg
+                HomeCommand.ExecutionTerminated -> R.string.terminal_terminate_msg
             }
+            messageToast.show(context.getString(text).asSuccessMessage)
         }
     }
 
-    fun onSoftReset() {
-        viewModel.microDevice?.let {
-            coroutineScope.launch {
-                terminalManager.softResetDevice {
-                    Toast.makeText(
-                        activity,
-                        activity.getString(R.string.terminal_soft_reset_msg),
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            }
-        }
-    }
 
-    fun onTerminate() {
-        coroutineScope.launch { terminalManager.terminateExecution() }
-        Toast.makeText(
-            activity,
-            activity.getString(R.string.terminal_terminate_msg),
-            Toast.LENGTH_SHORT
-        ).show()
-    }
-
-    fun onHelp() {
-        try {
-            val browserIntent = Intent(
-                Intent.ACTION_VIEW,
-                activity.getString(R.string.home_help_link).toUri()
-            )
-            activity.startActivity(browserIntent)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    val status = viewModel.status.collectAsState()
+    MessageToast(state = messageToast)
 
     HomeScreenContent(
-        isPortrait = isPortrait,
+        isPortrait = appManager.isPortrait,
         connectionStatus = { status.value },
         uiEvents = {
-            Log.i(TAG, "event - $it")
             when (it) {
                 is HomeEvents.OpenTerminal -> openTerminal()
                 is HomeEvents.OpenExplorer -> openExplorer()
                 is HomeEvents.OpenEditor -> openEditor()
                 is HomeEvents.OpenScripts -> openScripts()
-                is HomeEvents.Reset -> onReset()
-                is HomeEvents.SoftReset -> onSoftReset()
-                is HomeEvents.Terminate -> onTerminate()
-                is HomeEvents.Connect -> viewModel.detectUsbDevices()
-                is HomeEvents.Disconnect -> viewModel.boardManager.onDisconnectDevice()
-                is HomeEvents.RestartApp -> activity.recreate()
+                is HomeEvents.Reset -> viewModel.reset()
+                is HomeEvents.SoftReset -> viewModel.softReset()
+                is HomeEvents.Terminate -> viewModel.terminate()
+                is HomeEvents.Connect -> viewModel.connect()
+                is HomeEvents.Disconnect -> viewModel.disconnect()
+                is HomeEvents.DenyDevice -> viewModel.denyDevice()
+                is HomeEvents.ApproveDevice -> viewModel.approveDevice(it.microDevice)
+                is HomeEvents.ForgetDevice -> viewModel.forgetDevice(it.microDevice)
                 is HomeEvents.ShowThemeDialog -> openThemePicker()
-                is HomeEvents.ToggleOrientation -> activity.toggleOrientationMode()
-                is HomeEvents.Help -> onHelp()
-                is HomeEvents.DenyDevice -> viewModel.boardManager.onDenyDevice()
-                is HomeEvents.ApproveDevice -> onApproveDevice(it.microDevice)
-                is HomeEvents.ForgetDevice -> onForgetDevice(it.microDevice)
+                is HomeEvents.RestartApp -> appManager.restart()
+                is HomeEvents.ToggleOrientation -> appManager.toggleOrientation()
             }
         }
     )

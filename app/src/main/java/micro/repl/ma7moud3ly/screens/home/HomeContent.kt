@@ -39,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -410,13 +411,18 @@ private fun Footer(uiEvents: (HomeEvents) -> Unit) {
                 fontSize = 11.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+
+            val uriHandler = LocalUriHandler.current
+            val uri = stringResource(R.string.home_help_link)
             Text(
                 text = stringResource(R.string.home_report_bug),
                 fontFamily = fontConsolas,
                 fontSize = 11.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 //textDecoration = TextDecoration.Underline,
-                modifier = Modifier.clickable { uiEvents(HomeEvents.Help) }
+                modifier = Modifier.clickable {
+                    uriHandler.openUri(uri)
+                }
             )
         }
     }

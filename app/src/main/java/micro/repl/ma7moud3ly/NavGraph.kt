@@ -53,7 +53,6 @@ fun RootGraph(
     ) {
         composable<AppRoutes.Home> {
             HomeScreen(
-                viewModel = viewModel,
                 openThemePicker = {
                     navController.navigate(AppRoutes.ThemePicker)
                 },

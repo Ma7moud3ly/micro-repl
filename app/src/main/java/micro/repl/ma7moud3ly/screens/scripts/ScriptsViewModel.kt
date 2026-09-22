@@ -66,8 +66,6 @@ class ScriptsViewModel(
     }
 
     init {
-        // The list used to be scanned in the manager's constructor, on whichever
-        // thread first injected it.
         viewModelScope.launch { scriptsManager.refresh() }
     }
 }
