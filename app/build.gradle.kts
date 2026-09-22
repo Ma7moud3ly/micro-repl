@@ -32,7 +32,7 @@ android {
     compileSdk = 37
     defaultConfig {
         applicationId = "micro.repl.ma7moud3ly"
-        minSdk = 23
+        minSdk = 24
         targetSdk = 37
         versionCode = 18
         versionName = "3.1"
@@ -136,7 +136,6 @@ dependencies {
     implementation(libs.koin.compose)
     implementation(libs.koin.androidx.compose)
     implementation(libs.koin.compose.viewmodel)
-    implementation(libs.koin.compose.viewmodel.navigation)
     implementation(libs.koin.annotations)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 
@@ -170,7 +169,9 @@ dependencies {
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.ui)
-    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
     implementation(libs.androidx.ui.tooling.preview)
     debugImplementation(libs.androidx.ui.tooling)
     implementation(libs.androidx.material3)

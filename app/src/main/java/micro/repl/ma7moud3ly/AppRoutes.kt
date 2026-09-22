@@ -1,23 +1,25 @@
 package micro.repl.ma7moud3ly
 
+import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
 
-sealed interface AppRoutes {
-    @Serializable
-    data object Home
+sealed interface AppRoutes : NavKey {
 
     @Serializable
-    data object Explorer
+    data object Home : AppRoutes
 
     @Serializable
-    data object Scripts
+    data object Explorer : AppRoutes
 
     @Serializable
-    data object ThemePicker
+    data object Scripts : AppRoutes
 
     @Serializable
-    data object Terminal
+    data object ThemePicker : AppRoutes
 
     @Serializable
-    data object Editor
+    data object Terminal : AppRoutes
+
+    @Serializable
+    data object Editor : AppRoutes
 }
