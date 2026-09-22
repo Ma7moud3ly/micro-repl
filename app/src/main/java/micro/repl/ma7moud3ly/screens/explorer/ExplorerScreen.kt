@@ -1,242 +1,106 @@
 package micro.repl.ma7moud3ly.screens.explorer
 
-import android.app.Activity
-import android.util.Log
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import micro.repl.ma7moud3ly.MainViewModel
+import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import micro.repl.ma7moud3ly.R
-import micro.repl.ma7moud3ly.model.EditorMode
-import micro.repl.ma7moud3ly.model.MicroFile
+import micro.repl.ma7moud3ly.model.ExplorerCommand
 import micro.repl.ma7moud3ly.model.MicroScript
-import micro.repl.ma7moud3ly.screens.dialogs.FileDeleteDialog
+import micro.repl.ma7moud3ly.model.asSuccessMessage
 import micro.repl.ma7moud3ly.screens.dialogs.FileCreateDialog
+import micro.repl.ma7moud3ly.screens.dialogs.FileDeleteDialog
 import micro.repl.ma7moud3ly.screens.dialogs.FileRenameDialog
 import micro.repl.ma7moud3ly.screens.dialogs.ImportScriptDialog
-import micro.repl.ma7moud3ly.ui.components.rememberMyDialogState
-import java.io.File
-
-private const val TAG = "FileManagerScreen"
+import micro.repl.ma7moud3ly.ui.components.MessageToast
+import micro.repl.ma7moud3ly.ui.components.rememberMessageState
+import org.koin.androidx.compose.koinViewModel
 
 /**
- * Composable function that displays the Files Explorer screen.
+ * Files Explorer: browses and manages the files on the connected board.
  *
- * This screen allows users to browse and manage files on a remote device.
- * It provides functionalities such as opening folders, editing and running files,
- * refreshing the file list, navigating up the directory structure,
- * importing and exporting files, renaming and deleting files, and creating new files.
- *
- * @param viewModel The MainViewModel instance providing data for the screen.
- * @param openTerminal A lambda function to open a terminal session with a given MicroScript.
- * @param openEditor A lambda function to open an editor with a given MicroScript.
- * @param onBack A lambda function to navigate back to the previous screen.
+ * @param openTerminal Opens a terminal session on the given script.
+ * @param openEditor Opens the editor on the given script.
+ * @param onBack Leaves the explorer.
  */
 @Composable
 fun FilesExplorerScreen(
-    viewModel: MainViewModel,
+    viewModel: ExplorerViewModel = koinViewModel(),
     openTerminal: (MicroScript) -> Unit,
     openEditor: (MicroScript) -> Unit,
     onBack: () -> Unit
 ) {
-    val activity = LocalActivity.current as Activity
-    val terminalManager = viewModel.terminalManager
-    val filesManager = viewModel.filesManager
-    val root by remember { viewModel.root }
-    val coroutineScope = rememberCoroutineScope()
-    val files = viewModel.files.collectAsState()
-    var selectedFile by remember { mutableStateOf<MicroFile?>(null) }
-    val importScriptDialog = rememberMyDialogState()
-    val deleteFileDialog = rememberMyDialogState()
-    val createFileDialog = rememberMyDialogState()
-    val renameFileDialog = rememberMyDialogState()
-    val isMicroPython = viewModel.microDevice?.isMicroPython == true
+    val files = viewModel.files.collectAsStateWithLifecycle()
     val filesPicker = rememberFilesPickerResult()
+    val messageToast = rememberMessageState()
 
-    // LaunchedEffect to terminate any running execution and list the directory contents
+    val importDialogState = remember { viewModel.importDialogState }
+    val deleteDialogState = remember { viewModel.deleteDialogState }
+    val createDialogState = remember { viewModel.createDialogState }
+    val renameDialogState = remember { viewModel.renameDialogState }
+
+    val refreshMessage = stringResource(R.string.explorer_refresh)
+
     LaunchedEffect(Unit) {
-        terminalManager.terminateExecution()
-        filesManager.listDir(viewModel.root.value)
-    }
+        viewModel.commands.collect { command ->
+            when (command) {
+                is ExplorerCommand.OpenTerminal -> openTerminal(command.script)
+                is ExplorerCommand.OpenEditor -> openEditor(command.script)
+                is ExplorerCommand.Back -> onBack()
+                is ExplorerCommand.Refreshing ->
+                    messageToast.show(refreshMessage.asSuccessMessage)
 
-    /**
-     * Navigates up/back one level in the directory structure.
-     */
-    fun onUp() {
-        if (root.isEmpty() || root == "/") {
-            onBack()
-            return
-        }
-        val newRoot = File(root).parent ?: "/"
-        Log.i(TAG, "onUp from $root to $newRoot")
-        viewModel.root.value = newRoot
-        coroutineScope.launch { filesManager.listDir(newRoot) }
-    }
-
-    BackHandler { onUp() }
-
-    /**
-     * Runs the given file on the remote device.
-     *
-     * @param file The MicroFile to run.
-     */
-    fun onRun(file: MicroFile) {
-        Log.i(TAG, "onRun - $file")
-        coroutineScope.launch {
-            val content = filesManager.read(file.fullPath)
-            Log.i(TAG, "onRun - $content")
-            val script = MicroScript(
-                path = file.fullPath,
-                content = content,
-                editorMode = EditorMode.REMOTE
-            )
-            openTerminal(script)
-        }
-    }
-
-    /**
-     * Opens the given file in the editor.
-     *
-     * @param file The MicroFile to edit.
-     */
-    fun onEdit(file: MicroFile) {
-        Log.i(TAG, "onEdit - $file")
-        coroutineScope.launch {
-            val content = filesManager.read(file.fullPath)
-            Log.i(TAG, "onEdit - $content")
-            val script = MicroScript(
-                path = file.fullPath,
-                content = content,
-                editorMode = EditorMode.REMOTE
-            )
-            openEditor(script)
-        }
-    }
-
-    /**
-     * Imports a file form phone to the remote device.
-     *
-     * @param fileName The name of the file to import.
-     * @param byteArray The content of the file as a byte array.
-     */
-    fun importFile(fileName: String, byteArray: ByteArray) {
-        Log.v(TAG, "fileName - $fileName")
-        coroutineScope.launch {
-            filesManager.writeBinary(path = "$root/$fileName", bytes = byteArray)
-            filesManager.listDir()
-            withContext(Dispatchers.Main) {
-                Toast.makeText(activity, "saved to $root", Toast.LENGTH_SHORT).show()
+                is ExplorerCommand.Imported ->
+                    messageToast.show("saved to ${command.path}".asSuccessMessage)
             }
         }
     }
 
-    /**
-     * Opens the given folder.
-     *
-     * @param file The MicroFile representing the folder to open.
-     */
-    fun onOpenFolder(file: MicroFile) {
-        Log.i(TAG, "onOpenFolder - ${file.fullPath}")
-        viewModel.root.value = file.fullPath
-        coroutineScope.launch { filesManager.listDir(file.fullPath) }
-    }
+    BackHandler { viewModel.up() }
 
-    /**
-     * Refreshes the file list.
-     */
-    fun onRefresh() {
-        Log.i(TAG, "onRefresh")
-        val msg = activity.getText(R.string.explorer_refresh)
-        Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
-        coroutineScope.launch { filesManager.listDir() }
-    }
+    MessageToast(state = messageToast)
 
     FileDeleteDialog(
-        state = deleteFileDialog,
-        name = { selectedFile?.name.orEmpty() },
-        onOk = {
-            Log.i(TAG, "onRemove - $selectedFile")
-            coroutineScope.launch { filesManager.remove(selectedFile!!) }
-        }
+        state = deleteDialogState,
+        name = { viewModel.selectedFile?.name.orEmpty() },
+        onOk = { viewModel.confirmDelete() }
     )
 
     FileCreateDialog(
-        state = createFileDialog,
-        microFile = { selectedFile },
-        onOk = { file ->
-            Log.i(TAG, "onNew - $file")
-            coroutineScope.launch { filesManager.new(file) }
-        }
+        state = createDialogState,
+        microFile = { viewModel.selectedFile },
+        onOk = { file -> viewModel.confirmCreate(file) }
     )
 
-    //rename dialog
     FileRenameDialog(
-        state = renameFileDialog,
-        name = { selectedFile?.name.orEmpty() },
-        onOk = { newName ->
-            val dst = MicroFile(
-                name = newName,
-                path = selectedFile!!.path,
-                type = if (selectedFile!!.isFile) MicroFile.FILE
-                else MicroFile.DIRECTORY
-            )
-            Log.i(TAG, "onRename - from ${selectedFile!!.name} to ${dst.name}")
-            coroutineScope.launch {
-                filesManager.rename(src = selectedFile!!, dst = dst)
-            }
-        }
+        state = renameDialogState,
+        name = { viewModel.selectedFile?.name.orEmpty() },
+        onOk = { newName -> viewModel.confirmRename(newName) }
     )
 
-    // import file dialog
     ImportScriptDialog(
-        state = importScriptDialog,
-        onOk = { filesPicker.pickFile(::importFile) }
+        state = importDialogState,
+        onOk = { filesPicker.pickFile(viewModel::importFile) }
     )
 
     ExplorerScreenContent(
         files = { files.value },
-        root = { root },
-        isMicroPython = isMicroPython,
+        root = { viewModel.root.value },
+        isMicroPython = viewModel.isMicroPython,
         uiEvents = {
             when (it) {
-                is ExplorerEvents.OpenFolder -> onOpenFolder(it.file)
-                is ExplorerEvents.Edit -> onEdit(it.file)
-                is ExplorerEvents.Run -> onRun(it.file)
-                is ExplorerEvents.Refresh -> onRefresh()
-                is ExplorerEvents.Up -> onUp()
-                is ExplorerEvents.Import -> {
-                    importScriptDialog.show()
-                }
-
-                is ExplorerEvents.Export -> {
-
-                }
-
-                is ExplorerEvents.Rename -> {
-                    selectedFile = it.file
-                    renameFileDialog.show()
-                }
-
-                is ExplorerEvents.Remove -> {
-                    selectedFile = it.file
-                    deleteFileDialog.show()
-                }
-
-                is ExplorerEvents.New -> {
-                    selectedFile = it.file
-                    createFileDialog.show()
-                }
+                is ExplorerEvents.OpenFolder -> viewModel.openFolder(it.file)
+                is ExplorerEvents.Edit -> viewModel.edit(it.file)
+                is ExplorerEvents.Run -> viewModel.run(it.file)
+                is ExplorerEvents.Refresh -> viewModel.refresh()
+                is ExplorerEvents.Up -> viewModel.up()
+                is ExplorerEvents.Import -> viewModel.onImport()
+                is ExplorerEvents.Rename -> viewModel.onRename(it.file)
+                is ExplorerEvents.Remove -> viewModel.onDelete(it.file)
+                is ExplorerEvents.New -> viewModel.onCreate(it.file)
+                is ExplorerEvents.Export -> Unit
             }
         }
     )

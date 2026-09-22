@@ -115,7 +115,6 @@ fun RootGraph(
 
         composable<AppRoutes.Explorer> {
             FilesExplorerScreen(
-                viewModel = viewModel,
                 openTerminal = { microScript ->
                     viewModel.openScript(microScript)
                     navController.navigate(AppRoutes.Terminal)
