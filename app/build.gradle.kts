@@ -1,10 +1,10 @@
 import java.util.Properties
 
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.koin.compiler)
+    alias(libs.plugins.androidApplication)
+    alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.koinCompiler)
 }
 
 // apply gms & firebase plugin only for gms build flavor
@@ -26,6 +26,8 @@ val debugSigning = localProperties.signingCredentials("DEBUG")
 val releaseSigning = localProperties.signingCredentials("RELEASE")
 println("debugSigning = ${debugSigning?.storeFile?.path}")
 println("releaseSigning = ${releaseSigning?.storeFile?.path}")
+
+val javaVersion = libs.versions.java.version.get()
 
 android {
     namespace = "micro.repl.ma7moud3ly"
@@ -101,8 +103,8 @@ android {
 
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.toVersion(javaVersion)
+        targetCompatibility = JavaVersion.toVersion(javaVersion)
     }
 
     buildFeatures {
@@ -117,7 +119,7 @@ android {
 }
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(javaVersion.toInt())
 }
 
 dependencies {
@@ -125,7 +127,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
-    implementation(libs.kotlinx.serialization)
+    implementation(libs.kotlinx.json)
 
     /**
      * Koin - dependency injection
@@ -144,8 +146,8 @@ dependencies {
      */
 
     "gmsImplementation"(platform(libs.firebase.bom))
-    "gmsImplementation"(libs.firebase.crashlytics)
-    "gmsImplementation"(libs.firebase.analytics)
+    "gmsImplementation"(libs.firebase.crashlytics.ktx)
+    "gmsImplementation"(libs.firebase.analytics.ktx)
 
     /**
      * Serial communication
@@ -177,7 +179,7 @@ dependencies {
     implementation(libs.androidx.material3)
 
     testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.testExt.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     debugImplementation(libs.androidx.ui.test.manifest)
 }
