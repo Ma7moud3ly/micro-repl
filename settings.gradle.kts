@@ -21,10 +21,6 @@ plugins {
 
 rootProject.name = "Micro REPL"
 
-// the shipped Android app, until the shared module takes over
-include(":app")
-
-// the multiplatform build
 include(":shared")
 include(":androidApp")
 include(":desktopApp")

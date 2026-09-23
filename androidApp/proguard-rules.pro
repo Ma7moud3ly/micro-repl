@@ -1,21 +1,29 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# stop logs on release - both the Logger calls themselves and the logcat
+# calls behind them. R8 drops the invocation, then the arguments with it when
+# it can prove computing them has no side effect.
+-assumenosideeffects class micro.repl.ma7moud3ly.managers.port.Logger {
+    public *** v(...);
+    public *** d(...);
+    public *** w(...);
+    public *** i(...);
+    public *** e(...);
+}
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+-assumenosideeffects  class android.util.Log {
+    public static *** d(...);
+    public static *** w(...);
+    public static *** v(...);
+    public static *** i(...);
+    public static *** e(...);
+}
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Please add these rules to your existing keep rules in order to suppress warnings.
+-dontwarn java.beans.BeanInfo
+-dontwarn java.beans.FeatureDescriptor
+-dontwarn java.beans.IntrospectionException
+-dontwarn java.beans.Introspector
+-dontwarn java.beans.PropertyDescriptor
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# For the code editor (TextMateLanguage)
+-keep class org.eclipse.tm4e.**{*;}
+-keep class org.joni.**{*;}
