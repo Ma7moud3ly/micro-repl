@@ -2,21 +2,25 @@
 
 androidGradlePlugin = "9.4.0"
 desugarJdk = "2.1.5"
-kotlin = "2.4.10"
+kotlin = "2.4.20"
 firebaseCrashlytics = "3.0.8"
-kotlinSerialization = "2.4.10"
 
 lifecycleRuntimeKtx = "2.11.0"
-navigationCompos = "2.9.8"
+navigation3 = "1.2.0-rc01"
+lifecycleViewModelNavigation3 = "2.11.0"
 coreKtx = "1.19.0"
-composeBom = "2026.08.00"
+composeBom = "2026.09.00"
 activityCompose = "1.13.0"
 material3 = "1.4.0"
-composeUi = "1.12.0"
+composeUi = "1.12.1"
 
-firebaseBom = "34.18.0"
+firebaseBom = "34.19.0"
 googleServices = "4.5.0"
 
+koin = "4.2.2"
+koinPlugin = "1.2.1"
+
+fileKit = "0.16.0"
 nemoEditor = "1.0.4"
 usbSerialForAndroid = "3.9.0"
 serialization = "1.11.0"
@@ -30,11 +34,13 @@ android-application = { id = "com.android.application", version.ref = "androidGr
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
 firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashlytics" }
-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinSerialization" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+koin-compiler = { id = "io.insert-koin.compiler.plugin", version.ref = "koinPlugin" }
 
 [libraries]
 
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleRuntimeKtx" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
 
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
@@ -44,13 +50,26 @@ androidx-ui = { module = "androidx.compose.ui:ui", version.ref = "composeUi" }
 androidx-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 androidx-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "composeUi" }
 androidx-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "composeUi" }
-androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompos" }
+androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation3" }
+androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "navigation3" }
+androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "lifecycleViewModelNavigation3" }
 
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 
 kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
+# koin
+koin-bom = { group = "io.insert-koin", name = "koin-bom", version.ref = "koin" }
+koin-core = { group = "io.insert-koin", name = "koin-core" }
+koin-android = { group = "io.insert-koin", name = "koin-android" }
+koin-compose = { group = "io.insert-koin", name = "koin-compose" }
+koin-androidx-compose = { group = "io.insert-koin", name = "koin-androidx-compose" }
+koin-compose-viewmodel = { group = "io.insert-koin", name = "koin-compose-viewmodel" }
+koin-compose-viewmodel-navigation = { group = "io.insert-koin", name = "koin-compose-viewmodel-navigation" }
+koin-annotations = { group = "io.insert-koin", name = "koin-annotations", version.ref = "koin" }
+
+filekit-dialogs-compose = { module = "io.github.vinceglb:filekit-dialogs-compose", version.ref = "fileKit" }
 nemo-editor = { module = "io.github.ma7moud3ly:nemo-editor", version.ref = "nemoEditor" }
 usb-serial-forandroid = { module = "com.github.mik3y:usb-serial-for-android", version.ref = "usbSerialForAndroid" }
 
@@ -59,6 +78,3 @@ desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref 
 androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espressoCore" }
 androidx-junit = { module = "androidx.test.ext:junit", version.ref = "junitVersion" }
 junit = { module = "junit:junit", version.ref = "junit" }
-
-
-

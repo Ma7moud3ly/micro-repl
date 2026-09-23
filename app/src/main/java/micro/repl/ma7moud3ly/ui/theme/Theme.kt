@@ -7,8 +7,6 @@
 
 package micro.repl.ma7moud3ly.ui.theme
 
-import android.app.Activity
-import android.view.View
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
@@ -16,13 +14,9 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.Color
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.lerp
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalView
-import androidx.core.view.WindowCompat
 import io.ma7moud3ly.nemo.model.EditorTheme
 
 
@@ -74,9 +68,8 @@ fun EditorTheme.toColorScheme(): ColorScheme {
 }
 
 
-/**
- * Themes the app with a Nemo [EditorTheme].
- */
+val LocalEditorTheme = staticCompositionLocalOf { AppThemes.DEFAULT }
+
 @Composable
 fun AppTheme(
     theme: EditorTheme,
@@ -84,13 +77,6 @@ fun AppTheme(
 ) {
     val colorScheme = remember(theme) { theme.toColorScheme() }
     val statusColors = remember(theme) { theme.toStatusColors() }
-
-    ConfigureSystemBars(
-        view = LocalView.current,
-        darkTheme = theme.dark,
-        statusBarColor = colorScheme.surface,
-        navigationBarColor = colorScheme.background
-    )
 
     CompositionLocalProvider(LocalStatusColors provides statusColors) {
         MaterialTheme(
@@ -110,24 +96,3 @@ fun AppTheme(
     theme = if (darkTheme) AppThemes.DEFAULT_DARK else AppThemes.DEFAULT_LIGHT,
     content = content
 )
-
-@Composable
-private fun ConfigureSystemBars(
-    view: View,
-    darkTheme: Boolean,
-    statusBarColor: Color,
-    navigationBarColor: Color
-) {
-    if (view.isInEditMode) return
-    val activity = view.context as? Activity ?: return
-    SideEffect {
-        @Suppress("DEPRECATION")
-        activity.window.statusBarColor = statusBarColor.toArgb()
-        @Suppress("DEPRECATION")
-        activity.window.navigationBarColor = navigationBarColor.toArgb()
-        WindowCompat.getInsetsController(activity.window, view).apply {
-            isAppearanceLightStatusBars = !darkTheme
-            isAppearanceLightNavigationBars = !darkTheme
-        }
-    }
-}

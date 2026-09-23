@@ -10,60 +10,49 @@ package micro.repl.ma7moud3ly
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
-import androidx.compose.runtime.CompositionLocalProvider
-import micro.repl.ma7moud3ly.managers.BoardManager
-import micro.repl.ma7moud3ly.managers.FilesManager
-import micro.repl.ma7moud3ly.managers.TerminalManager
-import micro.repl.ma7moud3ly.ui.theme.AppTheme
-import micro.repl.ma7moud3ly.ui.theme.LocalThemeController
-import micro.repl.ma7moud3ly.ui.theme.rememberThemeController
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
+import io.ma7moud3ly.nemo.model.EditorTheme
+import micro.repl.ma7moud3ly.managers.ThemesManager
+import micro.repl.ma7moud3ly.ui.theme.toColorScheme
+import org.koin.android.ext.android.inject
 
 class MainActivity : ComponentActivity() {
-    private lateinit var boardManager: BoardManager
-    private lateinit var terminalManager: TerminalManager
-    private lateinit var filesManager: FilesManager
-    private val viewModel: MainViewModel by viewModels()
+
+    private val themesManager: ThemesManager by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        initManagers()
         setContent {
-            val themeController = rememberThemeController(this)
-            CompositionLocalProvider(LocalThemeController provides themeController) {
-                AppTheme(theme = themeController.theme) {
-                    RootGraph(
-                        viewModel = viewModel,
-                        boardManager = boardManager,
-                        terminalManager = terminalManager,
-                        filesManager = filesManager
-                    )
-                }
-            }
+            ConfigureSystemBars(themesManager.theme)
+            MicroReplApp()
         }
     }
 
-    private fun initManagers() {
-        boardManager = BoardManager(
-            context = this,
-            onStatusChanges = { viewModel.status.value = it },
-            onReceiveData = { data: String, clear: Boolean ->
-                runOnUiThread {
-                    if (clear) viewModel.terminalOutput.value = ""
-                    // limit terminal output to 10000 chars to avoid app
-                    // freeze for very large outputs
-                    else if (viewModel.terminalOutput.value.length > 10000)
-                        viewModel.terminalOutput.value = data
-                    else viewModel.terminalOutput.value += data
-                }
+    /**
+     * Paints this window's status and navigation bars to match [theme].
+     *
+     * Window chrome is Android's alone, so it stays with the Activity rather than
+     * in the shared theme - other platforms have nothing to configure.
+     */
+    @Composable
+    private fun ConfigureSystemBars(theme: EditorTheme) {
+        val view = LocalView.current
+        if (view.isInEditMode) return
+        val colorScheme = remember(theme) { theme.toColorScheme() }
+        SideEffect {
+            @Suppress("DEPRECATION")
+            window.statusBarColor = colorScheme.surface.toArgb()
+            @Suppress("DEPRECATION")
+            window.navigationBarColor = colorScheme.background.toArgb()
+            WindowCompat.getInsetsController(window, view).apply {
+                isAppearanceLightStatusBars = theme.dark.not()
+                isAppearanceLightNavigationBars = theme.dark.not()
             }
-        )
-        terminalManager = TerminalManager(boardManager)
-        filesManager = FilesManager(
-            boardManager = boardManager,
-            onUpdateFiles = { viewModel.files.value = it }
-        )
+        }
     }
 }
-
-

@@ -7,87 +7,31 @@
 
 package micro.repl.ma7moud3ly
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import micro.repl.ma7moud3ly.managers.TerminalHistoryManager
+import androidx.lifecycle.viewModelScope
+import io.ma7moud3ly.nemo.model.EditorTheme
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import micro.repl.ma7moud3ly.managers.BoardManager
+import micro.repl.ma7moud3ly.managers.ThemesManager
 import micro.repl.ma7moud3ly.model.ConnectionStatus
-import micro.repl.ma7moud3ly.model.MicroDevice
-import micro.repl.ma7moud3ly.model.MicroFile
-import micro.repl.ma7moud3ly.model.MicroScript
+import org.koin.core.annotation.KoinViewModel
 
-/**
- * Holds and manages the UI state for the main application screen.
- *
- * This ViewModel class provides data and state management for the main screen
- * of the application. It exposes LiveData objects for observing changes in
- * the device connection status, connected device, files explorer path, files
- * list, terminal input and output, and command history.
- */
-class MainViewModel : ViewModel() {
+@KoinViewModel
+class MainViewModel(
+    private val boardManager: BoardManager,
+    private val themesManager: ThemesManager
+) : ViewModel() {
 
-    ////// Home
+    val status: StateFlow<ConnectionStatus> = boardManager.status
 
-    /**
-     * Represents the current connectivity status of the device.
-     *
-     * Possible values are:
-     * - `ConnectionStatus.Connecting`: Indicates that the device is currently
-     *   attempting to connect.
-     * - `ConnectionStatus.Connected`: Indicates that the device is successfully
-     *   connected.
-     * - `ConnectionStatus.Error`: Indicates that the connection attempt
-     *   failed.
-     */
-    val status = MutableStateFlow<ConnectionStatus>(ConnectionStatus.Connecting)
+    val theme: EditorTheme get() = themesManager.theme
 
-    /**
-     * The currently connected MicroPython device.
-     *
-     * This property is only available when the `status` is `ConnectionStatus.Connected`.
-     * Otherwise, it returns `null`.
-     */
-    val microDevice: MicroDevice? get() = (status.value as? ConnectionStatus.Connected)?.microDevice
-
-    ////// Script handoff
-
-    var script by mutableStateOf(MicroScript())
-        private set
-
-    /** Sets the script for the screen being opened. Pass `MicroScript()` for a blank one. */
-    fun openScript(script: MicroScript) {
-        this.script = script
+    init {
+        viewModelScope.launch { boardManager.start() }
     }
 
-
-    ////// Files Explorer
-
-    /**
-     * The current path being displayed in the files explorer.
-     */
-    val root = mutableStateOf("/")
-
-    /**
-     * The list of files and directories in the current path of the files explorer.
-     */
-    val files = MutableStateFlow<List<MicroFile>>(listOf())
-
-    ////// Terminal
-
-    /**
-     * The current input text in the terminal.
-     */
-    val terminalInput = mutableStateOf("")
-
-    /**
-     * The current output text in the terminal.
-     */
-    val terminalOutput = mutableStateOf("")
-
-    /**
-     * Manages the command history for the terminal.
-     */
-    val history = TerminalHistoryManager()
+    override fun onCleared() {
+        boardManager.release()
+    }
 }

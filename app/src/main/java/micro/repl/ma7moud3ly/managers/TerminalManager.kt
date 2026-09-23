@@ -7,8 +7,8 @@
 
 package micro.repl.ma7moud3ly.managers
 
-import android.util.Log
 import kotlinx.coroutines.delay
+import org.koin.core.annotation.Single
 import micro.repl.ma7moud3ly.model.MicroDevice
 import micro.repl.ma7moud3ly.model.MicroScript
 import kotlin.time.Duration.Companion.milliseconds
@@ -18,14 +18,15 @@ import kotlin.time.Duration.Companion.milliseconds
  *
  * This class provides methods for executing various terminal commands, such as
  * resetting the interpreter, stopping code execution, evaluating code snippets,
- * and executing complete scripts. It utilizes the `BoardManager` to communicate
+ * and executing complete scripts. It utilizes the `ReplManager` to communicate
  * with the MicroPython board.
  */
+@Single
 class TerminalManager(
     /**
-     * The `BoardManager` instance used to communicate with the MicroPython board.
+     * The `ReplManager` instance used to communicate with the MicroPython board.
      */
-    private val boardManager: BoardManager
+    private val replManager: ReplManager
 ) {
 
     /**
@@ -34,9 +35,9 @@ class TerminalManager(
      * This method sends a termination command (CTRL+C) to the board, effectively
      * stopping any ongoing code execution.
      */
-    fun terminateExecution() {
-        Log.v(TAG, "terminateExecution")
-        boardManager.writeCommand(CommandsManager.TERMINATE)
+    suspend fun terminateExecution() {
+        AppLog.v(TAG, "terminateExecution")
+        replManager.writeCommand(CommandsManager.TERMINATE)
     }
 
     /**
@@ -49,12 +50,12 @@ class TerminalManager(
      * @param onReset An optional callback function that is invoked after the
      *                device has been reset.
      */
-    fun resetDevice(
+    suspend fun resetDevice(
         microDevice: MicroDevice,
         onReset: (() -> Unit)? = null
     ) {
         val cmd = if (microDevice.isMicroPython) "machine.reset()" else ""
-        boardManager.write(cmd)
+        replManager.write(cmd)
         onReset?.invoke()
     }
 
@@ -67,8 +68,8 @@ class TerminalManager(
      * @param onReset An optional callback function that is invoked after the
      *                soft reset has been performed.
      */
-    fun softResetDevice(onReset: (() -> Unit)? = null) {
-        boardManager.writeCommand(CommandsManager.RESET)
+    suspend fun softResetDevice(onReset: (() -> Unit)? = null) {
+        replManager.writeCommand(CommandsManager.RESET)
         onReset?.invoke()
     }
 
@@ -83,9 +84,9 @@ class TerminalManager(
      * @param onEval An optional callback function that is invoked after the
      *               code has been evaluated.
      */
-    fun eval(code: String, onEval: (() -> Unit)? = null) {
-        Log.i(TAG, "eval - $code")
-        boardManager.write(code.trim())
+    suspend fun eval(code: String, onEval: (() -> Unit)? = null) {
+        AppLog.i(TAG, "eval - $code")
+        replManager.write(code.trim())
         onEval?.invoke()
     }
 
@@ -99,9 +100,9 @@ class TerminalManager(
      * @param onEval An optional callback function that is invoked after the
      *               code has been evaluated.
      */
-    fun evalMultiLine(code: String, onEval: (() -> Unit)? = null) {
-        boardManager.write(code.replace("\n", "\r").trim())
-        boardManager.write("\r")
+    suspend fun evalMultiLine(code: String, onEval: (() -> Unit)? = null) {
+        replManager.write(code.replace("\n", "\r").trim())
+        replManager.write("\r")
         onEval?.invoke()
     }
 
@@ -119,39 +120,39 @@ class TerminalManager(
         onClear: () -> Unit
     ) {
         // stop any running code/loops
-        boardManager.writeCommand(CommandsManager.TERMINATE)
+        replManager.writeCommand(CommandsManager.TERMINATE)
         // Start silent mode.
-        boardManager.writeCommand(CommandsManager.SILENT_MODE)
+        replManager.writeCommand(CommandsManager.SILENT_MODE)
         // reset the device to clear previously imported modules
-        boardManager.writeCommand(CommandsManager.RESET)
+        replManager.writeCommand(CommandsManager.RESET)
         // clear noise from the terminal outputs
         delay(100.milliseconds)
         onClear()
         // Print a new line to separate the silent mode message from the output.
         // And write the code to interpreter to execute it
-        boardManager.writeCommand("print()\r\n${microScript.content}")
+        replManager.writeCommand("print()\r\n${microScript.content}")
         // Exit silent mode.
-        boardManager.writeCommand(CommandsManager.RESET)
+        replManager.writeCommand(CommandsManager.RESET)
         // Back to REPL mode.
-        boardManager.writeCommand(CommandsManager.REPL_MODE)
+        replManager.writeCommand(CommandsManager.REPL_MODE)
     }
 
     suspend fun executeScript(microScript: MicroScript, onClear: () -> Unit) {
         // Start silent mode.
-        boardManager.writeCommand(CommandsManager.SILENT_MODE)
+        replManager.writeCommand(CommandsManager.SILENT_MODE)
         // reset the device to clear previously imported modules
-        boardManager.writeCommand(CommandsManager.RESET)
+        replManager.writeCommand(CommandsManager.RESET)
         // clear noise from the terminal outputs
         delay(100.milliseconds)
         onClear()
         // Locate the working directory to the script
-        boardManager.write(CommandsManager.chDir(microScript.scriptDir))
+        replManager.write(CommandsManager.chDir(microScript.scriptDir))
         // Run the script
-        boardManager.write("import ${microScript.nameWithoutExt}")
+        replManager.write("import ${microScript.nameWithoutExt}")
         // Exit silent mode.
-        boardManager.writeCommand(CommandsManager.RESET)
+        replManager.writeCommand(CommandsManager.RESET)
         // Back to REPL mode.
-        boardManager.writeCommand(CommandsManager.REPL_MODE)
+        replManager.writeCommand(CommandsManager.REPL_MODE)
     }
 
 
