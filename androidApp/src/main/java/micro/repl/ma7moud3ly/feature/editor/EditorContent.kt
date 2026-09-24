@@ -34,16 +34,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.ma7moud3ly.nemo.NemoCodeEditor
-import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.feature.editor.manager.EditorManager
 import micro.repl.ma7moud3ly.feature.editor.model.EditorEvent
 import micro.repl.ma7moud3ly.shared.resources.Res
 import micro.repl.ma7moud3ly.shared.resources.circuit_python
 import micro.repl.ma7moud3ly.shared.resources.editor_new
 import micro.repl.ma7moud3ly.shared.resources.editor_save
+import micro.repl.ma7moud3ly.shared.resources.lines
 import micro.repl.ma7moud3ly.shared.resources.micro_python
+import micro.repl.ma7moud3ly.shared.resources.redo
 import micro.repl.ma7moud3ly.shared.resources.terminal_run
 import micro.repl.ma7moud3ly.shared.resources.this_device
+import micro.repl.ma7moud3ly.shared.resources.undo
 import micro.repl.ma7moud3ly.ui.components.ActionButton
 import micro.repl.ma7moud3ly.ui.components.BackButton
 import micro.repl.ma7moud3ly.ui.components.BarToggle
@@ -55,6 +57,7 @@ import micro.repl.ma7moud3ly.ui.components.ThemeButton
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.AppThemes
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Preview
@@ -220,8 +223,8 @@ private fun EditorActions(
                     onEnd = { uiEvents(EditorEvent.Redo) },
                     startEnabled = canUndo,
                     endEnabled = canRedo,
-                    start = { SegmentIcon(R.drawable.undo, MaterialTheme.colorScheme.onSurface) },
-                    end = { SegmentIcon(R.drawable.redo, MaterialTheme.colorScheme.onSurface) }
+                    start = { SegmentIcon(Res.drawable.undo, MaterialTheme.colorScheme.onSurface) },
+                    end = { SegmentIcon(Res.drawable.redo, MaterialTheme.colorScheme.onSurface) }
                 )
                 // font size
                 SegmentPair(
@@ -232,7 +235,7 @@ private fun EditorActions(
                     end = { SegmentLabel("A+", MaterialTheme.colorScheme.onSurface) }
                 )
                 BarToggle(
-                    icon = R.drawable.lines,
+                    icon = Res.drawable.lines,
                     selected = showLines,
                     onClick = { uiEvents(EditorEvent.Lines) }
                 )

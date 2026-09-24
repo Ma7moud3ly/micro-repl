@@ -20,12 +20,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.feature.explorer.ExplorerEvents
 import micro.repl.ma7moud3ly.model.MicroFile
 import micro.repl.ma7moud3ly.shared.resources.Res
@@ -34,10 +32,13 @@ import micro.repl.ma7moud3ly.shared.resources.explorer_edit
 import micro.repl.ma7moud3ly.shared.resources.explorer_open
 import micro.repl.ma7moud3ly.shared.resources.explorer_rename
 import micro.repl.ma7moud3ly.shared.resources.explorer_run
+import micro.repl.ma7moud3ly.shared.resources.file
+import micro.repl.ma7moud3ly.shared.resources.folder
 import micro.repl.ma7moud3ly.ui.components.MyDialog
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.explorerColors
 import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 private val microFile = MicroFile(
@@ -145,9 +146,8 @@ private fun FileOptionHeader(microFile: MicroFile) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
-            painter = painterResource(
-                id = if (microFile.isFile) R.drawable.file
-                else R.drawable.folder
+            painter = painterResource(if (microFile.isFile) Res.drawable.file
+                else Res.drawable.folder
             ),
             tint = if (microFile.isFile) explorerColors.file
             else explorerColors.folder,

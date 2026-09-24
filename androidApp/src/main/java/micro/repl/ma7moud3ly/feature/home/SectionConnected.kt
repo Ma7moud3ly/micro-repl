@@ -7,7 +7,6 @@
 
 package micro.repl.ma7moud3ly.feature.home
 
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -29,14 +28,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.feature.home.dialog.DeviceDetailsDialog
 import micro.repl.ma7moud3ly.model.MicroDevice
 import micro.repl.ma7moud3ly.shared.resources.Res
@@ -50,7 +47,9 @@ import micro.repl.ma7moud3ly.ui.components.rememberMyDialogState
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.LocalStatusColors
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
+import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Preview
@@ -132,8 +131,8 @@ private fun DeviceCard(
                 horizontalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 DeviceLogo(
-                    src = if (device.isMicroPython) R.drawable.micro_python
-                    else R.drawable.circuit_python
+                    src = if (device.isMicroPython) Res.drawable.micro_python
+                    else Res.drawable.circuit_python
                 )
                 Column(
                     modifier = Modifier.weight(1f),
@@ -237,7 +236,7 @@ private fun CellDivider() {
 
 /** Device runtime logo (MicroPython / CircuitPython) in a rounded white box. */
 @Composable
-private fun DeviceLogo(@DrawableRes src: Int) {
+private fun DeviceLogo(src: DrawableResource) {
     Surface(
         shape = RoundedCornerShape(10.dp),
         color = Color.White,

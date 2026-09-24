@@ -7,7 +7,6 @@
 
 package micro.repl.ma7moud3ly.feature.scripts
 
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -31,25 +30,28 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.model.MicroScript
 import micro.repl.ma7moud3ly.shared.resources.Res
+import micro.repl.ma7moud3ly.shared.resources.delete
+import micro.repl.ma7moud3ly.shared.resources.edit
 import micro.repl.ma7moud3ly.shared.resources.explorer_delete
 import micro.repl.ma7moud3ly.shared.resources.explorer_edit
 import micro.repl.ma7moud3ly.shared.resources.explorer_share
 import micro.repl.ma7moud3ly.shared.resources.scripts_empty
 import micro.repl.ma7moud3ly.shared.resources.scripts_local
 import micro.repl.ma7moud3ly.shared.resources.scripts_new
+import micro.repl.ma7moud3ly.shared.resources.share
 import micro.repl.ma7moud3ly.shared.resources.terminal_run
 import micro.repl.ma7moud3ly.ui.components.ActionButton
 import micro.repl.ma7moud3ly.ui.components.BackButton
 import micro.repl.ma7moud3ly.ui.components.MyScreen
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
+import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 
@@ -195,19 +197,19 @@ private fun ItemScript(
             )
 
             ScriptIcon(
-                icon = R.drawable.share,
+                icon = Res.drawable.share,
                 modifier = Modifier.size(18.dp),
                 description = Res.string.explorer_share,
                 onClick = onShare
             )
 
             ScriptIcon(
-                icon = R.drawable.edit,
+                icon = Res.drawable.edit,
                 description = Res.string.explorer_edit,
                 onClick = onRename
             )
             ScriptIcon(
-                icon = R.drawable.delete,
+                icon = Res.drawable.delete,
                 description = Res.string.explorer_delete,
                 onClick = onDelete
             )
@@ -217,7 +219,7 @@ private fun ItemScript(
 
 @Composable
 private fun ScriptIcon(
-    @DrawableRes icon: Int,
+    icon: DrawableResource,
     description: StringResource,
     modifier: Modifier = Modifier.size(20.dp),
     onClick: () -> Unit,
@@ -227,7 +229,7 @@ private fun ScriptIcon(
         modifier = modifier
     ) {
         Icon(
-            painter = painterResource(id = icon),
+            painter = painterResource(icon),
             contentDescription = stringResource(description),
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(24.dp)

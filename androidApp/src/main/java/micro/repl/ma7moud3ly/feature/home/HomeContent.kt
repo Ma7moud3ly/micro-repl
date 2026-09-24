@@ -7,7 +7,6 @@
 
 package micro.repl.ma7moud3ly.feature.home
 
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -40,7 +39,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -48,19 +46,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.ma7moud3ly.nemo.model.EditorTheme
 import micro.repl.ma7moud3ly.BuildConfig
-import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.model.ConnectionStatus
 import micro.repl.ma7moud3ly.shared.resources.Res
+import micro.repl.ma7moud3ly.shared.resources.circuit_python
 import micro.repl.ma7moud3ly.shared.resources.home_footer
 import micro.repl.ma7moud3ly.shared.resources.home_help_link
 import micro.repl.ma7moud3ly.shared.resources.home_report_bug
 import micro.repl.ma7moud3ly.shared.resources.home_wordmark
+import micro.repl.ma7moud3ly.shared.resources.micro_python
+import micro.repl.ma7moud3ly.shared.resources.python
 import micro.repl.ma7moud3ly.ui.components.MyScreen
 import micro.repl.ma7moud3ly.ui.components.ProgressView
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.AppThemes
 import micro.repl.ma7moud3ly.ui.theme.LocalEditorTheme
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Preview
@@ -206,14 +208,14 @@ private fun StatusLineView(status: ConnectionStatus) {
 @Composable
 private fun RuntimeBadges(active: RuntimeBadge?) {
     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        RuntimeLogo(R.drawable.python, active == RuntimeBadge.PY)
-        RuntimeLogo(R.drawable.micro_python, active == RuntimeBadge.MICRO_PYTHON)
-        RuntimeLogo(R.drawable.circuit_python, active == RuntimeBadge.CIRCUIT_PYTHON)
+        RuntimeLogo(Res.drawable.python, active == RuntimeBadge.PY)
+        RuntimeLogo(Res.drawable.micro_python, active == RuntimeBadge.MICRO_PYTHON)
+        RuntimeLogo(Res.drawable.circuit_python, active == RuntimeBadge.CIRCUIT_PYTHON)
     }
 }
 
 @Composable
-private fun RuntimeLogo(@DrawableRes src: Int, isActive: Boolean) {
+private fun RuntimeLogo(src: DrawableResource, isActive: Boolean) {
     Surface(
         shape = CircleShape,
         color = Color.White,
@@ -364,7 +366,7 @@ private fun SegmentCell(
 }
 
 @Composable
-private fun SegmentIcon(@DrawableRes icon: Int, selected: Boolean) {
+private fun SegmentIcon(icon: DrawableResource, selected: Boolean) {
     Icon(
         painter = painterResource(icon),
         contentDescription = null,

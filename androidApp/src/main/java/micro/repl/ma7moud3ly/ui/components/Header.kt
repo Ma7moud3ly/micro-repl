@@ -7,7 +7,6 @@
 
 package micro.repl.ma7moud3ly.ui.components
 
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,17 +23,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.shared.resources.Res
 import micro.repl.ma7moud3ly.shared.resources.home_theme
+import micro.repl.ma7moud3ly.shared.resources.theme
 import micro.repl.ma7moud3ly.ui.theme.LocalStatusColors
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
+import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -59,7 +59,7 @@ fun BackButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
 
 @Composable
 fun BarToggle(
-    @DrawableRes icon: Int,
+    icon: DrawableResource,
     selected: Boolean,
     onClick: () -> Unit,
     cellWidth: Dp = 34.dp,
@@ -110,7 +110,7 @@ fun ThemeButton(
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                painter = painterResource(R.drawable.theme),
+                painter = painterResource(Res.drawable.theme),
                 contentDescription = stringResource(Res.string.home_theme),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(15.dp)

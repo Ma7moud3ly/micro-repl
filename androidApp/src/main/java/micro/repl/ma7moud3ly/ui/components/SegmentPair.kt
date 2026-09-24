@@ -17,11 +17,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun SegmentPair(
@@ -78,7 +79,7 @@ fun SegmentLabel(text: String, color: Color) {
 }
 
 @Composable
-fun SegmentIcon(icon: Int, tint: Color) {
+fun SegmentIcon(icon: DrawableResource, tint: Color) {
     Icon(
         painter = painterResource(icon),
         contentDescription = null,

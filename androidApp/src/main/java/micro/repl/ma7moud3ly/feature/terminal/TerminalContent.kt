@@ -43,7 +43,6 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -54,10 +53,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.delay
-import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.model.MicroScript
 import micro.repl.ma7moud3ly.shared.resources.Res
+import micro.repl.ma7moud3ly.shared.resources.line_break
 import micro.repl.ma7moud3ly.shared.resources.micro_python
+import micro.repl.ma7moud3ly.shared.resources.run
+import micro.repl.ma7moud3ly.shared.resources.term_down
+import micro.repl.ma7moud3ly.shared.resources.term_up
 import micro.repl.ma7moud3ly.shared.resources.terminal_clear
 import micro.repl.ma7moud3ly.shared.resources.terminal_new_line
 import micro.repl.ma7moud3ly.shared.resources.terminal_reset
@@ -72,6 +74,7 @@ import micro.repl.ma7moud3ly.ui.components.SegmentLabel
 import micro.repl.ma7moud3ly.ui.components.SegmentPair
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 
@@ -231,9 +234,8 @@ private fun TerminalInputFiled(
             )
         )
         Icon(
-            painter = painterResource(
-                id = if (multiLine()) R.drawable.run
-                else R.drawable.line_break
+            painter = painterResource(if (multiLine()) Res.drawable.run
+                else Res.drawable.line_break
             ),
             contentDescription = stringResource(Res.string.terminal_new_line),
             modifier = Modifier
@@ -314,13 +316,13 @@ private fun TerminalAppBar(
                 onEnd = { uiEvents(TerminalEvents.MoveDown) },
                 start = {
                     SegmentIcon(
-                        R.drawable.term_up,
+                        Res.drawable.term_up,
                         MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 },
                 end = {
                     SegmentIcon(
-                        R.drawable.term_down,
+                        Res.drawable.term_down,
                         MaterialTheme.colorScheme.onSurface
                     )
                 }

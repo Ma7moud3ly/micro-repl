@@ -7,7 +7,6 @@
 
 package micro.repl.ma7moud3ly.feature.explorer
 
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -36,11 +35,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.feature.explorer.dialog.FileOptionsDialog
 import micro.repl.ma7moud3ly.model.MicroFile
 import micro.repl.ma7moud3ly.shared.resources.Res
@@ -49,12 +46,20 @@ import micro.repl.ma7moud3ly.shared.resources.explorer_file_import
 import micro.repl.ma7moud3ly.shared.resources.explorer_file_new
 import micro.repl.ma7moud3ly.shared.resources.explorer_new_folder
 import micro.repl.ma7moud3ly.shared.resources.explorer_refresh
+import micro.repl.ma7moud3ly.shared.resources.file
+import micro.repl.ma7moud3ly.shared.resources.folder
 import micro.repl.ma7moud3ly.shared.resources.micro_python
+import micro.repl.ma7moud3ly.shared.resources.new_file
+import micro.repl.ma7moud3ly.shared.resources.new_folder
+import micro.repl.ma7moud3ly.shared.resources.refresh
+import micro.repl.ma7moud3ly.shared.resources.upload
 import micro.repl.ma7moud3ly.ui.components.BackButton
 import micro.repl.ma7moud3ly.ui.components.MyScreen
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.explorerColors
+import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 
@@ -177,13 +182,13 @@ private fun Header(
                 ) {
                     IconHeader(
                         title = Res.string.explorer_file_import,
-                        icon = R.drawable.upload,
+                        icon = Res.drawable.upload,
                         tint = MaterialTheme.colorScheme.primary,
                         onClick = { uiEvents(ExplorerEvents.Import) }
                     )
                     IconHeader(
                         title = Res.string.explorer_file_new,
-                        icon = R.drawable.new_file,
+                        icon = Res.drawable.new_file,
                         tint = explorerColors.file,
                         onClick = {
                             val file = MicroFile(
@@ -194,7 +199,7 @@ private fun Header(
                         }
                     )
                     IconHeader(title = Res.string.explorer_new_folder,
-                        icon = R.drawable.new_folder,
+                        icon = Res.drawable.new_folder,
                         tint = explorerColors.folder,
                         onClick = {
                             val file = MicroFile(
@@ -207,7 +212,7 @@ private fun Header(
 
                     IconHeader(
                         title = Res.string.explorer_refresh,
-                        icon = R.drawable.refresh,
+                        icon = Res.drawable.refresh,
                         tint = MaterialTheme.colorScheme.primary,
                         onClick = { uiEvents(ExplorerEvents.Refresh) }
                     )
@@ -249,7 +254,7 @@ private fun Header(
 @Composable
 fun IconHeader(
     title: StringResource,
-    @DrawableRes icon: Int,
+    icon: DrawableResource,
     tint: Color,
     onClick: () -> Unit
 ) {
@@ -258,7 +263,7 @@ fun IconHeader(
         modifier = Modifier.size(25.dp)
     ) {
         Icon(
-            painter = painterResource(id = icon),
+            painter = painterResource(icon),
             contentDescription = stringResource(title),
             tint = tint
         )
@@ -281,9 +286,8 @@ private fun ItemFile(
         )
     ) {
         Icon(
-            painter = painterResource(
-                id = if (isFile) R.drawable.file
-                else R.drawable.folder
+            painter = painterResource(if (isFile) Res.drawable.file
+                else Res.drawable.folder
             ),
             contentDescription = microFile.name,
             tint = if (isFile) explorerColors.file else explorerColors.folder,
