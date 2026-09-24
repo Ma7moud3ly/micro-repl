@@ -146,7 +146,11 @@ class AndroidLocalFilesManager(private val context: Context) : LocalFilesManager
             putExtra(Intent.EXTRA_STREAM, fileUri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
-        context.startActivity(Intent.createChooser(shareIntent, "Share ${script.name}"))
+        // the application context has no task of its own to put the chooser in
+        val chooser = Intent
+            .createChooser(shareIntent, "Share ${script.name}")
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.startActivity(chooser)
     }
 
     /**
