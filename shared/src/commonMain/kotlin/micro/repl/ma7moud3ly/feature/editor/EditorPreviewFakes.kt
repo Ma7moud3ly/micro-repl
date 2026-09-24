@@ -23,10 +23,10 @@ import micro.repl.ma7moud3ly.managers.ScriptManager
 import micro.repl.ma7moud3ly.managers.ThemesManager
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import micro.repl.ma7moud3ly.managers.port.AppDispatchers
-import micro.repl.ma7moud3ly.managers.port.LocalFilesManager
-import micro.repl.ma7moud3ly.managers.port.SerialPortManager
-import micro.repl.ma7moud3ly.managers.port.StorageManager
+import micro.repl.ma7moud3ly.platform.AppDispatchers
+import micro.repl.ma7moud3ly.platform.LocalFilesManager
+import micro.repl.ma7moud3ly.platform.SerialPortManager
+import micro.repl.ma7moud3ly.platform.StorageManager
 import micro.repl.ma7moud3ly.model.EditorMode
 import micro.repl.ma7moud3ly.model.MicroDevice
 import micro.repl.ma7moud3ly.model.MicroScript

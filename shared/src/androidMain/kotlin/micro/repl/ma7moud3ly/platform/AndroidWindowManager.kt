@@ -18,20 +18,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.core.view.WindowCompat
-import micro.repl.ma7moud3ly.managers.port.AppManager
 
 /**
  * Drives the hosting Activity: sets its requested orientation, and recreates it
- * on [AppManager.restart].
+ * on [WindowManager.restart].
  *
  * Rebuilt on every configuration change.
  */
 @Composable
-actual fun rememberAppManager(): AppManager {
+actual fun rememberWindowManager(): WindowManager {
     val activity = LocalActivity.current
     val orientation = LocalConfiguration.current.orientation
     return remember(activity, orientation) {
-        AndroidAppManager(
+        AndroidWindowManager(
             activity = activity,
             isPortrait = orientation == Configuration.ORIENTATION_PORTRAIT
         )
@@ -39,10 +38,10 @@ actual fun rememberAppManager(): AppManager {
 }
 
 @SuppressLint("SourceLockedOrientationActivity")
-private class AndroidAppManager(
+private class AndroidWindowManager(
     private val activity: Activity?,
     override val isPortrait: Boolean
-) : AppManager {
+) : WindowManager {
 
     override fun toggleOrientation() {
         activity?.requestedOrientation = if (isPortrait) {

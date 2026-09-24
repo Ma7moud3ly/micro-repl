@@ -11,7 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import io.ma7moud3ly.nemo.model.EditorTheme
-import micro.repl.ma7moud3ly.managers.port.StorageManager
+import micro.repl.ma7moud3ly.platform.StorageManager
 import micro.repl.ma7moud3ly.ui.theme.AppThemes
 import org.koin.core.annotation.Single
 

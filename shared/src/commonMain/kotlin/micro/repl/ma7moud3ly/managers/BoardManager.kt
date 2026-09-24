@@ -14,8 +14,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import micro.repl.ma7moud3ly.managers.port.StorageManager
-import micro.repl.ma7moud3ly.managers.port.SerialPortManager
+import micro.repl.ma7moud3ly.platform.StorageManager
+import micro.repl.ma7moud3ly.platform.SerialPortManager
 import micro.repl.ma7moud3ly.model.ConnectionError
 import micro.repl.ma7moud3ly.model.ConnectionStatus
 import micro.repl.ma7moud3ly.model.MicroDevice

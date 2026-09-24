@@ -8,10 +8,7 @@
 package micro.repl.ma7moud3ly.platform
 
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
-import org.koin.core.annotation.Single
 
-@Single(binds = [AppDispatchers::class])
-class AndroidDispatchers : AppDispatchers {
-    override val io: CoroutineDispatcher = Dispatchers.IO
+interface AppDispatchers {
+    val io: CoroutineDispatcher
 }

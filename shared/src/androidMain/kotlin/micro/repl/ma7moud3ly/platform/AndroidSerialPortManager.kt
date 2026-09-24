@@ -29,7 +29,6 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import micro.repl.ma7moud3ly.managers.port.SerialPortManager
 import micro.repl.ma7moud3ly.model.MicroDevice
 import micro.repl.ma7moud3ly.model.MicroDeviceDetails
 import org.koin.core.annotation.Single

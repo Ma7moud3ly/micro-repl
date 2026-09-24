@@ -11,17 +11,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalWindowInfo
-import micro.repl.ma7moud3ly.managers.port.AppManager
+
+/** Reloads the page. */
+@OptIn(ExperimentalWasmJsInterop::class)
+private fun reloadPage(): Unit = js("location.reload()")
 
 /**
- * Reports the desktop window's shape. The orientation setters and [AppManager.restart]
- * do nothing.
+ * Reports the browser viewport's shape, and reloads the page on
+ * [WindowManager.restart]. The orientation setters do nothing.
  */
 @Composable
-actual fun rememberAppManager(): AppManager {
+actual fun rememberWindowManager(): WindowManager {
     val size = LocalWindowInfo.current.containerSize
     return remember(size) {
-        object : AppManager {
+        object : WindowManager {
             override val isPortrait: Boolean = size.height >= size.width
             override fun setSystemBars(
                 statusBar: Color,
@@ -31,7 +34,7 @@ actual fun rememberAppManager(): AppManager {
 
             override fun toggleOrientation() = Unit
             override fun forcePortrait() = Unit
-            override fun restart() = Unit
+            override fun restart() = reloadPage()
         }
     }
 }

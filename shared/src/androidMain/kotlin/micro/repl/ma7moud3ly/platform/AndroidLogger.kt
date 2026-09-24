@@ -8,7 +8,6 @@
 package micro.repl.ma7moud3ly.platform
 
 import android.util.Log
-import micro.repl.ma7moud3ly.managers.port.Logger
 import micro.repl.ma7moud3ly.BuildInfo
 
 actual val AppLog: Logger = AndroidLogger()

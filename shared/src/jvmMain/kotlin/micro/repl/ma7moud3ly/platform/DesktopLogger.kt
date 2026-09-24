@@ -8,7 +8,6 @@
 package micro.repl.ma7moud3ly.platform
 
 import micro.repl.ma7moud3ly.BuildInfo
-import micro.repl.ma7moud3ly.managers.port.Logger
 
 actual val AppLog: Logger = DesktopLogger()
 

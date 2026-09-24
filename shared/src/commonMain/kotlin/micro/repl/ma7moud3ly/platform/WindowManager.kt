@@ -5,9 +5,20 @@
  *
  */
 
-package micro.repl.ma7moud3ly.managers.port
+package micro.repl.ma7moud3ly.platform
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+
+/**
+ * The [WindowManager] for the window this composition is running in.
+ *
+ * Returns a new one whenever that window changes shape, so [WindowManager.isPortrait]
+ * always reports the current orientation.
+ */
+@Composable
+expect fun rememberWindowManager(): WindowManager
+
 
 /**
  * The things only the platform host can do to the app's window.
@@ -16,7 +27,7 @@ import androidx.compose.ui.graphics.Color
  * relaunches the window; web reads the viewport and reloads the page. Where a
  * platform owns the decision itself, the setters are no-ops.
  */
-interface AppManager {
+interface WindowManager {
 
     /** Whether the window is currently taller than it is wide. */
     val isPortrait: Boolean
@@ -37,3 +48,4 @@ interface AppManager {
      */
     fun setSystemBars(statusBar: Color, navigationBar: Color, darkIcons: Boolean)
 }
+

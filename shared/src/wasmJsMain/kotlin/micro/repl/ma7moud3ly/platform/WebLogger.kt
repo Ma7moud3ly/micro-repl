@@ -8,13 +8,16 @@
 package micro.repl.ma7moud3ly.platform
 
 import micro.repl.ma7moud3ly.BuildInfo
-import micro.repl.ma7moud3ly.managers.port.Logger
 
 actual val AppLog: Logger = WebLogger()
 
+@OptIn(ExperimentalWasmJsInterop::class)
 private fun consoleDebug(message: String): Unit = js("console.debug(message)")
+@OptIn(ExperimentalWasmJsInterop::class)
 private fun consoleInfo(message: String): Unit = js("console.info(message)")
+@OptIn(ExperimentalWasmJsInterop::class)
 private fun consoleWarn(message: String): Unit = js("console.warn(message)")
+@OptIn(ExperimentalWasmJsInterop::class)
 private fun consoleError(message: String): Unit = js("console.error(message)")
 
 /**

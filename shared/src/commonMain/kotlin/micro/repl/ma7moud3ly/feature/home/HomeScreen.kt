@@ -10,7 +10,7 @@ package micro.repl.ma7moud3ly.feature.home
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import micro.repl.ma7moud3ly.platform.rememberAppManager
+import micro.repl.ma7moud3ly.platform.rememberWindowManager
 import micro.repl.ma7moud3ly.shared.resources.Res
 import micro.repl.ma7moud3ly.shared.resources.terminal_reset_msg
 import micro.repl.ma7moud3ly.shared.resources.terminal_soft_reset_msg
@@ -35,7 +35,7 @@ fun HomeScreen(
     openScripts: () -> Unit,
     openExplorer: () -> Unit
 ) {
-    val appManager = rememberAppManager()
+    val windowManager = rememberWindowManager()
     val status = viewModel.status.collectAsStateWithLifecycle()
     val messageToast = rememberMessageState()
 
@@ -56,7 +56,7 @@ fun HomeScreen(
     MessageToast(state = messageToast)
 
     HomeScreenContent(
-        isPortrait = appManager.isPortrait,
+        isPortrait = windowManager.isPortrait,
         connectionStatus = { status.value },
         uiEvents = {
             when (it) {
@@ -81,8 +81,8 @@ fun HomeScreen(
                 is HomeEvents.ApproveDevice -> viewModel.approveDevice(it.microDevice)
                 is HomeEvents.ForgetDevice -> viewModel.forgetDevice(it.microDevice)
                 is HomeEvents.ShowThemeDialog -> openThemePicker()
-                is HomeEvents.RestartApp -> appManager.restart()
-                is HomeEvents.ToggleOrientation -> appManager.toggleOrientation()
+                is HomeEvents.RestartApp -> windowManager.restart()
+                is HomeEvents.ToggleOrientation -> windowManager.toggleOrientation()
             }
         }
     )

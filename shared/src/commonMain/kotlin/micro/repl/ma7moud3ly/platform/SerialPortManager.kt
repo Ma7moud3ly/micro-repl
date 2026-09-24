@@ -5,7 +5,7 @@
  *
  */
 
-package micro.repl.ma7moud3ly.managers.port
+package micro.repl.ma7moud3ly.platform
 
 import kotlinx.coroutines.flow.SharedFlow
 import micro.repl.ma7moud3ly.model.MicroDevice

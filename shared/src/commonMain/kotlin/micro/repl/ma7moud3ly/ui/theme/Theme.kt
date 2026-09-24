@@ -19,7 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.lerp
 import io.ma7moud3ly.nemo.model.EditorTheme
-import micro.repl.ma7moud3ly.platform.rememberAppManager
+import micro.repl.ma7moud3ly.platform.rememberWindowManager
 
 
 /**
@@ -79,10 +79,10 @@ fun AppTheme(
 ) {
     val colorScheme = remember(theme) { theme.toColorScheme() }
     val statusColors = remember(theme) { theme.toStatusColors() }
-    val appManager = rememberAppManager()
+    val windowManager = rememberWindowManager()
 
-    LaunchedEffect(appManager, theme) {
-        appManager.setSystemBars(
+    LaunchedEffect(windowManager, theme) {
+        windowManager.setSystemBars(
             statusBar = colorScheme.surface,
             navigationBar = colorScheme.background,
             darkIcons = theme.dark.not()

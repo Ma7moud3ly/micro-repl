@@ -17,11 +17,11 @@ import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import micro.repl.ma7moud3ly.BuildInfo
-import micro.repl.ma7moud3ly.managers.port.AppDispatchers
-import micro.repl.ma7moud3ly.managers.port.SerialPortManager
+import micro.repl.ma7moud3ly.platform.AppDispatchers
+import micro.repl.ma7moud3ly.platform.SerialPortManager
 import micro.repl.ma7moud3ly.managers.CommandsManager.isSilentExecutionDone
 import micro.repl.ma7moud3ly.managers.CommandsManager.trimSilentResult
-import micro.repl.ma7moud3ly.managers.port.Logger
+import micro.repl.ma7moud3ly.platform.Logger
 import micro.repl.ma7moud3ly.model.BoardOutput
 import micro.repl.ma7moud3ly.model.ExecutionMode
 import micro.repl.ma7moud3ly.platform.AppLog
