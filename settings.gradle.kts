@@ -15,5 +15,13 @@ dependencyResolutionManagement {
     }
 }
 
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+}
+
 rootProject.name = "Micro REPL"
-include(":app")
+
+include(":shared")
+include(":androidApp")
+include(":desktopApp")
+include(":webApp")
