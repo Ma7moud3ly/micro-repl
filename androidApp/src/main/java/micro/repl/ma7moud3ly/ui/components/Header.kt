@@ -8,7 +8,6 @@
 package micro.repl.ma7moud3ly.ui.components
 
 import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -26,14 +25,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import micro.repl.ma7moud3ly.R
+import micro.repl.ma7moud3ly.shared.resources.Res
+import micro.repl.ma7moud3ly.shared.resources.home_theme
 import micro.repl.ma7moud3ly.ui.theme.LocalStatusColors
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun BackButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
@@ -109,7 +111,7 @@ fun ThemeButton(
         ) {
             Icon(
                 painter = painterResource(R.drawable.theme),
-                contentDescription = stringResource(R.string.home_theme),
+                contentDescription = stringResource(Res.string.home_theme),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(15.dp)
             )
@@ -119,7 +121,7 @@ fun ThemeButton(
 
 @Composable
 fun ActionButton(
-    @StringRes text: Int,
+    text: StringResource,
     modifier: Modifier = Modifier,
     textModifier: Modifier = Modifier,
     filled: Boolean = false,

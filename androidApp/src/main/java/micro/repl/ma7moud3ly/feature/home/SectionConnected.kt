@@ -8,7 +8,6 @@
 package micro.repl.ma7moud3ly.feature.home
 
 import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -31,7 +30,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -39,12 +37,21 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import micro.repl.ma7moud3ly.R
-import micro.repl.ma7moud3ly.model.MicroDevice
 import micro.repl.ma7moud3ly.feature.home.dialog.DeviceDetailsDialog
+import micro.repl.ma7moud3ly.model.MicroDevice
+import micro.repl.ma7moud3ly.shared.resources.Res
+import micro.repl.ma7moud3ly.shared.resources.circuit_python
+import micro.repl.ma7moud3ly.shared.resources.home_details
+import micro.repl.ma7moud3ly.shared.resources.micro_python
+import micro.repl.ma7moud3ly.shared.resources.terminal_reset
+import micro.repl.ma7moud3ly.shared.resources.terminal_soft_reset
+import micro.repl.ma7moud3ly.shared.resources.terminal_terminate
 import micro.repl.ma7moud3ly.ui.components.rememberMyDialogState
-import micro.repl.ma7moud3ly.ui.theme.LocalStatusColors
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
+import micro.repl.ma7moud3ly.ui.theme.LocalStatusColors
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 
 @Preview
 @Composable
@@ -134,8 +141,8 @@ private fun DeviceCard(
                 ) {
                     Text(
                         text = stringResource(
-                            if (device.isMicroPython) R.string.micro_python
-                            else R.string.circuit_python
+                            if (device.isMicroPython) Res.string.micro_python
+                            else Res.string.circuit_python
                         ),
                         style = MaterialTheme.typography.bodyMedium,
                         fontSize = 16.sp,
@@ -162,7 +169,7 @@ private fun DeviceCard(
                     )
                 }
                 Text(
-                    text = stringResource(R.string.home_details),
+                    text = stringResource(Res.string.home_details),
                     style = MaterialTheme.typography.labelMedium,
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurface,
@@ -177,19 +184,19 @@ private fun DeviceCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 ActionCell(
-                    title = R.string.terminal_reset,
+                    title = Res.string.terminal_reset,
                     modifier = Modifier.weight(1f),
                     onClick = onReset
                 )
                 CellDivider()
                 ActionCell(
-                    title = R.string.terminal_soft_reset,
+                    title = Res.string.terminal_soft_reset,
                     modifier = Modifier.weight(1f),
                     onClick = onSoftReset
                 )
                 CellDivider()
                 ActionCell(
-                    title = R.string.terminal_terminate,
+                    title = Res.string.terminal_terminate,
                     modifier = Modifier.weight(1f),
                     color = LocalStatusColors.current.error,
                     onClick = onTerminate
@@ -201,7 +208,7 @@ private fun DeviceCard(
 
 @Composable
 private fun ActionCell(
-    @StringRes title: Int,
+    title: StringResource,
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.onSurface,
     onClick: () -> Unit

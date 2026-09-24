@@ -1,6 +1,5 @@
 package micro.repl.ma7moud3ly.feature.explorer.dialog
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,17 +21,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import micro.repl.ma7moud3ly.R
-import micro.repl.ma7moud3ly.model.MicroFile
 import micro.repl.ma7moud3ly.feature.explorer.ExplorerEvents
+import micro.repl.ma7moud3ly.model.MicroFile
+import micro.repl.ma7moud3ly.shared.resources.Res
+import micro.repl.ma7moud3ly.shared.resources.explorer_delete
+import micro.repl.ma7moud3ly.shared.resources.explorer_edit
+import micro.repl.ma7moud3ly.shared.resources.explorer_open
+import micro.repl.ma7moud3ly.shared.resources.explorer_rename
+import micro.repl.ma7moud3ly.shared.resources.explorer_run
 import micro.repl.ma7moud3ly.ui.components.MyDialog
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.explorerColors
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 
 private val microFile = MicroFile(
     name = "main.py",
@@ -90,35 +96,35 @@ internal fun FileOptionsDialog(
             FileOptionHeader(file)
             Spacer(modifier = Modifier.height(8.dp))
             if (file.canRun) FileOptionItem(
-                title = R.string.explorer_run,
+                title = Res.string.explorer_run,
                 onClick = {
                     uiEvents(ExplorerEvents.Run(file))
                     onDismiss()
                 }
             )
             if (file.isFile) FileOptionItem(
-                title = R.string.explorer_edit,
+                title = Res.string.explorer_edit,
                 onClick = {
                     uiEvents(ExplorerEvents.Edit(file))
                     onDismiss()
                 }
             )
             if (file.isFile.not()) FileOptionItem(
-                title = R.string.explorer_open,
+                title = Res.string.explorer_open,
                 onClick = {
                     uiEvents(ExplorerEvents.OpenFolder(file))
                     onDismiss()
                 }
             )
             FileOptionItem(
-                title = R.string.explorer_rename,
+                title = Res.string.explorer_rename,
                 onClick = {
                     onDismiss()
                     uiEvents(ExplorerEvents.Rename(file))
                 }
             )
             FileOptionItem(
-                title = R.string.explorer_delete,
+                title = Res.string.explorer_delete,
                 onClick = {
                     uiEvents(ExplorerEvents.Remove(file))
                     onDismiss()
@@ -164,7 +170,7 @@ private fun FileOptionHeader(microFile: MicroFile) {
 
 @Composable
 private fun FileOptionItem(
-    @StringRes title: Int,
+    title: StringResource,
     onClick: () -> Unit,
     showDivider: Boolean = true,
 ) {
@@ -176,7 +182,7 @@ private fun FileOptionItem(
 
     ) {
         Text(
-            stringResource(id = title),
+            stringResource(title),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(

@@ -41,7 +41,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -51,12 +50,18 @@ import io.ma7moud3ly.nemo.model.EditorTheme
 import micro.repl.ma7moud3ly.BuildConfig
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.model.ConnectionStatus
+import micro.repl.ma7moud3ly.shared.resources.Res
+import micro.repl.ma7moud3ly.shared.resources.home_footer
+import micro.repl.ma7moud3ly.shared.resources.home_help_link
+import micro.repl.ma7moud3ly.shared.resources.home_report_bug
+import micro.repl.ma7moud3ly.shared.resources.home_wordmark
 import micro.repl.ma7moud3ly.ui.components.MyScreen
 import micro.repl.ma7moud3ly.ui.components.ProgressView
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.AppThemes
 import micro.repl.ma7moud3ly.ui.theme.LocalEditorTheme
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
+import org.jetbrains.compose.resources.stringResource
 
 @Preview
 @Composable
@@ -162,7 +167,7 @@ private fun HomeAppBar(connectionStatus: () -> ConnectionStatus) {
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
-                    text = stringResource(R.string.home_wordmark),
+                    text = stringResource(Res.string.home_wordmark),
                     fontFamily = fontConsolas,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold,
@@ -397,7 +402,7 @@ private fun Footer(uiEvents: (HomeEvents) -> Unit) {
         ) {
             Text(
                 text = stringResource(
-                    R.string.home_footer,
+                    Res.string.home_footer,
                     BuildConfig.VERSION_NAME
                 ),
                 fontFamily = fontConsolas,
@@ -413,9 +418,9 @@ private fun Footer(uiEvents: (HomeEvents) -> Unit) {
             )
 
             val uriHandler = LocalUriHandler.current
-            val uri = stringResource(R.string.home_help_link)
+            val uri = stringResource(Res.string.home_help_link)
             Text(
-                text = stringResource(R.string.home_report_bug),
+                text = stringResource(Res.string.home_report_bug),
                 fontFamily = fontConsolas,
                 fontSize = 11.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

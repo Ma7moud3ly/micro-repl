@@ -25,13 +25,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import micro.repl.ma7moud3ly.R
+import micro.repl.ma7moud3ly.shared.resources.Res
+import micro.repl.ma7moud3ly.shared.resources.dialog_cancel
+import micro.repl.ma7moud3ly.shared.resources.dialog_no
+import micro.repl.ma7moud3ly.shared.resources.dialog_ok
+import micro.repl.ma7moud3ly.shared.resources.dialog_yes
 import micro.repl.ma7moud3ly.ui.components.MyButton
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * The bodies every dialog in the app is built from.
@@ -77,12 +81,12 @@ internal fun InputDialogContent(
         )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             MyButton(
-                text = stringResource(id = R.string.dialog_ok),
+                text = stringResource(Res.string.dialog_ok),
                 modifier = Modifier.weight(0.4f),
                 onClick = { onOk(fileName) }
             )
             MyButton(
-                text = stringResource(id = R.string.dialog_cancel),
+                text = stringResource(Res.string.dialog_cancel),
                 background = MaterialTheme.colorScheme.secondary,
                 color = MaterialTheme.colorScheme.onSecondary,
                 modifier = Modifier.weight(0.4f),
@@ -117,12 +121,12 @@ internal fun ApproveDialogContent(
         )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             MyButton(
-                text = stringResource(id = R.string.dialog_yes),
+                text = stringResource(Res.string.dialog_yes),
                 modifier = Modifier.weight(0.4f),
                 onClick = onOk
             )
             MyButton(
-                text = stringResource(id = R.string.dialog_no),
+                text = stringResource(Res.string.dialog_no),
                 background = MaterialTheme.colorScheme.secondary,
                 color = MaterialTheme.colorScheme.onSecondary,
                 modifier = Modifier.weight(0.4f),

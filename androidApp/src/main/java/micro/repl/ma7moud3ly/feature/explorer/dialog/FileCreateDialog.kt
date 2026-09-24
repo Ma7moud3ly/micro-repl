@@ -4,15 +4,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import micro.repl.ma7moud3ly.R
-import micro.repl.ma7moud3ly.ui.theme.AppTheme
-import micro.repl.ma7moud3ly.ui.dialog.InputDialogContent
-import micro.repl.ma7moud3ly.ui.components.MyDialog
 import micro.repl.ma7moud3ly.model.MicroFile
+import micro.repl.ma7moud3ly.shared.resources.Res
+import micro.repl.ma7moud3ly.shared.resources.explorer_create
+import micro.repl.ma7moud3ly.shared.resources.explorer_file_new
+import micro.repl.ma7moud3ly.shared.resources.explorer_new_folder
+import micro.repl.ma7moud3ly.shared.resources.explorer_rename_label
+import micro.repl.ma7moud3ly.ui.components.MyDialog
 import micro.repl.ma7moud3ly.ui.components.MyDialogState
 import micro.repl.ma7moud3ly.ui.components.rememberMyDialogState
+import micro.repl.ma7moud3ly.ui.dialog.InputDialogContent
+import micro.repl.ma7moud3ly.ui.theme.AppTheme
+import org.jetbrains.compose.resources.stringResource
 
 private val microFile = MicroFile(
     name = "",
@@ -80,12 +84,10 @@ fun FileCreateDialog(
 ) {
     val file = microFile() ?: return
     val message = if (file.name.isEmpty()) {
-        stringResource(id = R.string.explorer_create) + " " + stringResource(
-            id = if (file.isFile) R.string.explorer_file_new
-            else R.string.explorer_new_folder
+        stringResource(Res.string.explorer_create) + " " + stringResource(if (file.isFile) Res.string.explorer_file_new
+            else Res.string.explorer_new_folder
         ) + "~" + file.path
-    } else stringResource(
-        id = R.string.explorer_rename_label, file.name
+    } else stringResource(Res.string.explorer_rename_label, file.name
     )
 
     val name by remember(file) {

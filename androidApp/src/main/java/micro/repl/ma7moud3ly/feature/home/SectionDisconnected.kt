@@ -27,14 +27,18 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import micro.repl.ma7moud3ly.R
+import micro.repl.ma7moud3ly.shared.resources.Res
+import micro.repl.ma7moud3ly.shared.resources.home_connect_device
+import micro.repl.ma7moud3ly.shared.resources.home_no_device
+import micro.repl.ma7moud3ly.shared.resources.home_no_device_msg
+import micro.repl.ma7moud3ly.shared.resources.home_restart
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
+import org.jetbrains.compose.resources.stringResource
 
 @Preview
 @Composable
@@ -88,14 +92,14 @@ private fun EmptyStateCard(
     ) {
         IconBadge(text = ">_", size = 36.dp)
         Text(
-            text = stringResource(R.string.home_no_device),
+            text = stringResource(Res.string.home_no_device),
             style = MaterialTheme.typography.bodyLarge,
             fontSize = 16.sp,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurface
         )
         Text(
-            text = stringResource(R.string.home_no_device_msg),
+            text = stringResource(Res.string.home_no_device_msg),
             style = MaterialTheme.typography.bodyMedium,
             fontSize = 12.sp,
             lineHeight = 21.sp,
@@ -115,7 +119,7 @@ private fun EmptyStateCard(
                 .height(44.dp)
         ) {
             Text(
-                text = stringResource(R.string.home_connect_device),
+                text = stringResource(Res.string.home_connect_device),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold
             )
@@ -131,7 +135,7 @@ private fun EmptyStateCard(
                 .height(44.dp)
         ) {
             Text(
-                text = stringResource(R.string.home_restart),
+                text = stringResource(Res.string.home_restart),
                 fontSize = 14.sp
             )
         }

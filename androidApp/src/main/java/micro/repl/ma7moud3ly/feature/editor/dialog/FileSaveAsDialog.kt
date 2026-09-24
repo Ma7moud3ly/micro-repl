@@ -1,14 +1,15 @@
 package micro.repl.ma7moud3ly.feature.editor.dialog
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import micro.repl.ma7moud3ly.R
-import micro.repl.ma7moud3ly.ui.dialog.InputDialogContent
+import micro.repl.ma7moud3ly.shared.resources.Res
+import micro.repl.ma7moud3ly.shared.resources.editor_msg_save
 import micro.repl.ma7moud3ly.ui.components.MyDialog
 import micro.repl.ma7moud3ly.ui.components.MyDialogState
 import micro.repl.ma7moud3ly.ui.components.rememberMyDialogState
+import micro.repl.ma7moud3ly.ui.dialog.InputDialogContent
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
+import org.jetbrains.compose.resources.stringResource
 
 
 @Preview
@@ -46,7 +47,7 @@ fun FileSaveAsDialog(
     ) {
         InputDialogContent(
             name = name(),
-            message = stringResource(R.string.editor_msg_save),
+            message = stringResource(Res.string.editor_msg_save),
             onDismiss = {
                 state.dismiss()
                 onDismiss()

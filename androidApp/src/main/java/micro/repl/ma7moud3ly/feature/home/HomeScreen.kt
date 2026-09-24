@@ -9,14 +9,17 @@ package micro.repl.ma7moud3ly.feature.home
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import micro.repl.ma7moud3ly.R
-import micro.repl.ma7moud3ly.ui.components.asSuccessMessage
 import micro.repl.ma7moud3ly.platform.rememberAppManager
+import micro.repl.ma7moud3ly.shared.resources.Res
+import micro.repl.ma7moud3ly.shared.resources.terminal_reset_msg
+import micro.repl.ma7moud3ly.shared.resources.terminal_soft_reset_msg
+import micro.repl.ma7moud3ly.shared.resources.terminal_terminate_msg
 import micro.repl.ma7moud3ly.ui.components.MessageToast
+import micro.repl.ma7moud3ly.ui.components.asSuccessMessage
 import micro.repl.ma7moud3ly.ui.components.rememberMessageState
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
+import org.jetbrains.compose.resources.getString
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -35,16 +38,17 @@ fun HomeScreen(
     val appManager = rememberAppManager()
     val status = viewModel.status.collectAsStateWithLifecycle()
     val messageToast = rememberMessageState()
-    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         viewModel.commands.collect { command ->
-            val text = when (command) {
-                HomeCommand.DeviceReset -> R.string.terminal_reset_msg
-                HomeCommand.DeviceSoftReset -> R.string.terminal_soft_reset_msg
-                HomeCommand.ExecutionTerminated -> R.string.terminal_terminate_msg
-            }
-            messageToast.show(context.getString(text).asSuccessMessage)
+            val text = getString(
+                when (command) {
+                    HomeCommand.DeviceReset -> Res.string.terminal_reset_msg
+                    HomeCommand.DeviceSoftReset -> Res.string.terminal_soft_reset_msg
+                    HomeCommand.ExecutionTerminated -> Res.string.terminal_terminate_msg
+                }
+            )
+            messageToast.show(text.asSuccessMessage)
         }
     }
 

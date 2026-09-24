@@ -1,13 +1,14 @@
 package micro.repl.ma7moud3ly.ui.dialog
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import micro.repl.ma7moud3ly.R
+import micro.repl.ma7moud3ly.shared.resources.Res
+import micro.repl.ma7moud3ly.shared.resources.explorer_rename_label
 import micro.repl.ma7moud3ly.ui.components.MyDialog
 import micro.repl.ma7moud3ly.ui.components.MyDialogState
 import micro.repl.ma7moud3ly.ui.components.rememberMyDialogState
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
+import org.jetbrains.compose.resources.stringResource
 
 
 @Preview
@@ -41,7 +42,7 @@ fun FileRenameDialog(
     MyDialog(state) {
         InputDialogContent(
             name = name(),
-            message = stringResource(R.string.explorer_rename_label, name()),
+            message = stringResource(Res.string.explorer_rename_label, name()),
             onDismiss = { state.dismiss() },
             onOk = {
                 state.dismiss()

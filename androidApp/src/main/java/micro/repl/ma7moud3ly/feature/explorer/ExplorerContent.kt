@@ -8,8 +8,6 @@
 package micro.repl.ma7moud3ly.feature.explorer
 
 import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -39,17 +37,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import micro.repl.ma7moud3ly.R
-import micro.repl.ma7moud3ly.model.MicroFile
 import micro.repl.ma7moud3ly.feature.explorer.dialog.FileOptionsDialog
+import micro.repl.ma7moud3ly.model.MicroFile
+import micro.repl.ma7moud3ly.shared.resources.Res
+import micro.repl.ma7moud3ly.shared.resources.circuit_python
+import micro.repl.ma7moud3ly.shared.resources.explorer_file_import
+import micro.repl.ma7moud3ly.shared.resources.explorer_file_new
+import micro.repl.ma7moud3ly.shared.resources.explorer_new_folder
+import micro.repl.ma7moud3ly.shared.resources.explorer_refresh
+import micro.repl.ma7moud3ly.shared.resources.micro_python
 import micro.repl.ma7moud3ly.ui.components.BackButton
 import micro.repl.ma7moud3ly.ui.components.MyScreen
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.explorerColors
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 
 
 private val iconSize = 60.dp
@@ -170,13 +176,13 @@ private fun Header(
                     )
                 ) {
                     IconHeader(
-                        title = R.string.explorer_file_import,
+                        title = Res.string.explorer_file_import,
                         icon = R.drawable.upload,
                         tint = MaterialTheme.colorScheme.primary,
                         onClick = { uiEvents(ExplorerEvents.Import) }
                     )
                     IconHeader(
-                        title = R.string.explorer_file_new,
+                        title = Res.string.explorer_file_new,
                         icon = R.drawable.new_file,
                         tint = explorerColors.file,
                         onClick = {
@@ -187,7 +193,7 @@ private fun Header(
                             uiEvents(ExplorerEvents.New(file))
                         }
                     )
-                    IconHeader(title = R.string.explorer_new_folder,
+                    IconHeader(title = Res.string.explorer_new_folder,
                         icon = R.drawable.new_folder,
                         tint = explorerColors.folder,
                         onClick = {
@@ -200,7 +206,7 @@ private fun Header(
                     )
 
                     IconHeader(
-                        title = R.string.explorer_refresh,
+                        title = Res.string.explorer_refresh,
                         icon = R.drawable.refresh,
                         tint = MaterialTheme.colorScheme.primary,
                         onClick = { uiEvents(ExplorerEvents.Refresh) }
@@ -216,9 +222,8 @@ private fun Header(
             actions = {
                 Row(Modifier.fillMaxWidth(0.9f)) {
                     Text(
-                        text = stringResource(
-                            id = if (isMicroPython) R.string.micro_python
-                            else R.string.circuit_python
+                        text = stringResource(if (isMicroPython) Res.string.micro_python
+                            else Res.string.circuit_python
                         ),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary,
@@ -243,7 +248,7 @@ private fun Header(
 
 @Composable
 fun IconHeader(
-    @StringRes title: Int,
+    title: StringResource,
     @DrawableRes icon: Int,
     tint: Color,
     onClick: () -> Unit
@@ -260,7 +265,6 @@ fun IconHeader(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ItemFile(
     microFile: MicroFile,

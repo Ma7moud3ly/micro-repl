@@ -1,24 +1,23 @@
 package micro.repl.ma7moud3ly.feature.editor
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -28,7 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,6 +37,13 @@ import io.ma7moud3ly.nemo.NemoCodeEditor
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.feature.editor.manager.EditorManager
 import micro.repl.ma7moud3ly.feature.editor.model.EditorEvent
+import micro.repl.ma7moud3ly.shared.resources.Res
+import micro.repl.ma7moud3ly.shared.resources.circuit_python
+import micro.repl.ma7moud3ly.shared.resources.editor_new
+import micro.repl.ma7moud3ly.shared.resources.editor_save
+import micro.repl.ma7moud3ly.shared.resources.micro_python
+import micro.repl.ma7moud3ly.shared.resources.terminal_run
+import micro.repl.ma7moud3ly.shared.resources.this_device
 import micro.repl.ma7moud3ly.ui.components.ActionButton
 import micro.repl.ma7moud3ly.ui.components.BackButton
 import micro.repl.ma7moud3ly.ui.components.BarToggle
@@ -49,6 +55,7 @@ import micro.repl.ma7moud3ly.ui.components.ThemeButton
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.AppThemes
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
+import org.jetbrains.compose.resources.stringResource
 
 @Preview
 @Composable
@@ -120,9 +127,9 @@ private fun EditorAppBar(
     val title by editorManager.title
     val source = stringResource(
         when {
-            editorManager.isLocal -> R.string.this_device
-            editorManager.isMicroPython -> R.string.micro_python
-            else -> R.string.circuit_python
+            editorManager.isLocal -> Res.string.this_device
+            editorManager.isMicroPython -> Res.string.micro_python
+            else -> Res.string.circuit_python
         }
     )
     Row(
@@ -172,7 +179,7 @@ private fun EditorActions(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 if (canRun && editorManager.isPython) ActionButton(
-                    text = R.string.terminal_run,
+                    text = Res.string.terminal_run,
                     filled = true,
                     textModifier = Modifier.padding(horizontal = 14.dp),
                     onClick = { uiEvents(EditorEvent.Run) }
@@ -181,7 +188,7 @@ private fun EditorActions(
                 // so the write would fail silently.
                 if (canRun || editorManager.isLocal) Box {
                     ActionButton(
-                        text = R.string.editor_save,
+                        text = Res.string.editor_save,
                         textModifier = Modifier.padding(horizontal = 14.dp),
                         onClick = { uiEvents(EditorEvent.Save) }
                     )
@@ -195,7 +202,7 @@ private fun EditorActions(
                     )
                 }
                 if (editorManager.isLocal) ActionButton(
-                    text = R.string.editor_new,
+                    text = Res.string.editor_new,
                     textModifier = Modifier.padding(horizontal = 14.dp),
                     onClick = { uiEvents(EditorEvent.New) }
                 )

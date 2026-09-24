@@ -11,21 +11,19 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.runtime.mutableStateListOf
+import androidx.core.content.FileProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import androidx.core.content.FileProvider
+import micro.repl.ma7moud3ly.managers.port.LocalFilesManager
+import micro.repl.ma7moud3ly.model.MicroScript
+import org.koin.core.annotation.Single
 import java.io.DataInputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.OutputStreamWriter
-import micro.repl.ma7moud3ly.R
-import micro.repl.ma7moud3ly.managers.port.LocalFilesManager
-import micro.repl.ma7moud3ly.model.MicroScript
-import org.koin.core.annotation.Single
 
 
 /**
@@ -141,7 +139,6 @@ class AndroidLocalFilesManager(private val context: Context) : LocalFilesManager
             )
         } catch (e: IllegalArgumentException) {
             Log.e(TAG, "shareScript - cannot expose ${file.absolutePath}", e)
-            Toast.makeText(context, R.string.scripts_share_failed, Toast.LENGTH_SHORT).show()
             return
         }
 

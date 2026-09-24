@@ -33,7 +33,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -41,13 +40,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.ma7moud3ly.nemo.model.EditorTheme
-import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.AppRoutes
-import micro.repl.ma7moud3ly.ui.components.MyDialog
 import micro.repl.ma7moud3ly.managers.ThemesManager
+import micro.repl.ma7moud3ly.shared.resources.Res
+import micro.repl.ma7moud3ly.shared.resources.home_nemo_link
+import micro.repl.ma7moud3ly.shared.resources.home_powered_by
+import micro.repl.ma7moud3ly.shared.resources.home_theme
+import micro.repl.ma7moud3ly.shared.resources.home_theme_dark
+import micro.repl.ma7moud3ly.shared.resources.home_theme_light
+import micro.repl.ma7moud3ly.ui.components.MyDialog
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.AppThemes
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
 @Preview
@@ -104,7 +109,7 @@ private fun ThemePicker(
 ) {
     Column(modifier = Modifier.padding(vertical = 8.dp)) {
         Text(
-            text = stringResource(R.string.home_theme),
+            text = stringResource(Res.string.home_theme),
             fontFamily = fontConsolas,
             fontSize = 12.sp,
             fontWeight = FontWeight.SemiBold,
@@ -130,7 +135,7 @@ private fun ThemePicker(
 @Composable
 private fun PoweredByNemo() {
     val uriHandler = LocalUriHandler.current
-    val link = stringResource(R.string.home_nemo_link)
+    val link = stringResource(Res.string.home_nemo_link)
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -140,7 +145,7 @@ private fun PoweredByNemo() {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = stringResource(R.string.home_powered_by),
+            text = stringResource(Res.string.home_powered_by),
             fontFamily = fontConsolas,
             fontSize = 11.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -187,7 +192,7 @@ private fun ThemeRow(
             )
             Text(
                 text = stringResource(
-                    if (theme.dark) R.string.home_theme_dark else R.string.home_theme_light
+                    if (theme.dark) Res.string.home_theme_dark else Res.string.home_theme_light
                 ),
                 fontFamily = fontConsolas,
                 fontSize = 11.sp,
@@ -202,7 +207,7 @@ private fun ThemeRow(
     }
 }
 
-/** Miniature preview of a theme: its background with syntax colour dots. */
+/** Miniature preview of a theme: its background with syntax color dots. */
 @Composable
 private fun ThemeSwatch(theme: EditorTheme) {
     Box(

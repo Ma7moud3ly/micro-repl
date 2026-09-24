@@ -8,7 +8,6 @@
 package micro.repl.ma7moud3ly.feature.scripts
 
 import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -33,16 +32,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.model.MicroScript
+import micro.repl.ma7moud3ly.shared.resources.Res
+import micro.repl.ma7moud3ly.shared.resources.explorer_delete
+import micro.repl.ma7moud3ly.shared.resources.explorer_edit
+import micro.repl.ma7moud3ly.shared.resources.explorer_share
+import micro.repl.ma7moud3ly.shared.resources.scripts_empty
+import micro.repl.ma7moud3ly.shared.resources.scripts_local
+import micro.repl.ma7moud3ly.shared.resources.scripts_new
+import micro.repl.ma7moud3ly.shared.resources.terminal_run
 import micro.repl.ma7moud3ly.ui.components.ActionButton
 import micro.repl.ma7moud3ly.ui.components.BackButton
 import micro.repl.ma7moud3ly.ui.components.MyScreen
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 
 
 private val scripts = listOf(
@@ -105,7 +113,7 @@ fun ScriptsScreenContent(
                 )
             }
         } else Text(
-            text = stringResource(R.string.scripts_empty),
+            text = stringResource(Res.string.scripts_empty),
             style = MaterialTheme.typography.labelLarge,
             modifier = Modifier.padding(horizontal = 16.dp)
         )
@@ -132,14 +140,14 @@ private fun Header(
             },
             title = {
                 Text(
-                    text = stringResource(R.string.scripts_local),
+                    text = stringResource(Res.string.scripts_local),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
             },
             actions = {
                 ActionButton(
-                    text = R.string.scripts_new,
+                    text = Res.string.scripts_new,
                     textModifier = Modifier.padding(horizontal = 8.dp),
                     onClick = onNewScript
                 )
@@ -180,7 +188,7 @@ private fun ItemScript(
                 overflow = TextOverflow.Ellipsis
             )
             if (canRun && script.isPython) ActionButton(
-                text = R.string.terminal_run,
+                text = Res.string.terminal_run,
                 filled = true,
                 textModifier = Modifier.padding(horizontal = 14.dp),
                 onClick = onRun
@@ -189,18 +197,18 @@ private fun ItemScript(
             ScriptIcon(
                 icon = R.drawable.share,
                 modifier = Modifier.size(18.dp),
-                description = R.string.explorer_share,
+                description = Res.string.explorer_share,
                 onClick = onShare
             )
 
             ScriptIcon(
                 icon = R.drawable.edit,
-                description = R.string.explorer_edit,
+                description = Res.string.explorer_edit,
                 onClick = onRename
             )
             ScriptIcon(
                 icon = R.drawable.delete,
-                description = R.string.explorer_delete,
+                description = Res.string.explorer_delete,
                 onClick = onDelete
             )
         }
@@ -210,7 +218,7 @@ private fun ItemScript(
 @Composable
 private fun ScriptIcon(
     @DrawableRes icon: Int,
-    @StringRes description: Int,
+    description: StringResource,
     modifier: Modifier = Modifier.size(20.dp),
     onClick: () -> Unit,
 ) {
@@ -220,7 +228,7 @@ private fun ScriptIcon(
     ) {
         Icon(
             painter = painterResource(id = icon),
-            contentDescription = stringResource(id = description),
+            contentDescription = stringResource(description),
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(24.dp)
         )

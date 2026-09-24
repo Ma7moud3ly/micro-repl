@@ -44,7 +44,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -53,9 +52,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.delay
 import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.model.MicroScript
+import micro.repl.ma7moud3ly.shared.resources.Res
+import micro.repl.ma7moud3ly.shared.resources.micro_python
+import micro.repl.ma7moud3ly.shared.resources.terminal_clear
+import micro.repl.ma7moud3ly.shared.resources.terminal_new_line
+import micro.repl.ma7moud3ly.shared.resources.terminal_reset
+import micro.repl.ma7moud3ly.shared.resources.terminal_run
+import micro.repl.ma7moud3ly.shared.resources.terminal_terminate
+import micro.repl.ma7moud3ly.shared.resources.this_device
 import micro.repl.ma7moud3ly.ui.components.ActionButton
 import micro.repl.ma7moud3ly.ui.components.BackButton
 import micro.repl.ma7moud3ly.ui.components.MyScreen
@@ -64,7 +72,7 @@ import micro.repl.ma7moud3ly.ui.components.SegmentLabel
 import micro.repl.ma7moud3ly.ui.components.SegmentPair
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
-import kotlin.time.Duration.Companion.milliseconds
+import org.jetbrains.compose.resources.stringResource
 
 
 @Preview
@@ -227,9 +235,8 @@ private fun TerminalInputFiled(
                 id = if (multiLine()) R.drawable.run
                 else R.drawable.line_break
             ),
-            contentDescription = stringResource(
-                id = R.string.terminal_new_line
-            ), modifier = Modifier
+            contentDescription = stringResource(Res.string.terminal_new_line),
+            modifier = Modifier
                 .size(20.dp)
                 .clickable {
                     if (multiLine()) {
@@ -335,8 +342,8 @@ private fun ScriptTitle(
     ) {
         Text(
             text = stringResource(
-                if (script.isLocal) R.string.this_device
-                else R.string.micro_python
+                if (script.isLocal) Res.string.this_device
+                else Res.string.micro_python
             ),
             fontFamily = fontConsolas,
             fontWeight = FontWeight.SemiBold,
@@ -369,23 +376,23 @@ private fun TerminalActions(uiEvents: (TerminalEvents) -> Unit) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         ActionButton(
-            text = R.string.terminal_run,
+            text = Res.string.terminal_run,
             modifier = Modifier.weight(1f),
             filled = true,
             onClick = { uiEvents(TerminalEvents.Run) }
         )
         ActionButton(
-            text = R.string.terminal_reset,
+            text = Res.string.terminal_reset,
             modifier = Modifier.weight(1f),
             onClick = { uiEvents(TerminalEvents.SoftReset) }
         )
         ActionButton(
-            text = R.string.terminal_clear,
+            text = Res.string.terminal_clear,
             modifier = Modifier.weight(1f),
             onClick = { uiEvents(TerminalEvents.Clear) }
         )
         ActionButton(
-            text = R.string.terminal_terminate,
+            text = Res.string.terminal_terminate,
             modifier = Modifier.weight(1f),
             danger = true,
             onClick = { uiEvents(TerminalEvents.Terminate) }

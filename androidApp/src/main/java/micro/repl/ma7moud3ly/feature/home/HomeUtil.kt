@@ -7,47 +7,52 @@
 
 package micro.repl.ma7moud3ly.feature.home
 
-import androidx.annotation.StringRes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.model.ConnectionError
 import micro.repl.ma7moud3ly.model.ConnectionStatus
 import micro.repl.ma7moud3ly.model.MicroDevice
 import micro.repl.ma7moud3ly.model.MicroDeviceDetails
+import micro.repl.ma7moud3ly.shared.resources.Res
+import micro.repl.ma7moud3ly.shared.resources.home_status_cant_connect
+import micro.repl.ma7moud3ly.shared.resources.home_status_connected
+import micro.repl.ma7moud3ly.shared.resources.home_status_connecting
+import micro.repl.ma7moud3ly.shared.resources.home_status_connection_lost
+import micro.repl.ma7moud3ly.shared.resources.home_status_waiting
 import micro.repl.ma7moud3ly.ui.theme.LocalStatusColors
+import org.jetbrains.compose.resources.StringResource
 
 
 enum class StatusTone { OK, WARN, ERROR, MUTED }
 
-data class StatusLine(@param:StringRes val text: Int, val tone: StatusTone)
+data class StatusLine(val text: StringResource, val tone: StatusTone)
 
 /** Resolves the current [ConnectionStatus] into a status word + tone. */
 fun ConnectionStatus.statusLine(): StatusLine = when (this) {
     is ConnectionStatus.Connected -> {
-        StatusLine(R.string.home_status_connected, StatusTone.OK)
+        StatusLine(Res.string.home_status_connected, StatusTone.OK)
     }
 
     is ConnectionStatus.Connecting -> {
-        StatusLine(R.string.home_status_connecting, StatusTone.OK)
+        StatusLine(Res.string.home_status_connecting, StatusTone.OK)
     }
 
     is ConnectionStatus.Approve -> {
-        StatusLine(R.string.home_status_waiting, StatusTone.MUTED)
+        StatusLine(Res.string.home_status_waiting, StatusTone.MUTED)
     }
 
     is ConnectionStatus.Error -> when (this.error) {
         ConnectionError.CONNECTION_LOST -> {
-            StatusLine(R.string.home_status_connection_lost, StatusTone.WARN)
+            StatusLine(Res.string.home_status_connection_lost, StatusTone.WARN)
         }
 
         ConnectionError.NO_DEVICES -> {
-            StatusLine(R.string.home_status_waiting, StatusTone.MUTED)
+            StatusLine(Res.string.home_status_waiting, StatusTone.MUTED)
         }
 
         else -> {
-            StatusLine(R.string.home_status_cant_connect, StatusTone.ERROR)
+            StatusLine(Res.string.home_status_cant_connect, StatusTone.ERROR)
         }
     }
 }

@@ -4,16 +4,17 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import micro.repl.ma7moud3ly.R
-import micro.repl.ma7moud3ly.ui.components.asSuccessMessage
 import micro.repl.ma7moud3ly.feature.explorer.dialog.FileCreateDialog
+import micro.repl.ma7moud3ly.feature.explorer.dialog.ImportScriptDialog
+import micro.repl.ma7moud3ly.shared.resources.Res
+import micro.repl.ma7moud3ly.shared.resources.explorer_refresh
+import micro.repl.ma7moud3ly.ui.components.MessageToast
+import micro.repl.ma7moud3ly.ui.components.asSuccessMessage
+import micro.repl.ma7moud3ly.ui.components.rememberMessageState
 import micro.repl.ma7moud3ly.ui.dialog.FileDeleteDialog
 import micro.repl.ma7moud3ly.ui.dialog.FileRenameDialog
-import micro.repl.ma7moud3ly.feature.explorer.dialog.ImportScriptDialog
-import micro.repl.ma7moud3ly.ui.components.MessageToast
-import micro.repl.ma7moud3ly.ui.components.rememberMessageState
+import org.jetbrains.compose.resources.getString
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -39,7 +40,6 @@ fun FilesExplorerScreen(
     val createDialogState = remember { viewModel.createDialogState }
     val renameDialogState = remember { viewModel.renameDialogState }
 
-    val refreshMessage = stringResource(R.string.explorer_refresh)
 
     LaunchedEffect(Unit) {
         viewModel.commands.collect { command ->
@@ -47,8 +47,10 @@ fun FilesExplorerScreen(
                 is ExplorerCommand.OpenTerminal -> openTerminal()
                 is ExplorerCommand.OpenEditor -> openEditor()
                 is ExplorerCommand.Back -> onBack()
-                is ExplorerCommand.Refreshing ->
+                is ExplorerCommand.Refreshing -> {
+                    val refreshMessage = getString(Res.string.explorer_refresh)
                     messageToast.show(refreshMessage.asSuccessMessage)
+                }
 
                 is ExplorerCommand.Imported ->
                     messageToast.show("saved to ${command.path}".asSuccessMessage)

@@ -7,7 +7,6 @@
 
 package micro.repl.ma7moud3ly.feature.home
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -26,13 +25,25 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import micro.repl.ma7moud3ly.R
+import micro.repl.ma7moud3ly.shared.resources.Res
+import micro.repl.ma7moud3ly.shared.resources.home_editor
+import micro.repl.ma7moud3ly.shared.resources.home_explorer
+import micro.repl.ma7moud3ly.shared.resources.home_needs_device
+import micro.repl.ma7moud3ly.shared.resources.home_scripts
+import micro.repl.ma7moud3ly.shared.resources.home_sub_device_files
+import micro.repl.ma7moud3ly.shared.resources.home_sub_editor_open
+import micro.repl.ma7moud3ly.shared.resources.home_sub_live_repl
+import micro.repl.ma7moud3ly.shared.resources.home_sub_local_files
+import micro.repl.ma7moud3ly.shared.resources.home_sub_scripts
+import micro.repl.ma7moud3ly.shared.resources.home_terminal
+import micro.repl.ma7moud3ly.shared.resources.home_workspace
 import micro.repl.ma7moud3ly.ui.theme.LocalStatusColors
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * The 2 x 2 "Workspace" grid. Terminal and Explorer need a live device and are
@@ -48,7 +59,7 @@ internal fun Workspace(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
-            text = stringResource(R.string.home_workspace).uppercase(),
+            text = stringResource(Res.string.home_workspace).uppercase(),
             style = MaterialTheme.typography.labelSmall.copy(
                 fontFamily = fontConsolas,
                 letterSpacing = 1.6.sp
@@ -60,9 +71,9 @@ internal fun Workspace(
             WorkspaceTile(
                 modifier = Modifier.weight(1f),
                 glyph = ">_",
-                title = R.string.home_terminal,
-                sub = if (connected) R.string.home_sub_live_repl
-                else R.string.home_needs_device,
+                title = Res.string.home_terminal,
+                sub = if (connected) Res.string.home_sub_live_repl
+                else Res.string.home_needs_device,
                 enabled = connected,
                 emphasized = connected,
                 onClick = { uiEvents(HomeEvents.OpenTerminal) }
@@ -70,9 +81,9 @@ internal fun Workspace(
             WorkspaceTile(
                 modifier = Modifier.weight(1f),
                 glyph = "/·/",
-                title = R.string.home_explorer,
-                sub = if (connected) R.string.home_sub_device_files
-                else R.string.home_needs_device,
+                title = Res.string.home_explorer,
+                sub = if (connected) Res.string.home_sub_device_files
+                else Res.string.home_needs_device,
                 enabled = connected,
                 onClick = { uiEvents(HomeEvents.OpenExplorer) }
             )
@@ -81,17 +92,17 @@ internal fun Workspace(
             WorkspaceTile(
                 modifier = Modifier.weight(1f),
                 glyph = ".py",
-                title = R.string.home_editor,
-                sub = if (connected) R.string.home_sub_editor_open
-                else R.string.home_sub_local_files,
+                title = Res.string.home_editor,
+                sub = if (connected) Res.string.home_sub_editor_open
+                else Res.string.home_sub_local_files,
                 enabled = true,
                 onClick = { uiEvents(HomeEvents.OpenEditor) }
             )
             WorkspaceTile(
                 modifier = Modifier.weight(1f),
                 glyph = "{ }",
-                title = R.string.home_scripts,
-                sub = R.string.home_sub_scripts,
+                title = Res.string.home_scripts,
+                sub = Res.string.home_sub_scripts,
                 enabled = true,
                 onClick = { uiEvents(HomeEvents.OpenScripts) }
             )
@@ -102,8 +113,8 @@ internal fun Workspace(
 @Composable
 private fun RowScope.WorkspaceTile(
     glyph: String,
-    @StringRes title: Int,
-    @StringRes sub: Int,
+    title: StringResource,
+    sub: StringResource,
     enabled: Boolean,
     modifier: Modifier = Modifier,
     emphasized: Boolean = false,

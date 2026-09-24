@@ -3,11 +3,13 @@ package micro.repl.ma7moud3ly.feature.terminal
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.res.stringResource
-import micro.repl.ma7moud3ly.R
-import micro.repl.ma7moud3ly.ui.components.asSuccessMessage
+import micro.repl.ma7moud3ly.shared.resources.Res
+import micro.repl.ma7moud3ly.shared.resources.terminal_soft_reset_msg
+import micro.repl.ma7moud3ly.shared.resources.terminal_terminate_msg
 import micro.repl.ma7moud3ly.ui.components.MessageToast
+import micro.repl.ma7moud3ly.ui.components.asSuccessMessage
 import micro.repl.ma7moud3ly.ui.components.rememberMessageState
+import org.jetbrains.compose.resources.getString
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -16,15 +18,15 @@ fun TerminalScreen(
     onBack: () -> Unit
 ) {
     val messageToast = rememberMessageState()
-    val terminateMessage = stringResource(R.string.terminal_terminate_msg)
-    val softResetMessage = stringResource(R.string.terminal_soft_reset_msg)
 
     LaunchedEffect(Unit) {
         viewModel.commands.collect { command ->
-            val text = when (command) {
-                TerminalCommand.Terminated -> terminateMessage
-                TerminalCommand.SoftReset -> softResetMessage
-            }
+            val text = getString(
+                when (command) {
+                    TerminalCommand.Terminated -> Res.string.terminal_terminate_msg
+                    TerminalCommand.SoftReset -> Res.string.terminal_soft_reset_msg
+                }
+            )
             messageToast.show(text.asSuccessMessage)
         }
     }

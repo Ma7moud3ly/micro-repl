@@ -23,19 +23,25 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import micro.repl.ma7moud3ly.R
 import micro.repl.ma7moud3ly.model.MicroDevice
 import micro.repl.ma7moud3ly.model.MicroDeviceDetails
+import micro.repl.ma7moud3ly.shared.resources.Res
+import micro.repl.ma7moud3ly.shared.resources.home_change_device
+import micro.repl.ma7moud3ly.shared.resources.home_device_manufacturer
+import micro.repl.ma7moud3ly.shared.resources.home_device_product_id
+import micro.repl.ma7moud3ly.shared.resources.home_device_product_name
+import micro.repl.ma7moud3ly.shared.resources.home_device_vendor_id
+import micro.repl.ma7moud3ly.shared.resources.home_disconnect
 import micro.repl.ma7moud3ly.ui.components.MyDialog
 import micro.repl.ma7moud3ly.ui.components.MyDialogState
 import micro.repl.ma7moud3ly.ui.components.rememberMyDialogState
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
+import org.jetbrains.compose.resources.stringResource
 
 private val previewDetails = MicroDeviceDetails(
     productId = "0005",
@@ -97,10 +103,10 @@ private fun DeviceDetailsContent(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        DetailRow(stringResource(R.string.home_device_product_name), details.productName)
-        DetailRow(stringResource(R.string.home_device_manufacturer), details.manufacturerName)
-        DetailRow(stringResource(R.string.home_device_vendor_id), details.vendorId)
-        DetailRow(stringResource(R.string.home_device_product_id), details.productId)
+        DetailRow(stringResource(Res.string.home_device_product_name), details.productName)
+        DetailRow(stringResource(Res.string.home_device_manufacturer), details.manufacturerName)
+        DetailRow(stringResource(Res.string.home_device_vendor_id), details.vendorId)
+        DetailRow(stringResource(Res.string.home_device_product_id), details.productId)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(
                 onClick = onDisconnect,
@@ -112,7 +118,7 @@ private fun DeviceDetailsContent(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = stringResource(R.string.home_disconnect),
+                    text = stringResource(Res.string.home_disconnect),
                     style = MaterialTheme.typography.labelMedium
                 )
             }
@@ -125,7 +131,7 @@ private fun DeviceDetailsContent(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = stringResource(R.string.home_change_device),
+                    text = stringResource(Res.string.home_change_device),
                     style = MaterialTheme.typography.labelMedium
                 )
             }

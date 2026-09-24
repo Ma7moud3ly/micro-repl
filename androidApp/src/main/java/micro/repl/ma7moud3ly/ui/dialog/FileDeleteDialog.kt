@@ -1,13 +1,14 @@
 package micro.repl.ma7moud3ly.ui.dialog
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import micro.repl.ma7moud3ly.R
+import micro.repl.ma7moud3ly.shared.resources.Res
+import micro.repl.ma7moud3ly.shared.resources.editor_msg_delete
 import micro.repl.ma7moud3ly.ui.components.MyDialog
 import micro.repl.ma7moud3ly.ui.components.MyDialogState
 import micro.repl.ma7moud3ly.ui.components.rememberMyDialogState
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
+import org.jetbrains.compose.resources.stringResource
 
 @Preview
 @Composable
@@ -39,7 +40,7 @@ fun FileDeleteDialog(
 ) {
     MyDialog(state) {
         ApproveDialogContent(
-            message = stringResource(R.string.editor_msg_delete, name()),
+            message = stringResource(Res.string.editor_msg_delete, name()),
             onOk = {
                 state.dismiss()
                 onOk()
