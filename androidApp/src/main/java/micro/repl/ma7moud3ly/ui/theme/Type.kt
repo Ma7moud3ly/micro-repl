@@ -8,28 +8,38 @@
 package micro.repl.ma7moud3ly.ui.theme
 
 import androidx.compose.material3.Typography
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import micro.repl.ma7moud3ly.R
-
-val fontConsolas = FontFamily(
-    Font(R.font.consolas, FontWeight.Normal),
-    Font(R.font.consolas_bold, FontWeight.Bold)
-)
-
-val font04b03 = FontFamily(
-    Font(R.font.f04b03, FontWeight.Normal),
-)
+import micro.repl.ma7moud3ly.shared.resources.Res
+import micro.repl.ma7moud3ly.shared.resources.consolas
+import micro.repl.ma7moud3ly.shared.resources.consolas_bold
+import micro.repl.ma7moud3ly.shared.resources.f04b03
+import micro.repl.ma7moud3ly.shared.resources.roboto
+import micro.repl.ma7moud3ly.shared.resources.roboto_bold
+import micro.repl.ma7moud3ly.shared.resources.roboto_medium
+import org.jetbrains.compose.resources.Font
 
 
-private val fontRoboto = FontFamily(
-    Font(R.font.roboto, FontWeight.Normal),
-    Font(R.font.roboto_medium, FontWeight.Medium),
-    Font(R.font.roboto_bold, FontWeight.Bold)
-)
+val fontConsolas: FontFamily
+    @Composable get() = FontFamily(
+        Font(Res.font.consolas, FontWeight.Normal),
+        Font(Res.font.consolas_bold, FontWeight.Bold)
+    )
+
+val font04b03: FontFamily
+    @Composable get() = FontFamily(
+        Font(Res.font.f04b03, FontWeight.Normal)
+    )
+
+private val fontRoboto: FontFamily
+    @Composable get() = FontFamily(
+        Font(Res.font.roboto, FontWeight.Normal),
+        Font(Res.font.roboto_medium, FontWeight.Medium),
+        Font(Res.font.roboto_bold, FontWeight.Bold)
+    )
 private val labelLarge = TextStyle(
     fontWeight = FontWeight.Medium,
     fontSize = 14.sp,
@@ -74,13 +84,17 @@ private val bodySmall = bodyLarge.copy(
 )
 
 // Set of Material typography styles to start with
-val Typography = Typography(
-    bodyLarge = bodyLarge.copy(fontFamily = fontRoboto),
-    bodyMedium = bodyMedium.copy(fontFamily = fontRoboto),
-    bodySmall = bodySmall.copy(fontFamily = fontRoboto),
-    titleLarge = titleLarge.copy(fontFamily = fontRoboto),
-    titleMedium = titleMedium.copy(fontFamily = fontRoboto),
-    titleSmall = titleSmall.copy(fontFamily = fontRoboto),
-    labelSmall = labelSmall.copy(fontFamily = fontRoboto),
-    labelMedium = labelMedium.copy(fontFamily = fontRoboto)
-)
+val appTypography: Typography
+    @Composable get() {
+        val font = fontRoboto
+        return Typography(
+            bodyLarge = bodyLarge.copy(fontFamily = font),
+            bodyMedium = bodyMedium.copy(fontFamily = font),
+            bodySmall = bodySmall.copy(fontFamily = font),
+            titleLarge = titleLarge.copy(fontFamily = font),
+            titleMedium = titleMedium.copy(fontFamily = font),
+            titleSmall = titleSmall.copy(fontFamily = font),
+            labelSmall = labelSmall.copy(fontFamily = font),
+            labelMedium = labelMedium.copy(fontFamily = font)
+        )
+    }

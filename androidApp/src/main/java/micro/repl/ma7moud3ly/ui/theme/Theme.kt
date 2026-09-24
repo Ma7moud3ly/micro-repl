@@ -81,7 +81,7 @@ fun AppTheme(
     CompositionLocalProvider(LocalStatusColors provides statusColors) {
         MaterialTheme(
             colorScheme = colorScheme,
-            typography = Typography,
+            typography = appTypography,
             content = content
         )
     }
