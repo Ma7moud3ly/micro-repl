@@ -7,7 +7,7 @@
 
 package micro.repl.ma7moud3ly.feature.editor
 
-import androidx.activity.compose.BackHandler
+import micro.repl.ma7moud3ly.platform.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
