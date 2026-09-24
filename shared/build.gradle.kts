@@ -95,6 +95,9 @@ kotlin {
 
             // the file picker
             implementation(libs.filekit.dialogs.compose)
+
+            // settings storage
+            implementation(libs.settings.noArg)
         }
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
