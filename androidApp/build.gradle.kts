@@ -3,7 +3,7 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.kotlinSerialization)
+    // rewrites the `modules(AppModule::class)` call in AndroidApp
     alias(libs.plugins.koinCompiler)
 }
 
@@ -30,14 +30,14 @@ println("releaseSigning = ${releaseSigning?.storeFile?.path}")
 val javaVersion = libs.versions.java.version.get()
 
 android {
-    namespace = "micro.repl.ma7moud3ly"
-    compileSdk = 37
+    namespace = libs.versions.project.packageName.get()
+    compileSdk = libs.versions.android.compileSdk.get().toInt()
     defaultConfig {
-        applicationId = "micro.repl.ma7moud3ly"
-        minSdk = 24
-        targetSdk = 37
-        versionCode = 18
-        versionName = "3.1"
+        applicationId = libs.versions.project.packageName.get()
+        minSdk = libs.versions.android.minSdk.get().toInt()
+        targetSdk = libs.versions.android.targetSdk.get().toInt()
+        versionCode = libs.versions.project.versionCode.get().toInt()
+        versionName = libs.versions.project.versionName.get()
         multiDexEnabled = true
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -126,64 +126,26 @@ dependencies {
 
     implementation(project(":shared"))
 
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.lifecycle.viewmodel.ktx)
-    implementation(libs.kotlinx.json)
-
     /**
-     * Koin - dependency injection
+     * Koin - starts the graph
      */
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.core)
     implementation(libs.koin.android)
-    implementation(libs.koin.compose)
-    implementation(libs.koin.androidx.compose)
-    implementation(libs.koin.compose.viewmodel)
-    implementation(libs.koin.annotations)
-    coreLibraryDesugaring(libs.desugar.jdk.libs)
 
     /**
      * Firebase
      */
-
     "gmsImplementation"(platform(libs.firebase.bom))
     "gmsImplementation"(libs.firebase.crashlytics.ktx)
     "gmsImplementation"(libs.firebase.analytics.ktx)
 
-    /**
-     * Serial communication
-     */
-    implementation(libs.usb.serial.forandroid)
-
-    /**
-     * Nemo Code Editor - https://github.com/Ma7moud3ly/nemo-editor
-     */
-    implementation(libs.nemo.editor)
-
-    /**
-     * FileKit - https://github.com/vinceglb/filekit
-     */
-    implementation(libs.filekit.dialogs.compose)
-
-    /**
-     * Compose Dependencies
-     */
-    implementation(platform(libs.androidx.compose.bom))
-
     implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.navigation3.runtime)
-    implementation(libs.androidx.navigation3.ui)
-    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
-    implementation(libs.androidx.ui.tooling.preview)
-    debugImplementation(libs.androidx.ui.tooling)
-    implementation(libs.androidx.material3)
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.testExt.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    debugImplementation(libs.androidx.ui.test.manifest)
 }
 
 

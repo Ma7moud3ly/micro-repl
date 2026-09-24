@@ -1,7 +1,7 @@
 [versions]
 #project
 project-packageName = "micro.repl.ma7moud3ly"
-project-versionCode = "4"
+project-versionCode = "19"
 project-versionName = "4.0.0"
 java-version = "17"
 android-compileSdk = "37"
@@ -34,7 +34,8 @@ androidx-core = "1.19.1"
 androidx-espresso = "3.7.0"
 androidx-lifecycle = "2.11.0"
 androidx-material3 = "1.4.0"
-androidx-navigation3 = "1.2.0-rc01"
+androidx-navigation3 = "1.2.0-beta01"
+jbNavigation3 = "1.2.0-beta01"
 androidx-testExt = "1.3.0"
 desugarJdk = "2.1.5"
 firebaseBom = "34.19.0"
@@ -69,6 +70,7 @@ settings-noArg = { module = "com.russhwolf:multiplatform-settings-no-arg", versi
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 okio-fakefilesystem = { module = "com.squareup.okio:okio-fakefilesystem", version.ref = "okio" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 
 # test
 junit = { module = "junit:junit", version.ref = "junit" }
@@ -93,8 +95,9 @@ androidx-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref =
 androidx-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "androidx-composeUi" }
 androidx-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "androidx-navigation3" }
-androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "androidx-navigation3" }
-androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "androidx-lifecycle" }
+# the JetBrains port - androidx's navigation3-ui has no wasm/desktop variant
+navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "jbNavigation3" }
+lifecycle-viewmodel-navigation3 = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "androidx-lifecycle" }
 koin-android = { module = "io.insert-koin:koin-android" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose" }
 nemo-editor = { module = "io.github.ma7moud3ly:nemo-editor", version.ref = "nemoEditor" }
