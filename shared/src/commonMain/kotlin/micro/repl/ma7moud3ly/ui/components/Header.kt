@@ -11,7 +11,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -146,9 +147,13 @@ fun ActionButton(
         shape = RoundedCornerShape(10.dp),
         color = background,
         border = border,
-        modifier = modifier.height(height)
+        // a minimum rather than a fixed height, so the button grows with its label
+        modifier = modifier.heightIn(min = height)
     ) {
-        Box(contentAlignment = Alignment.Center) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 4.dp)
+        ) {
             Text(
                 text = stringResource(text),
                 fontSize = 12.sp,

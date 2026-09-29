@@ -42,11 +42,18 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isShiftPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Devices.DESKTOP
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -68,6 +75,7 @@ import micro.repl.ma7moud3ly.shared.resources.terminal_terminate
 import micro.repl.ma7moud3ly.shared.resources.this_device
 import micro.repl.ma7moud3ly.ui.components.ActionButton
 import micro.repl.ma7moud3ly.ui.components.BackButton
+import micro.repl.ma7moud3ly.ui.components.isCompactDevice
 import micro.repl.ma7moud3ly.ui.components.MyScreen
 import micro.repl.ma7moud3ly.ui.components.SegmentIcon
 import micro.repl.ma7moud3ly.ui.components.SegmentLabel
@@ -95,6 +103,20 @@ private fun TerminalScreenPreview() {
 @Preview
 @Composable
 private fun TerminalScreenPreviewDark() {
+    AppTheme(darkTheme = true) {
+        TerminalScreenContent(
+            microScript = { MicroScript(path = "/") },
+            terminalOutput = { "Hello World" },
+            terminalInput = { "" },
+            onInputChanges = {},
+            uiEvents = {}
+        )
+    }
+}
+
+@Preview(device = DESKTOP, widthDp = 1024)
+@Composable
+private fun TerminalScreenPreviewDarkDesktop() {
     AppTheme(darkTheme = true) {
         TerminalScreenContent(
             microScript = { MicroScript(path = "/") },
@@ -158,6 +180,7 @@ private fun TerminalOutput(
     }
     Column(
         modifier = modifier
+            .fillMaxWidth()
             .verticalScroll(scrollState)
             .padding(horizontal = 8.dp)
     ) {
@@ -208,6 +231,14 @@ private fun TerminalInputFiled(
             modifier = Modifier
                 .weight(1f)
                 .wrapContentHeight()
+                // a physical keyboard sends on Enter, and breaks a line on shift+Enter
+                .onPreviewKeyEvent { event ->
+                    val send = event.type == KeyEventType.KeyDown &&
+                            event.key == Key.Enter &&
+                            event.isShiftPressed.not()
+                    if (send) onKeyboardSend()
+                    send
+                }
                 .background(
                     color = if (multiLine()) MaterialTheme.colorScheme
                         .primary.copy(alpha = 0.1f)
@@ -259,7 +290,7 @@ private fun Header(
     uiEvents: (TerminalEvents) -> Unit
 ) {
     Surface(color = MaterialTheme.colorScheme.surface) {
-        Column(Modifier.statusBarsPadding()) {
+        Column(modifier = Modifier.statusBarsPadding()) {
             TerminalAppBar(
                 microScript = microScript,
                 onZoomIn = onZoomIn,
@@ -267,8 +298,16 @@ private fun Header(
                 uiEvents = uiEvents
             )
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-            TerminalActions(uiEvents = uiEvents)
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            if (isCompactDevice()) {
+                TerminalActions(
+                    uiEvents = uiEvents,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    fillWidth = true
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            }
         }
     }
 }
@@ -278,7 +317,7 @@ private fun TerminalAppBar(
     microScript: () -> MicroScript,
     onZoomIn: () -> Unit,
     onZoomOut: () -> Unit,
-    uiEvents: (TerminalEvents) -> Unit
+    uiEvents: (TerminalEvents) -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -298,6 +337,10 @@ private fun TerminalAppBar(
             )
         }
         Spacer(Modifier.width(8.dp))
+        if(isCompactDevice().not()){
+            TerminalActions(uiEvents)
+            Spacer(Modifier.width(12.dp))
+        }
         Row(
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -369,33 +412,37 @@ private fun ScriptTitle(
 
 /** Run / Reset / Clear / Terminate. */
 @Composable
-private fun TerminalActions(uiEvents: (TerminalEvents) -> Unit) {
+private fun TerminalActions(
+    uiEvents: (TerminalEvents) -> Unit,
+    modifier: Modifier = Modifier,
+    fillWidth: Boolean = false
+) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+        modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(7.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // the buttons share a row of their own, and size to their text beside the title
+        val button = if (fillWidth) Modifier.weight(1f) else Modifier
         ActionButton(
             text = Res.string.terminal_run,
-            modifier = Modifier.weight(1f),
+            modifier = button,
             filled = true,
             onClick = { uiEvents(TerminalEvents.Run) }
         )
         ActionButton(
             text = Res.string.terminal_reset,
-            modifier = Modifier.weight(1f),
+            modifier = button,
             onClick = { uiEvents(TerminalEvents.SoftReset) }
         )
         ActionButton(
             text = Res.string.terminal_clear,
-            modifier = Modifier.weight(1f),
+            modifier = button,
             onClick = { uiEvents(TerminalEvents.Clear) }
         )
         ActionButton(
             text = Res.string.terminal_terminate,
-            modifier = Modifier.weight(1f),
+            modifier = button,
             danger = true,
             onClick = { uiEvents(TerminalEvents.Terminate) }
         )
