@@ -27,6 +27,22 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = libs.versions.project.packageName.get()
             packageVersion = libs.versions.project.versionName.get()
+
+            vendor = libs.versions.project.vendor.get()
+
+            // jpackage takes a different image format on each platform
+            val icons = rootProject.file("shared/src/commonMain/composeResources/drawable")
+            windows {
+                iconFile.set(icons.resolve("icon.ico"))
+                shortcut = true
+            }
+            linux {
+                iconFile.set(icons.resolve("logo.png"))
+                shortcut = true
+            }
+            macOS {
+                iconFile.set(icons.resolve("icon.icon"))
+            }
         }
     }
 }
