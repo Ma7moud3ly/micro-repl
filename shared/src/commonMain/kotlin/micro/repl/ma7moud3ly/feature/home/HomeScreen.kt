@@ -41,7 +41,7 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         viewModel.commands.collect { command ->
             when (command) {
-                HomeCommand.ScriptOpened -> openEditor()
+                HomeCommand.FileOpened -> openEditor()
                 else -> command.message?.let {
                     messageToast.show(getString(it).asSuccessMessage)
                 }
@@ -68,7 +68,7 @@ fun HomeScreen(
 
                 is HomeEvents.OpenExplorer -> openExplorer()
                 is HomeEvents.OpenScripts -> openScripts()
-                is HomeEvents.OpenScriptFile -> viewModel.openScriptFile()
+                is HomeEvents.OpenFile -> viewModel.openFile()
                 is HomeEvents.Reset -> viewModel.reset()
                 is HomeEvents.SoftReset -> viewModel.softReset()
                 is HomeEvents.Terminate -> viewModel.terminate()
@@ -89,5 +89,5 @@ private val HomeCommand.message: StringResource?
         HomeCommand.DeviceReset -> Res.string.terminal_reset_msg
         HomeCommand.DeviceSoftReset -> Res.string.terminal_soft_reset_msg
         HomeCommand.ExecutionTerminated -> Res.string.terminal_terminate_msg
-        HomeCommand.ScriptOpened -> null
+        HomeCommand.FileOpened -> null
     }

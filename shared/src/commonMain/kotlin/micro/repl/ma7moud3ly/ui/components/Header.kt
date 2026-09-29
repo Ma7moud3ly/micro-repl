@@ -43,7 +43,7 @@ fun BackButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
     Box(
         modifier = modifier
             .offset(x = (-4).dp)
-            .size(26.dp)
+            .size(26.dp.scaled)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
@@ -73,7 +73,7 @@ fun BarToggle(
     ) {
         Box(
             modifier = Modifier
-                .size(width = cellWidth, height = cellHeight)
+                .size(width = cellWidth.scaled, height = cellHeight.scaled)
                 .background(
                     if (selected) MaterialTheme.colorScheme.surfaceVariant
                     else Color.Transparent
@@ -86,7 +86,7 @@ fun BarToggle(
                 contentDescription = null,
                 tint = if (selected) MaterialTheme.colorScheme.onSurface
                 else MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(14.dp)
+                modifier = Modifier.size(14.dp.scaled)
             )
         }
     }
@@ -106,7 +106,7 @@ fun ThemeButton(
     ) {
         Box(
             modifier = Modifier
-                .size(width = cellWidth, height = cellHeight)
+                .size(width = cellWidth.scaled, height = cellHeight.scaled)
                 .clickable(onClick = onClick),
             contentAlignment = Alignment.Center
         ) {
@@ -114,7 +114,7 @@ fun ThemeButton(
                 painter = painterResource(Res.drawable.theme),
                 contentDescription = stringResource(Res.string.home_theme),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(15.dp)
+                modifier = Modifier.size(15.dp.scaled)
             )
         }
     }
@@ -147,7 +147,6 @@ fun ActionButton(
         shape = RoundedCornerShape(10.dp),
         color = background,
         border = border,
-        // a minimum rather than a fixed height, so the button grows with its label
         modifier = modifier.heightIn(min = height)
     ) {
         Box(

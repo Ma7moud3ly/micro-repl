@@ -72,7 +72,6 @@ import micro.repl.ma7moud3ly.shared.resources.terminal_new_line
 import micro.repl.ma7moud3ly.shared.resources.terminal_reset
 import micro.repl.ma7moud3ly.shared.resources.terminal_run
 import micro.repl.ma7moud3ly.shared.resources.terminal_terminate
-import micro.repl.ma7moud3ly.shared.resources.this_device
 import micro.repl.ma7moud3ly.ui.components.ActionButton
 import micro.repl.ma7moud3ly.ui.components.BackButton
 import micro.repl.ma7moud3ly.ui.components.isCompactDevice
@@ -80,6 +79,7 @@ import micro.repl.ma7moud3ly.ui.components.MyScreen
 import micro.repl.ma7moud3ly.ui.components.SegmentIcon
 import micro.repl.ma7moud3ly.ui.components.SegmentLabel
 import micro.repl.ma7moud3ly.ui.components.SegmentPair
+import micro.repl.ma7moud3ly.ui.components.scaled
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
 import org.jetbrains.compose.resources.painterResource
@@ -270,7 +270,7 @@ private fun TerminalInputFiled(
             ),
             contentDescription = stringResource(Res.string.terminal_new_line),
             modifier = Modifier
-                .size(20.dp)
+                .size(20.dp.scaled)
                 .clickable {
                     if (multiLine()) {
                         onKeyboardSend()
@@ -385,17 +385,16 @@ private fun ScriptTitle(
         horizontalArrangement = Arrangement.spacedBy(2.dp),
         verticalAlignment = Alignment.Bottom
     ) {
-        Text(
-            text = stringResource(
-                if (script.isLocal) Res.string.this_device
-                else Res.string.micro_python
-            ),
-            fontFamily = fontConsolas,
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 1
-        )
+        if (script.isLocal.not()) {
+            Text(
+                text = stringResource(Res.string.micro_python),
+                fontFamily = fontConsolas,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1
+            )
+        }
         Text(
             text = script.displayName,
             fontFamily = fontConsolas,

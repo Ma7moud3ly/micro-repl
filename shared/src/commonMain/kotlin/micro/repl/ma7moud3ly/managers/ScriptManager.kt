@@ -9,6 +9,7 @@ package micro.repl.ma7moud3ly.managers
 
 import micro.repl.ma7moud3ly.platform.LocalFilesManager
 import micro.repl.ma7moud3ly.model.MicroScript
+import micro.repl.ma7moud3ly.platform.AppLog
 import micro.repl.ma7moud3ly.platform.ScriptPicker
 import org.koin.core.annotation.Single
 
@@ -36,6 +37,7 @@ class ScriptManager(
     fun open(script: MicroScript, blank: Boolean = false) {
         this.script = script
         this.blank = blank
+        AppLog.v(TAG, script.path)
     }
 
     /**
@@ -70,7 +72,11 @@ class ScriptManager(
     /**
      * Show script save as dialog
      */
-    suspend fun save(script: MicroScript): Boolean {
+    suspend fun save(script: MicroScript): MicroScript? {
         return scriptPicker.save(script)
+    }
+
+    companion object {
+        private const val TAG = "ScriptManager"
     }
 }

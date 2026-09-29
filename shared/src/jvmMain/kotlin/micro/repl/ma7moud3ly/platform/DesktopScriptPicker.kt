@@ -31,7 +31,8 @@ class DesktopScriptPicker : ScriptPicker {
             val script = MicroScript(
                 path = file.absolutePath(),
                 content = file.readString(),
-                editorMode = EditorMode.LOCAL
+                editorMode = EditorMode.LOCAL,
+                initialName = file.name
             )
             openedFile = file
             script
@@ -41,19 +42,22 @@ class DesktopScriptPicker : ScriptPicker {
         }
     }
 
-    override suspend fun save(script: MicroScript): Boolean {
-        val file = openedFile ?: FileKit.openFileSaver(
-            suggestedName = script.name.ifEmpty { "main" },
-            defaultExtension = "py",
-            directory = null
-        ) ?: return false
+    override suspend fun save(script: MicroScript): MicroScript? {
+        // only the file this script came from is written without asking
+        val file = openedFile?.takeIf { it.absolutePath() == script.path }
+            ?: FileKit.openFileSaver(
+                suggestedName = script.nameWithoutExt.ifEmpty { "main" },
+                defaultExtension = "py",
+                directory = null
+            )
+            ?: return null
         return try {
             file.writeString(script.content)
             openedFile = file
-            true
+            script.copy(path = file.absolutePath(), initialName = file.name)
         } catch (e: Exception) {
             AppLog.e(TAG, "save - cannot write ${file.name}", e)
-            false
+            null
         }
     }
 }

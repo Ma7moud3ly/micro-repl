@@ -95,7 +95,7 @@ internal fun Workspace(
                 title = Res.string.home_open,
                 sub = Res.string.home_sub_open,
                 enabled = true,
-                event = HomeEvents.OpenScriptFile
+                event = HomeEvents.OpenFile
             )
         )
         // local scripts live on the device's own storage

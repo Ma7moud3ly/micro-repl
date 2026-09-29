@@ -274,9 +274,14 @@ class EditorManager(
         if (script.isLocal) {
             // the scripts folder first, then the platform's own save dialog for a
             // file that came from outside it
-            val saved = localFilesManager.write(script.path, codeState.code)
-                    || scriptManager.save(session.asMicroScript)
-            if (saved) session.markSaved()
+            if (localFilesManager.write(script.path, codeState.code)) {
+                session.markSaved()
+            } else {
+                val saved = scriptManager.save(session.asMicroScript) ?: return
+                // the dialog decides the location, so the session follows it there
+                session.moveTo(saved.path, saved.name)
+                session.markSaved()
+            }
         } else {
             remoteFilesManager.write(path = script.path, content = codeState.code)
             session.markSaved()
@@ -288,8 +293,8 @@ class EditorManager(
      */
     private suspend fun saveFileAs(name: String) {
         val directory = localFilesManager.scriptDirectory()
-        if (directory.isEmpty()) return
-        session.moveTo("$directory/$name")
+        // without a scripts folder the name is only what the save dialog suggests
+        session.moveTo(if (directory.isEmpty()) name else "$directory/$name")
         AppLog.v(TAG, "saveFileAs - ${script.path}")
         save()
     }

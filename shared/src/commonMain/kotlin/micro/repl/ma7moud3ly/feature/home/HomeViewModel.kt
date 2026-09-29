@@ -44,13 +44,13 @@ class HomeViewModel(
     /**
      * Shows the file picker and hands what was chosen to the editor.
      *
-     * Reports [HomeCommand.ScriptOpened] once a script is ready, and nothing when
+     * Reports [HomeCommand.FileOpened] once a script is ready, and nothing when
      * the picker is dismissed.
      */
-    fun openScriptFile() {
+    fun openFile() {
         viewModelScope.launch {
             scriptManager.pickAScript() ?: return@launch
-            _commands.trySend(HomeCommand.ScriptOpened)
+            _commands.trySend(HomeCommand.FileOpened)
         }
     }
 

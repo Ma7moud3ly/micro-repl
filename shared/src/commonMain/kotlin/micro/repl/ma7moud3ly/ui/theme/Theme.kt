@@ -24,6 +24,7 @@ import io.ma7moud3ly.nemo.model.EditorTheme
 import micro.repl.ma7moud3ly.platform.LocalPlatform
 import micro.repl.ma7moud3ly.platform.isMobile
 import micro.repl.ma7moud3ly.platform.rememberWindowManager
+import micro.repl.ma7moud3ly.ui.components.DESKTOP_SCALE
 
 
 /**
@@ -73,8 +74,6 @@ fun EditorTheme.toColorScheme(): ColorScheme {
 }
 
 
-private const val DESKTOP_FONT_SCALE = 1.3f
-
 val LocalEditorTheme = staticCompositionLocalOf { AppThemes.DEFAULT }
 
 @Composable
@@ -98,7 +97,7 @@ fun AppTheme(
     val density = LocalDensity.current
     val scaled = remember(density, platform) {
         if (platform.isMobile) density
-        else Density(density.density, fontScale = density.fontScale * DESKTOP_FONT_SCALE)
+        else Density(density.density, fontScale = density.fontScale * DESKTOP_SCALE)
     }
 
     CompositionLocalProvider(

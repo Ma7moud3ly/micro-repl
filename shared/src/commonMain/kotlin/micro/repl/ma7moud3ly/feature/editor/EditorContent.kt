@@ -46,7 +46,6 @@ import micro.repl.ma7moud3ly.shared.resources.lines
 import micro.repl.ma7moud3ly.shared.resources.micro_python
 import micro.repl.ma7moud3ly.shared.resources.redo
 import micro.repl.ma7moud3ly.shared.resources.terminal_run
-import micro.repl.ma7moud3ly.shared.resources.this_device
 import micro.repl.ma7moud3ly.shared.resources.undo
 import micro.repl.ma7moud3ly.ui.components.ActionButton
 import micro.repl.ma7moud3ly.ui.components.BackButton
@@ -144,13 +143,11 @@ private fun EditorAppBar(
     uiEvents: (EditorEvent) -> Unit
 ) {
     val title by editorManager.title
-    val source = stringResource(
-        when {
-            editorManager.isLocal -> Res.string.this_device
-            editorManager.isMicroPython -> Res.string.micro_python
-            else -> Res.string.circuit_python
-        }
-    )
+    val source = when {
+        editorManager.isLocal -> null
+        editorManager.isMicroPython -> Res.string.micro_python
+        else -> Res.string.circuit_python
+    }?.let { stringResource(it) }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -228,7 +225,7 @@ private fun EditorPrimaryActions(
             if (isDirty) Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .offset(x = (-5).dp, y = (5).dp)
+                    .offset(x = (-5).dp, y = (15).dp)
                     .size(5.dp)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.error)
@@ -282,7 +279,7 @@ private fun EditorViewControls(
 
 @Composable
 private fun ScriptTitle(
-    source: String,
+    source: String?,
     name: String?,
     modifier: Modifier = Modifier
 ) {
@@ -291,14 +288,16 @@ private fun ScriptTitle(
         horizontalArrangement = Arrangement.spacedBy(2.dp),
         verticalAlignment = Alignment.Bottom
     ) {
-        Text(
-            text = source,
-            fontFamily = fontConsolas,
-            fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = FontWeight.SemiBold,
-            maxLines = 1
-        )
+        if (!source.isNullOrEmpty()) {
+            Text(
+                text = source,
+                fontFamily = fontConsolas,
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1
+            )
+        }
         if (!name.isNullOrEmpty()) {
             Text(
                 text = name,

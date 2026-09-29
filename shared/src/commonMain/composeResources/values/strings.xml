@@ -6,7 +6,6 @@
     <string name="dialog_no">No</string>
     <string name="dialog_approve">Yes Approve</string>
 
-    <string name="this_device">My Phone</string>
     <string name="micro_python">MicroPython</string>
     <string name="circuit_python">Circuit Python</string>
 

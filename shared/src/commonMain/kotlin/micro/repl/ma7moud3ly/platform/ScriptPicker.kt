@@ -33,9 +33,10 @@ interface ScriptPicker {
 
     /**
      * Writes [script] back to the file it was opened from, asking for a location
-     * when there is none.
+     * when there is none. [MicroScript.name] is the name the dialog suggests.
      *
-     * @return false if the file could not be written, or the dialog was dismissed.
+     * @return the script as written, its path and name pointing at the file, or
+     * null if the dialog was dismissed or the file could not be written.
      */
-    suspend fun save(script: MicroScript): Boolean
+    suspend fun save(script: MicroScript): MicroScript?
 }

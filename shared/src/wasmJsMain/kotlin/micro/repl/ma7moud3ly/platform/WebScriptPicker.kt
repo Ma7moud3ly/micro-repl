@@ -29,6 +29,7 @@ class WebScriptPicker : ScriptPicker {
         return try {
             MicroScript(
                 path = file.path,
+                initialName = file.name,
                 content = file.readString(),
                 editorMode = EditorMode.LOCAL
             )
@@ -39,14 +40,14 @@ class WebScriptPicker : ScriptPicker {
     }
 
     /** Hands the script to the browser as a download; the original file is untouched. */
-    override suspend fun save(script: MicroScript): Boolean = try {
-        FileKit.download(
-            bytes = script.content.encodeToByteArray(),
-            fileName = script.name.ifEmpty { "main.py" }
-        )
-        true
-    } catch (e: Exception) {
-        AppLog.e(TAG, "save - cannot download ${script.name}", e)
-        false
+    override suspend fun save(script: MicroScript): MicroScript? {
+        val name = script.name.ifEmpty { "main.py" }
+        return try {
+            FileKit.download(bytes = script.content.encodeToByteArray(), fileName = name)
+            script.copy(path = name, initialName = name)
+        } catch (e: Exception) {
+            AppLog.e(TAG, "save - cannot download $name", e)
+            null
+        }
     }
 }
