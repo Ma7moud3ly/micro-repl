@@ -18,7 +18,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -36,7 +35,7 @@ import micro.repl.ma7moud3ly.shared.resources.Res
 import micro.repl.ma7moud3ly.shared.resources.home_connect_device
 import micro.repl.ma7moud3ly.shared.resources.home_no_device
 import micro.repl.ma7moud3ly.shared.resources.home_no_device_msg
-import micro.repl.ma7moud3ly.shared.resources.home_restart
+import micro.repl.ma7moud3ly.ui.components.contentWidth
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import org.jetbrains.compose.resources.stringResource
 
@@ -62,23 +61,17 @@ internal fun SectionDisconnected(
 ) {
     Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .contentWidth()
             .padding(horizontal = 20.dp, vertical = 24.dp),
         verticalArrangement = Arrangement.spacedBy(22.dp)
     ) {
-        EmptyStateCard(
-            onConnect = { uiEvents(HomeEvents.Connect) },
-            onRestart = { uiEvents(HomeEvents.RestartApp) }
-        )
+        EmptyStateCard(onConnect = { uiEvents(HomeEvents.Connect) })
         Workspace(connected = false, uiEvents = uiEvents)
     }
 }
 
 @Composable
-private fun EmptyStateCard(
-    onConnect: () -> Unit,
-    onRestart: () -> Unit
-) {
+private fun EmptyStateCard(onConnect: () -> Unit) {
     val shape = RoundedCornerShape(14.dp)
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -88,7 +81,7 @@ private fun EmptyStateCard(
             .clip(shape)
             .background(MaterialTheme.colorScheme.surfaceVariant)
             .dashedBorder()
-            .padding( 16.dp)
+            .padding(16.dp)
     ) {
         IconBadge(text = ">_", size = 36.dp)
         Text(
@@ -122,21 +115,6 @@ private fun EmptyStateCard(
                 text = stringResource(Res.string.home_connect_device),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold
-            )
-        }
-        OutlinedButton(
-            onClick = onRestart,
-            shape = RoundedCornerShape(10.dp),
-            colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = MaterialTheme.colorScheme.onSurface
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(44.dp)
-        ) {
-            Text(
-                text = stringResource(Res.string.home_restart),
-                fontSize = 14.sp
             )
         }
     }

@@ -1,7 +1,9 @@
 package micro.repl.ma7moud3ly
 
 import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.application
+import androidx.compose.ui.window.rememberWindowState
 import micro.repl.ma7moud3ly.di.AppModule
 import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
@@ -15,6 +17,7 @@ fun main() {
     application {
         Window(
             onCloseRequest = ::exitApplication,
+            state = rememberWindowState(placement = WindowPlacement.Maximized),
             title = "Micro REPL",
         ) {
             MicroReplApp()

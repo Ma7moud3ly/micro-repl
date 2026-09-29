@@ -12,9 +12,6 @@ import androidx.compose.ui.graphics.Color
 
 /**
  * The [WindowManager] for the window this composition is running in.
- *
- * Returns a new one whenever that window changes shape, so [WindowManager.isPortrait]
- * always reports the current orientation.
  */
 @Composable
 expect fun rememberWindowManager(): WindowManager
@@ -28,18 +25,6 @@ expect fun rememberWindowManager(): WindowManager
  * platform owns the decision itself, the setters are no-ops.
  */
 interface WindowManager {
-
-    /** Whether the window is currently taller than it is wide. */
-    val isPortrait: Boolean
-
-    /** Flips portrait to landscape and back. */
-    fun toggleOrientation()
-
-    /** Pins the screen to portrait. */
-    fun forcePortrait()
-
-    /** Rebuilds the UI from scratch, as after a theme or locale change. */
-    fun restart()
 
     /**
      * Paints the platform's own chrome - Android's status and navigation bars.

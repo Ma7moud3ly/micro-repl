@@ -17,8 +17,12 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.graphics.lerp
 import io.ma7moud3ly.nemo.model.EditorTheme
+import micro.repl.ma7moud3ly.platform.LocalPlatform
+import micro.repl.ma7moud3ly.platform.isMobile
 import micro.repl.ma7moud3ly.platform.rememberWindowManager
 
 
@@ -59,7 +63,6 @@ fun EditorTheme.toColorScheme(): ColorScheme {
         surfaceVariant = currentLine,
         onSurfaceVariant = lineNumber,
         outline = selection,
-        // hairlines sit halfway between the surface and a full outline
         outlineVariant = lerp(gutter, selection, 0.5f),
         inverseSurface = foreground,
         inverseOnSurface = gutter,
@@ -70,6 +73,8 @@ fun EditorTheme.toColorScheme(): ColorScheme {
 }
 
 
+private const val DESKTOP_FONT_SCALE = 1.3f
+
 val LocalEditorTheme = staticCompositionLocalOf { AppThemes.DEFAULT }
 
 @Composable
@@ -77,6 +82,7 @@ fun AppTheme(
     theme: EditorTheme,
     content: @Composable () -> Unit
 ) {
+    val platform = LocalPlatform.current
     val colorScheme = remember(theme) { theme.toColorScheme() }
     val statusColors = remember(theme) { theme.toStatusColors() }
     val windowManager = rememberWindowManager()
@@ -89,7 +95,16 @@ fun AppTheme(
         )
     }
 
-    CompositionLocalProvider(LocalStatusColors provides statusColors) {
+    val density = LocalDensity.current
+    val scaled = remember(density, platform) {
+        if (platform.isMobile) density
+        else Density(density.density, fontScale = density.fontScale * DESKTOP_FONT_SCALE)
+    }
+
+    CompositionLocalProvider(
+        LocalStatusColors provides statusColors,
+        LocalDensity provides scaled
+    ) {
         MaterialTheme(
             colorScheme = colorScheme,
             typography = appTypography,

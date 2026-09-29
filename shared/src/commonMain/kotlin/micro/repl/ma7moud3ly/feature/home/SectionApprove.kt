@@ -37,6 +37,7 @@ import micro.repl.ma7moud3ly.shared.resources.home_device_manufacturer
 import micro.repl.ma7moud3ly.shared.resources.home_device_product_id
 import micro.repl.ma7moud3ly.shared.resources.home_device_product_name
 import micro.repl.ma7moud3ly.shared.resources.home_device_vendor_id
+import micro.repl.ma7moud3ly.ui.components.contentWidth
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
 import org.jetbrains.compose.resources.stringResource
@@ -61,7 +62,7 @@ internal fun SectionApprove(
 ) {
     Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .contentWidth()
             .padding(horizontal = 20.dp, vertical = 24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {

@@ -10,14 +10,11 @@ package micro.repl.ma7moud3ly.feature.home
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -27,11 +24,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,6 +52,8 @@ import micro.repl.ma7moud3ly.shared.resources.micro_python
 import micro.repl.ma7moud3ly.shared.resources.python
 import micro.repl.ma7moud3ly.ui.components.MyScreen
 import micro.repl.ma7moud3ly.ui.components.ProgressView
+import micro.repl.ma7moud3ly.ui.components.contentWidth
+import micro.repl.ma7moud3ly.ui.components.isCompactDevice
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.AppThemes
 import micro.repl.ma7moud3ly.ui.theme.LocalEditorTheme
@@ -117,20 +114,19 @@ private fun HomeDisconnectedPreviewLight() {
 @Composable
 internal fun HomeScreenContent(
     connectionStatus: () -> ConnectionStatus,
-    isPortrait: Boolean = true,
     theme: EditorTheme = LocalEditorTheme.current,
     uiEvents: (HomeEvents) -> Unit
 ) {
     MyScreen(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = if (isCompactDevice()) Arrangement.spacedBy(0.dp)
+        else Arrangement.spacedBy(0.dp, Alignment.CenterVertically),
         header = {
-            Column {
-                HomeAppBar(connectionStatus)
-                SectionControl(
-                    isPortrait = isPortrait,
-                    theme = theme,
-                    uiEvents = uiEvents
-                )
-            }
+            HomeAppBar(
+                connectionStatus = connectionStatus,
+                theme = theme,
+                uiEvents = uiEvents
+            )
         },
         footer = { Footer(uiEvents = uiEvents) },
         modifier = Modifier
@@ -156,12 +152,38 @@ internal fun HomeScreenContent(
 
 
 @Composable
-private fun HomeAppBar(connectionStatus: () -> ConnectionStatus) {
-    val status = connectionStatus()
-    Column {
+private fun ThemeBar(
+    theme: EditorTheme,
+    uiEvents: (HomeEvents) -> Unit
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
+                .contentWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            ThemeButton(
+                theme = theme,
+                onClick = { uiEvents(HomeEvents.ShowThemeDialog) }
+            )
+        }
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+    }
+}
+
+@Composable
+private fun HomeAppBar(
+    connectionStatus: () -> ConnectionStatus,
+    theme: EditorTheme,
+    uiEvents: (HomeEvents) -> Unit
+) {
+    val status = connectionStatus()
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Row(
+            modifier = Modifier
+                .contentWidth()
                 .statusBarsPadding()
                 .padding(start = 20.dp, top = 18.dp, end = 20.dp, bottom = 14.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -177,9 +199,26 @@ private fun HomeAppBar(connectionStatus: () -> ConnectionStatus) {
                 )
                 StatusLineView(status)
             }
-            RuntimeBadges(active = status.activeRuntime())
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RuntimeBadges(active = status.activeRuntime())
+                if (isCompactDevice().not()) {
+                    ThemeButton(
+                        theme = theme,
+                        onClick = { uiEvents(HomeEvents.ShowThemeDialog) }
+                    )
+                }
+            }
         }
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        if (isCompactDevice()) {
+            ThemeBar(
+                theme = theme,
+                uiEvents = uiEvents
+            )
+        }
     }
 }
 
@@ -236,36 +275,6 @@ private fun RuntimeLogo(src: DrawableResource, isActive: Boolean) {
  * [theme] defaults to the app-wide theme, so callers don't have to thread it down;
  * previews can still pass one explicitly.
  */
-@Composable
-private fun SectionControl(
-    isPortrait: Boolean,
-    uiEvents: (HomeEvents) -> Unit,
-    theme: EditorTheme = LocalEditorTheme.current
-) {
-    Column {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // theme picker
-            ThemeButton(
-                theme = theme,
-                onClick = { uiEvents(HomeEvents.ShowThemeDialog) }
-            )
-            // orientation: portrait / landscape
-            TwoWaySegment(
-                startSelected = isPortrait,
-                onToggle = { uiEvents(HomeEvents.ToggleOrientation) },
-                start = { selected -> OrientationGlyph(portrait = true, selected = selected) },
-                end = { selected -> OrientationGlyph(portrait = false, selected = selected) }
-            )
-        }
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-    }
-}
 
 /** Shows the active theme's colours and name; opens the theme picker. */
 @Composable
@@ -319,85 +328,15 @@ private fun ThemeDot(color: Color) {
 
 
 @Composable
-private fun TwoWaySegment(
-    startSelected: Boolean,
-    onToggle: () -> Unit,
-    start: @Composable (selected: Boolean) -> Unit,
-    end: @Composable (selected: Boolean) -> Unit
-) {
-    Surface(
-        shape = RoundedCornerShape(9.dp),
-        color = Color.Transparent,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
-    ) {
-        Row(modifier = Modifier.height(28.dp)) {
-            SegmentCell(
-                selected = startSelected,
-                onClick = { if (!startSelected) onToggle() }
-            ) { start(startSelected) }
-            VerticalDivider(
-                modifier = Modifier.height(28.dp),
-                color = MaterialTheme.colorScheme.outline
-            )
-            SegmentCell(
-                selected = !startSelected,
-                onClick = { if (startSelected) onToggle() }
-            ) { end(!startSelected) }
-        }
-    }
-}
-
-@Composable
-private fun SegmentCell(
-    selected: Boolean,
-    onClick: () -> Unit,
-    content: @Composable () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .size(width = 34.dp, height = 28.dp)
-            .background(
-                if (selected) MaterialTheme.colorScheme.surfaceVariant
-                else Color.Transparent
-            )
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center
-    ) { content() }
-}
-
-@Composable
-private fun SegmentIcon(icon: DrawableResource, selected: Boolean) {
-    Icon(
-        painter = painterResource(icon),
-        contentDescription = null,
-        tint = if (selected) MaterialTheme.colorScheme.onSurface
-        else MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.size(15.dp)
-    )
-}
-
-@Composable
-private fun OrientationGlyph(portrait: Boolean, selected: Boolean) {
-    val color = if (selected) MaterialTheme.colorScheme.onSurface
-    else MaterialTheme.colorScheme.onSurfaceVariant
-    Box(
-        modifier = Modifier
-            .size(
-                width = if (portrait) 9.dp else 13.dp,
-                height = if (portrait) 13.dp else 9.dp
-            )
-            .border(1.dp, color, RoundedCornerShape(2.dp))
-    )
-}
-
-
-@Composable
 private fun Footer(uiEvents: (HomeEvents) -> Unit) {
-    Column(modifier = Modifier.navigationBarsPadding()) {
+    Column(
+        modifier = Modifier.navigationBarsPadding(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         Row(
             modifier = Modifier
-                .fillMaxWidth()
+                .contentWidth()
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center

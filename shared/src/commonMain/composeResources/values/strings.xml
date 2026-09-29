@@ -27,9 +27,8 @@
 
     <!-- empty state -->
     <string name="home_no_device">No device connected</string>
-    <string name="home_no_device_msg">Connect your board over USB and tap Connect. If it isn't detected, restart the app.</string>
+    <string name="home_no_device_msg">Connect your board over USB and tap Connect. If it isn't detected, unplug it and plug it back in.</string>
     <string name="home_connect_device">Connect device</string>
-    <string name="home_restart">Restart app</string>
 
     <!-- workspace tiles -->
     <string name="home_workspace">Workspace</string>
