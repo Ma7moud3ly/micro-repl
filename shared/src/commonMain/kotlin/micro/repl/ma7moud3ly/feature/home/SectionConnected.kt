@@ -44,6 +44,7 @@ import micro.repl.ma7moud3ly.shared.resources.terminal_reset
 import micro.repl.ma7moud3ly.shared.resources.terminal_soft_reset
 import micro.repl.ma7moud3ly.shared.resources.terminal_terminate
 import micro.repl.ma7moud3ly.ui.components.rememberMyDialogState
+import micro.repl.ma7moud3ly.ui.components.contentWidth
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.LocalStatusColors
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
@@ -85,7 +86,7 @@ fun SectionConnected(
 ) {
     Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .contentWidth()
             .padding(horizontal = 20.dp, vertical = 24.dp),
         verticalArrangement = Arrangement.spacedBy(22.dp)
     ) {

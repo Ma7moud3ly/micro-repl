@@ -7,10 +7,15 @@
 
 package micro.repl.ma7moud3ly.di
 
+import com.russhwolf.settings.Settings
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Module
+import org.koin.core.annotation.Single
 
 
 @Module
 @ComponentScan("micro.repl.ma7moud3ly")
-class AppModule
+class AppModule{
+    @Single
+    fun provideSettings(): Settings = Settings()
+}

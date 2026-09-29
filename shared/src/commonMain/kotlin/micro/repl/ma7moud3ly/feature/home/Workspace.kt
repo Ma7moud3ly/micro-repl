@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -28,6 +27,8 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import micro.repl.ma7moud3ly.platform.LocalPlatform
+import micro.repl.ma7moud3ly.platform.isMobile
 import micro.repl.ma7moud3ly.shared.resources.Res
 import micro.repl.ma7moud3ly.shared.resources.home_editor
 import micro.repl.ma7moud3ly.shared.resources.home_explorer
@@ -40,6 +41,8 @@ import micro.repl.ma7moud3ly.shared.resources.home_sub_local_files
 import micro.repl.ma7moud3ly.shared.resources.home_sub_scripts
 import micro.repl.ma7moud3ly.shared.resources.home_terminal
 import micro.repl.ma7moud3ly.shared.resources.home_workspace
+import micro.repl.ma7moud3ly.ui.components.contentWidth
+import micro.repl.ma7moud3ly.ui.components.isCompactDevice
 import micro.repl.ma7moud3ly.ui.theme.LocalStatusColors
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
 import org.jetbrains.compose.resources.StringResource
@@ -54,8 +57,55 @@ internal fun Workspace(
     connected: Boolean,
     uiEvents: (HomeEvents) -> Unit
 ) {
+    val platform = LocalPlatform.current
+    val tiles = buildList {
+        add(
+            WorkspaceEntry(
+                glyph = ">_",
+                title = Res.string.home_terminal,
+                sub = if (connected) Res.string.home_sub_live_repl else Res.string.home_needs_device,
+                enabled = connected,
+                emphasized = connected,
+                event = HomeEvents.OpenTerminal
+            )
+        )
+        add(
+            WorkspaceEntry(
+                glyph = "/·/",
+                title = Res.string.home_explorer,
+                sub = if (connected) Res.string.home_sub_device_files else Res.string.home_needs_device,
+                enabled = connected,
+                event = HomeEvents.OpenExplorer
+            )
+        )
+        add(
+            WorkspaceEntry(
+                glyph = ".py",
+                title = Res.string.home_editor,
+                sub = if (connected) Res.string.home_sub_editor_open else Res.string.home_sub_local_files,
+                enabled = true,
+                event = HomeEvents.OpenEditor
+            )
+        )
+        // local scripts live on the device's own storage
+        if (platform.isMobile) {
+            add(
+                WorkspaceEntry(
+                    glyph = "{ }",
+                    title = Res.string.home_scripts,
+                    sub = Res.string.home_sub_scripts,
+                    enabled = true,
+                    event = HomeEvents.OpenScripts
+                )
+            )
+        }
+    }
+
+    // two per row on a phone; one row on anything wider
+    val columns = if (isCompactDevice()) 2 else tiles.size
+
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.contentWidth(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
@@ -67,48 +117,35 @@ internal fun Workspace(
             fontSize = 10.sp,
             color = LocalStatusColors.current.muted
         )
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            WorkspaceTile(
-                modifier = Modifier.weight(1f),
-                glyph = ">_",
-                title = Res.string.home_terminal,
-                sub = if (connected) Res.string.home_sub_live_repl
-                else Res.string.home_needs_device,
-                enabled = connected,
-                emphasized = connected,
-                onClick = { uiEvents(HomeEvents.OpenTerminal) }
-            )
-            WorkspaceTile(
-                modifier = Modifier.weight(1f),
-                glyph = "/·/",
-                title = Res.string.home_explorer,
-                sub = if (connected) Res.string.home_sub_device_files
-                else Res.string.home_needs_device,
-                enabled = connected,
-                onClick = { uiEvents(HomeEvents.OpenExplorer) }
-            )
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            WorkspaceTile(
-                modifier = Modifier.weight(1f),
-                glyph = ".py",
-                title = Res.string.home_editor,
-                sub = if (connected) Res.string.home_sub_editor_open
-                else Res.string.home_sub_local_files,
-                enabled = true,
-                onClick = { uiEvents(HomeEvents.OpenEditor) }
-            )
-            WorkspaceTile(
-                modifier = Modifier.weight(1f),
-                glyph = "{ }",
-                title = Res.string.home_scripts,
-                sub = Res.string.home_sub_scripts,
-                enabled = true,
-                onClick = { uiEvents(HomeEvents.OpenScripts) }
-            )
+        tiles.chunked(columns).forEach { row ->
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                row.forEach { tile ->
+                    WorkspaceTile(
+                        modifier = Modifier.weight(1f),
+                        glyph = tile.glyph,
+                        title = tile.title,
+                        sub = tile.sub,
+                        enabled = tile.enabled,
+                        emphasized = tile.emphasized,
+                        onClick = { uiEvents(tile.event) }
+                    )
+                }
+                // keeps a short last row the same tile width as a full one
+                repeat(columns - row.size) { Spacer(Modifier.weight(1f)) }
+            }
         }
     }
 }
+
+/** One tile on the workspace grid. */
+private data class WorkspaceEntry(
+    val glyph: String,
+    val title: StringResource,
+    val sub: StringResource,
+    val enabled: Boolean,
+    val emphasized: Boolean = false,
+    val event: HomeEvents
+)
 
 @Composable
 private fun RowScope.WorkspaceTile(

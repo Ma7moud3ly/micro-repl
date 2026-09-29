@@ -73,6 +73,7 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation(libs.compose.adaptive)
 
             // navigation
             implementation(libs.androidx.navigation3.runtime)
@@ -95,6 +96,9 @@ kotlin {
 
             // the file picker
             implementation(libs.filekit.dialogs.compose)
+
+            // settings storage
+            implementation(libs.settings.noArg)
         }
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)

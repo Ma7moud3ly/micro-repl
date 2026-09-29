@@ -56,7 +56,6 @@ fun HomeScreen(
     MessageToast(state = messageToast)
 
     HomeScreenContent(
-        isPortrait = windowManager.isPortrait,
         connectionStatus = { status.value },
         uiEvents = {
             when (it) {
@@ -81,8 +80,6 @@ fun HomeScreen(
                 is HomeEvents.ApproveDevice -> viewModel.approveDevice(it.microDevice)
                 is HomeEvents.ForgetDevice -> viewModel.forgetDevice(it.microDevice)
                 is HomeEvents.ShowThemeDialog -> openThemePicker()
-                is HomeEvents.RestartApp -> windowManager.restart()
-                is HomeEvents.ToggleOrientation -> windowManager.toggleOrientation()
             }
         }
     )

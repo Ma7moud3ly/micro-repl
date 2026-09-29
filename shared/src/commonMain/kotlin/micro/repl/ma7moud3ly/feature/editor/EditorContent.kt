@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Devices.DESKTOP
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -53,6 +54,7 @@ import micro.repl.ma7moud3ly.ui.components.MyScreen
 import micro.repl.ma7moud3ly.ui.components.SegmentIcon
 import micro.repl.ma7moud3ly.ui.components.SegmentLabel
 import micro.repl.ma7moud3ly.ui.components.SegmentPair
+import micro.repl.ma7moud3ly.ui.components.isCompactDevice
 import micro.repl.ma7moud3ly.ui.components.ThemeButton
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.AppThemes
@@ -83,6 +85,18 @@ private fun EditorScreenPreviewDark() {
     }
 }
 
+
+@Preview(device = DESKTOP, widthDp = 1024)
+@Composable
+private fun EditorScreenPreviewDarkDesktop() {
+    val editorManager = remember { previewEditorManager(theme = AppThemes.DEFAULT_DARK) }
+    AppTheme(darkTheme = true) {
+        EditorScreenContent(
+            editorManager = editorManager,
+            uiEvents = {}
+        )
+    }
+}
 
 @Composable
 fun EditorScreenContent(
@@ -115,8 +129,10 @@ private fun Header(
         Column(Modifier.statusBarsPadding()) {
             EditorAppBar(editorManager = editorManager, uiEvents = uiEvents)
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-            EditorActions(editorManager = editorManager, uiEvents = uiEvents)
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            if (isCompactDevice()) {
+                EditorActions(editorManager = editorManager, uiEvents = uiEvents)
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            }
         }
     }
 }
@@ -147,6 +163,11 @@ private fun EditorAppBar(
             name = title,
             modifier = Modifier.weight(1f)
         )
+        // a wide window fits the actions beside the title
+        if (isCompactDevice().not()) {
+            EditorPrimaryActions(editorManager = editorManager, uiEvents = uiEvents)
+            EditorViewControls(editorManager = editorManager, uiEvents = uiEvents)
+        }
         ThemeButton(onClick = { uiEvents(EditorEvent.ShowThemeDialog) })
     }
 }
@@ -158,12 +179,6 @@ private fun EditorActions(
     editorManager: EditorManager,
     uiEvents: (EditorEvent) -> Unit
 ) {
-    val canRun = editorManager.canRun
-    val isDirty = editorManager.isDirty
-    val canUndo = editorManager.canUndo
-    val canRedo = editorManager.canRedo
-    val showLines = editorManager.showLines
-
     // Scrolls when the controls don't fit; on wider screens the row is stretched
     // to the viewport so SpaceBetween still pushes the two groups apart.
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
@@ -176,70 +191,87 @@ private fun EditorActions(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(7.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                if (canRun && editorManager.isPython) ActionButton(
-                    text = Res.string.terminal_run,
-                    filled = true,
-                    textModifier = Modifier.padding(horizontal = 14.dp),
-                    onClick = { uiEvents(EditorEvent.Run) }
-                )
-                // A remote script has nowhere to save without the board connected,
-                // so the write would fail silently.
-                if (canRun || editorManager.isLocal) Box {
-                    ActionButton(
-                        text = Res.string.editor_save,
-                        textModifier = Modifier.padding(horizontal = 14.dp),
-                        onClick = { uiEvents(EditorEvent.Save) }
-                    )
-                    if (isDirty) Box(
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .offset(x = (-5).dp, y = (5).dp)
-                            .size(5.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.error)
-                    )
-                }
-                if (editorManager.isLocal) ActionButton(
-                    text = Res.string.editor_new,
-                    textModifier = Modifier.padding(horizontal = 14.dp),
-                    onClick = { uiEvents(EditorEvent.New) }
-                )
-            }
+            EditorPrimaryActions(editorManager = editorManager, uiEvents = uiEvents)
             // keeps the two groups apart once the row overflows and SpaceBetween
             // has no free space left to distribute
             Spacer(Modifier.width(16.dp))
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                SegmentPair(
-                    cellWidth = 28.dp, cellHeight = 24.dp,
-                    onStart = { uiEvents(EditorEvent.Undo) },
-                    onEnd = { uiEvents(EditorEvent.Redo) },
-                    startEnabled = canUndo,
-                    endEnabled = canRedo,
-                    start = { SegmentIcon(Res.drawable.undo, MaterialTheme.colorScheme.onSurface) },
-                    end = { SegmentIcon(Res.drawable.redo, MaterialTheme.colorScheme.onSurface) }
-                )
-                // font size
-                SegmentPair(
-                    cellWidth = 28.dp, cellHeight = 24.dp,
-                    onStart = { uiEvents(EditorEvent.ZoomOut) },
-                    onEnd = { uiEvents(EditorEvent.ZoomIn) },
-                    start = { SegmentLabel("A−", MaterialTheme.colorScheme.onSurface) },
-                    end = { SegmentLabel("A+", MaterialTheme.colorScheme.onSurface) }
-                )
-                BarToggle(
-                    icon = Res.drawable.lines,
-                    selected = showLines,
-                    onClick = { uiEvents(EditorEvent.Lines) }
-                )
-            }
+            EditorViewControls(editorManager = editorManager, uiEvents = uiEvents)
         }
+    }
+}
+
+/** Run, Save and New. */
+@Composable
+private fun EditorPrimaryActions(
+    editorManager: EditorManager,
+    uiEvents: (EditorEvent) -> Unit
+) {
+    val canRun = editorManager.canRun
+    val isDirty = editorManager.isDirty
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(7.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (canRun && editorManager.isPython) ActionButton(
+            text = Res.string.terminal_run,
+            filled = true,
+            onClick = { uiEvents(EditorEvent.Run) }
+        )
+        // A remote script has nowhere to save without the board connected,
+        // so to write would fail silently.
+        if (canRun || editorManager.isLocal) Box {
+            ActionButton(
+                text = Res.string.editor_save,
+                onClick = { uiEvents(EditorEvent.Save) }
+            )
+            if (isDirty) Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .offset(x = (-5).dp, y = (5).dp)
+                    .size(5.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.error)
+            )
+        }
+        if (editorManager.isLocal) ActionButton(
+            text = Res.string.editor_new,
+            onClick = { uiEvents(EditorEvent.New) }
+        )
+    }
+}
+
+/** Undo and redo, font size, line numbers. */
+@Composable
+private fun EditorViewControls(
+    editorManager: EditorManager,
+    uiEvents: (EditorEvent) -> Unit
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        SegmentPair(
+            cellWidth = 28.dp, cellHeight = 24.dp,
+            onStart = { uiEvents(EditorEvent.Undo) },
+            onEnd = { uiEvents(EditorEvent.Redo) },
+            startEnabled = editorManager.canUndo,
+            endEnabled = editorManager.canRedo,
+            start = { SegmentIcon(Res.drawable.undo, MaterialTheme.colorScheme.onSurface) },
+            end = { SegmentIcon(Res.drawable.redo, MaterialTheme.colorScheme.onSurface) }
+        )
+        // font size
+        SegmentPair(
+            cellWidth = 28.dp, cellHeight = 24.dp,
+            onStart = { uiEvents(EditorEvent.ZoomOut) },
+            onEnd = { uiEvents(EditorEvent.ZoomIn) },
+            start = { SegmentLabel("A−", MaterialTheme.colorScheme.onSurface) },
+            end = { SegmentLabel("A+", MaterialTheme.colorScheme.onSurface) }
+        )
+        BarToggle(
+            icon = Res.drawable.lines,
+            selected = editorManager.showLines,
+            onClick = { uiEvents(EditorEvent.Lines) }
+        )
     }
 }
 

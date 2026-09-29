@@ -23,7 +23,7 @@ import micro.repl.ma7moud3ly.managers.RemoteFilesManager
 import micro.repl.ma7moud3ly.managers.ScriptManager
 import micro.repl.ma7moud3ly.managers.ThemesManager
 import micro.repl.ma7moud3ly.platform.LocalFilesManager
-import micro.repl.ma7moud3ly.platform.StorageManager
+import micro.repl.ma7moud3ly.managers.StorageManager
 import micro.repl.ma7moud3ly.feature.editor.model.EditorAction
 import micro.repl.ma7moud3ly.feature.editor.model.EditorCommand
 import micro.repl.ma7moud3ly.model.MicroScript

@@ -26,7 +26,7 @@ fun MyDialog(
     if (show()) BasicAlertDialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(
-            usePlatformDefaultWidth = false,
+            usePlatformDefaultWidth = isCompactDevice().not(),
             dismissOnClickOutside = dismissOnClickOutside
         ),
         modifier = Modifier.fillMaxWidth(0.90f)
@@ -55,7 +55,7 @@ fun MyDialog(
             state?.dismiss()
         },
         properties = DialogProperties(
-            usePlatformDefaultWidth = false,
+            usePlatformDefaultWidth = isCompactDevice().not(),
             dismissOnClickOutside = dismissOnClickOutside
         ),
         modifier = Modifier.fillMaxWidth(0.90f)

@@ -54,8 +54,8 @@ compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.re
 compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMultiplatform" }
 compose-uiTooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "composeMultiplatform" }
 compose-uiToolingPreview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "composeMultiplatform" }
+compose-adaptive = { module = "org.jetbrains.compose.material3.adaptive:adaptive", version.ref = "adaptive" }
 kotlinx-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization-json" }
-material3-adaptive = { module = "org.jetbrains.compose.material3.adaptive:adaptive", version.ref = "adaptive" }
 # koin
 koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koinCore" }
 koin-core = { module = "io.insert-koin:koin-core" }

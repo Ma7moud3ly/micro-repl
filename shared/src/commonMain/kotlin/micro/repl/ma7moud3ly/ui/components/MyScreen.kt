@@ -18,9 +18,10 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun MyScreen(
+    modifier: Modifier = Modifier.padding(16.dp),
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
     spacedBy: Dp = 8.dp,
-    modifier: Modifier = Modifier.padding(16.dp),
+    verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(spacedBy),
     background: Color = MaterialTheme.colorScheme.background,
     header: @Composable () -> Unit = {},
     footer: @Composable () -> Unit = {},
@@ -38,7 +39,7 @@ fun MyScreen(
         ) {
             Column(
                 horizontalAlignment = horizontalAlignment,
-                verticalArrangement = Arrangement.spacedBy(spacedBy),
+                verticalArrangement = verticalArrangement,
                 modifier = Modifier
                     .fillMaxSize()
                     .then(modifier),
