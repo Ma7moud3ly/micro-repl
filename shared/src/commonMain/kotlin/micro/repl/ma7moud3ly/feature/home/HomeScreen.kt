@@ -10,7 +10,6 @@ package micro.repl.ma7moud3ly.feature.home
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import micro.repl.ma7moud3ly.platform.rememberWindowManager
 import micro.repl.ma7moud3ly.shared.resources.Res
 import micro.repl.ma7moud3ly.shared.resources.terminal_reset_msg
 import micro.repl.ma7moud3ly.shared.resources.terminal_soft_reset_msg
@@ -19,6 +18,7 @@ import micro.repl.ma7moud3ly.ui.components.MessageToast
 import micro.repl.ma7moud3ly.ui.components.asSuccessMessage
 import micro.repl.ma7moud3ly.ui.components.rememberMessageState
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.getString
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -35,20 +35,17 @@ fun HomeScreen(
     openScripts: () -> Unit,
     openExplorer: () -> Unit
 ) {
-    val windowManager = rememberWindowManager()
     val status = viewModel.status.collectAsStateWithLifecycle()
     val messageToast = rememberMessageState()
 
     LaunchedEffect(Unit) {
         viewModel.commands.collect { command ->
-            val text = getString(
-                when (command) {
-                    HomeCommand.DeviceReset -> Res.string.terminal_reset_msg
-                    HomeCommand.DeviceSoftReset -> Res.string.terminal_soft_reset_msg
-                    HomeCommand.ExecutionTerminated -> Res.string.terminal_terminate_msg
+            when (command) {
+                HomeCommand.ScriptOpened -> openEditor()
+                else -> command.message?.let {
+                    messageToast.show(getString(it).asSuccessMessage)
                 }
-            )
-            messageToast.show(text.asSuccessMessage)
+            }
         }
     }
 
@@ -71,6 +68,7 @@ fun HomeScreen(
 
                 is HomeEvents.OpenExplorer -> openExplorer()
                 is HomeEvents.OpenScripts -> openScripts()
+                is HomeEvents.OpenScriptFile -> viewModel.openScriptFile()
                 is HomeEvents.Reset -> viewModel.reset()
                 is HomeEvents.SoftReset -> viewModel.softReset()
                 is HomeEvents.Terminate -> viewModel.terminate()
@@ -84,3 +82,12 @@ fun HomeScreen(
         }
     )
 }
+
+/** The toast a command asks to show, or null when it asks for something else. */
+private val HomeCommand.message: StringResource?
+    get() = when (this) {
+        HomeCommand.DeviceReset -> Res.string.terminal_reset_msg
+        HomeCommand.DeviceSoftReset -> Res.string.terminal_soft_reset_msg
+        HomeCommand.ExecutionTerminated -> Res.string.terminal_terminate_msg
+        HomeCommand.ScriptOpened -> null
+    }

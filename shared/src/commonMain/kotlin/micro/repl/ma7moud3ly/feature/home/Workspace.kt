@@ -33,10 +33,12 @@ import micro.repl.ma7moud3ly.shared.resources.Res
 import micro.repl.ma7moud3ly.shared.resources.home_editor
 import micro.repl.ma7moud3ly.shared.resources.home_explorer
 import micro.repl.ma7moud3ly.shared.resources.home_needs_device
+import micro.repl.ma7moud3ly.shared.resources.home_open
 import micro.repl.ma7moud3ly.shared.resources.home_scripts
 import micro.repl.ma7moud3ly.shared.resources.home_sub_device_files
 import micro.repl.ma7moud3ly.shared.resources.home_sub_editor_open
 import micro.repl.ma7moud3ly.shared.resources.home_sub_live_repl
+import micro.repl.ma7moud3ly.shared.resources.home_sub_open
 import micro.repl.ma7moud3ly.shared.resources.home_sub_local_files
 import micro.repl.ma7moud3ly.shared.resources.home_sub_scripts
 import micro.repl.ma7moud3ly.shared.resources.home_terminal
@@ -85,6 +87,15 @@ internal fun Workspace(
                 sub = if (connected) Res.string.home_sub_editor_open else Res.string.home_sub_local_files,
                 enabled = true,
                 event = HomeEvents.OpenEditor
+            )
+        )
+        add(
+            WorkspaceEntry(
+                glyph = "[]",
+                title = Res.string.home_open,
+                sub = Res.string.home_sub_open,
+                enabled = true,
+                event = HomeEvents.OpenScriptFile
             )
         )
         // local scripts live on the device's own storage

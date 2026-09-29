@@ -64,6 +64,14 @@ class EditorSession(
         script = script.copy(path = path)
     }
 
+    /** Replaces the buffer and the file it belongs to, clearing the undo history. */
+    fun openScript(script: MicroScript) {
+        codeState.updateText(script.content)
+        codeState.clearHistory()
+        this.script = script
+        savedContent = script.content
+    }
+
     /** Empties the editor for a new, unnamed script, keeping the current mode. */
     fun reset() {
         codeState.updateText("")

@@ -199,6 +199,7 @@ class EditorManager(
         pendingAction = null
         when (action) {
             EditorAction.NewScript -> reset()
+            EditorAction.OpenScript -> _commands.trySend(EditorCommand.RequestOpen)
             EditorAction.CloseScript -> _commands.trySend(EditorCommand.Close)
             EditorAction.RunScript -> {
                 scriptManager.open(asMicroScript)
@@ -242,6 +243,17 @@ class EditorManager(
         if (isOpen) persistSettings()
     }
 
+    /**
+     * Shows the file picker and loads what was chosen into the editor.
+     *
+     * @return false if the picker was dismissed or the file could not be read.
+     */
+    suspend fun openScriptFile(): Boolean {
+        val script = scriptManager.pickAScript() ?: return false
+        session.openScript(script)
+        return true
+    }
+
     /** Empties the buffer for a new, unnamed script. */
     private fun reset() {
         session.reset()
@@ -260,7 +272,10 @@ class EditorManager(
      */
     private suspend fun save() {
         if (script.isLocal) {
+            // the scripts folder first, then the platform's own save dialog for a
+            // file that came from outside it
             val saved = localFilesManager.write(script.path, codeState.code)
+                    || scriptManager.save(session.asMicroScript)
             if (saved) session.markSaved()
         } else {
             remoteFilesManager.write(path = script.path, content = codeState.code)

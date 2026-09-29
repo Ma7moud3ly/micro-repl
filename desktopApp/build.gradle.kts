@@ -4,7 +4,6 @@ plugins {
     alias(libs.plugins.kotlinJvm)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
-    // rewrites the `modules(AppModule::class)` call in main
     alias(libs.plugins.koinCompiler)
 }
 

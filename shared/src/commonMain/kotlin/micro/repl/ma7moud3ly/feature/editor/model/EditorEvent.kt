@@ -12,6 +12,7 @@ sealed interface EditorEvent {
     data object Undo : EditorEvent
     data object Redo : EditorEvent
     data object New : EditorEvent
+    data object Open : EditorEvent
     data object Save : EditorEvent
     data object Clear : EditorEvent
     data object Lines : EditorEvent

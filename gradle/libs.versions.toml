@@ -1,6 +1,7 @@
 [versions]
 #project
 project-packageName = "micro.repl.ma7moud3ly"
+project-vendor = "github.com/Ma7moud3ly"
 project-versionCode = "19"
 project-versionName = "4.0.0"
 java-version = "17"

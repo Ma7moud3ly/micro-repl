@@ -21,4 +21,7 @@ sealed interface EditorCommand {
 
     /** A plain save finished; nothing is pending. */
     data object Saved : EditorCommand
+
+    /** Show the file picker and load what is chosen. */
+    data object RequestOpen : EditorCommand
 }

@@ -76,6 +76,7 @@ fun EditorScreen(
                 is EditorEvent.Run -> viewModel.onAction(EditorAction.RunScript)
                 is EditorEvent.Save -> viewModel.onAction(EditorAction.SaveScript)
                 is EditorEvent.New -> viewModel.onAction(EditorAction.NewScript)
+                is EditorEvent.Open -> viewModel.onAction(EditorAction.OpenScript)
                 is EditorEvent.Back -> viewModel.onAction(EditorAction.CloseScript)
                 is EditorEvent.Lines -> editorManager.toggleLines()
                 is EditorEvent.Clear -> editorManager.clear()

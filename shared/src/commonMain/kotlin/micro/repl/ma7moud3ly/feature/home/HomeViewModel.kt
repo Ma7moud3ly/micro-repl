@@ -27,7 +27,7 @@ import org.koin.core.annotation.KoinViewModel
 class HomeViewModel(
     private val boardManager: BoardManager,
     private val terminalManager: TerminalManager,
-    private val scriptManager: ScriptManager
+    private val scriptManager: ScriptManager,
 ) : ViewModel() {
 
     /** Current connectivity of the board. */
@@ -40,6 +40,19 @@ class HomeViewModel(
 
     private val microDevice: MicroDevice?
         get() = (status.value as? ConnectionStatus.Connected)?.microDevice
+
+    /**
+     * Shows the file picker and hands what was chosen to the editor.
+     *
+     * Reports [HomeCommand.ScriptOpened] once a script is ready, and nothing when
+     * the picker is dismissed.
+     */
+    fun openScriptFile() {
+        viewModelScope.launch {
+            scriptManager.pickAScript() ?: return@launch
+            _commands.trySend(HomeCommand.ScriptOpened)
+        }
+    }
 
     /** Clears the handoff, so the terminal or editor opens on nothing. */
     fun newScript() {

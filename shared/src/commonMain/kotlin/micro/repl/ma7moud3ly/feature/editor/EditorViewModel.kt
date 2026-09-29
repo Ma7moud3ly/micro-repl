@@ -54,6 +54,7 @@ class EditorViewModel(
                     EditorCommand.RequestSave -> saveDialogState.show()
                     EditorCommand.RequestSaveAs -> saveAsNewDialogState.show()
                     EditorCommand.Saved -> messageToastState.show("Saved...".asSuccessMessage)
+                    EditorCommand.RequestOpen -> editorManager.openScriptFile()
                     EditorCommand.Run, EditorCommand.Close -> _events.trySend(command)
                 }
             }

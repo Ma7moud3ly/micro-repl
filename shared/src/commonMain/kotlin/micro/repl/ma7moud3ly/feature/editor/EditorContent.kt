@@ -40,6 +40,7 @@ import micro.repl.ma7moud3ly.feature.editor.model.EditorEvent
 import micro.repl.ma7moud3ly.shared.resources.Res
 import micro.repl.ma7moud3ly.shared.resources.circuit_python
 import micro.repl.ma7moud3ly.shared.resources.editor_new
+import micro.repl.ma7moud3ly.shared.resources.editor_open
 import micro.repl.ma7moud3ly.shared.resources.editor_save
 import micro.repl.ma7moud3ly.shared.resources.lines
 import micro.repl.ma7moud3ly.shared.resources.micro_python
@@ -236,6 +237,10 @@ private fun EditorPrimaryActions(
         if (editorManager.isLocal) ActionButton(
             text = Res.string.editor_new,
             onClick = { uiEvents(EditorEvent.New) }
+        )
+        ActionButton(
+            text = Res.string.editor_open,
+            onClick = { uiEvents(EditorEvent.Open) }
         )
     }
 }
