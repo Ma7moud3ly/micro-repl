@@ -41,7 +41,7 @@ compose.desktop {
                 shortcut = true
             }
             macOS {
-                iconFile.set(icons.resolve("icon.icon"))
+                iconFile.set(icons.resolve("icon.icns"))
             }
         }
     }
