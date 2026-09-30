@@ -99,7 +99,12 @@ class EditorManager(
     /**
      * Whether the run button is available.
      */
-    val canRun: Boolean get() = boardManager.isConnected
+    val canRunScript: Boolean get() = boardManager.isConnected && isPython
+
+    /**
+     * Whether the save button is available.
+     */
+    val canSave: Boolean get() = boardManager.isConnected || isLocal
 
     /** Whether there are edits that haven't been written back yet. */
     val isDirty: Boolean get() = session.isDirty
