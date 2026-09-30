@@ -16,3 +16,13 @@ data class MicroDeviceDetails(
     val vendorId: String = "",
     val productId: String
 )
+
+/** The USB vendor and product ids as `VID:PID` in hex, or null for a port that is not USB. */
+val MicroDevice.usbIds: String?
+    get() {
+        val vendorId = details?.vendorId?.toIntOrNull()?.takeIf { it >= 0 } ?: return null
+        val productId = productId?.takeIf { it >= 0 } ?: return null
+        return "${vendorId.toHex()}:${productId.toHex()}"
+    }
+
+fun Int.toHex(): String = toString(16).uppercase().padStart(4, '0')

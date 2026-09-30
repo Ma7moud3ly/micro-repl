@@ -112,6 +112,10 @@ kotlin {
             // the USB serial transport
             implementation(libs.usb.serial.forandroid)
         }
+        jvmMain.dependencies {
+            // serial ports on Windows, macOS and Linux
+            implementation(libs.jserialcomm)
+        }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }

@@ -88,12 +88,16 @@ class BoardManager(
     /**
      * Detects and lists connected USB devices, and attempts to connect
      * to a supported device.
+     *
+     * With [autoConnect] off, every device is listed for the user to pick from,
+     * supported or not.
      */
-    suspend fun detectUsbDevices() {
+    suspend fun detectUsbDevices(autoConnect: Boolean = true) {
         val deviceList = serialPort.connectedDevices()
         AppLog.i(TAG, "detectUsbDevices - deviceList =  ${deviceList.size}")
 
-        val supportedDevice: MicroDevice? = deviceList.filter { device ->
+        val supportedDevice: MicroDevice? = if (autoConnect.not()) null
+        else deviceList.filter { device ->
             val productId = device.productId
             supportedManufacturers.contains(device.details?.manufacturerName) ||
                     (productId != null && supportedProducts.contains(productId))

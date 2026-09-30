@@ -43,6 +43,7 @@ firebaseBom = "34.19.0"
 nemoEditor = "1.0.4"
 usbSerialForAndroid = "3.9.0"
 #jvm
+jSerialComm = "2.11.0"
 #web
 kotlin-wrappers = "2026.9.2"
 
@@ -104,6 +105,8 @@ koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose" }
 nemo-editor = { module = "io.github.ma7moud3ly:nemo-editor", version.ref = "nemoEditor" }
 usb-serial-forandroid = { module = "com.github.mik3y:usb-serial-for-android", version.ref = "usbSerialForAndroid" }
 desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugarJdk" }
+# jvm
+jserialcomm = { module = "com.fazecast:jSerialComm", version.ref = "jSerialComm" }
 #gms
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics" }

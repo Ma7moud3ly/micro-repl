@@ -46,6 +46,10 @@
     <string name="home_sub_scripts">Saved scripts</string>
 
     <!-- device details -->
+    <string name="home_select_port">Select a port</string>
+    <string name="home_select_port_msg">Pick the port your MicroPython board is plugged into.</string>
+    <string name="home_connect">Connect</string>
+    <string name="home_refresh">Refresh</string>
     <string name="home_device_is_flashed">Are you sure that one of the connected devices is a supported port flashed with MicroPython firmware?</string>
     <string name="home_device_product_name">Product Name</string>
     <string name="home_device_manufacturer">Manufacturer</string>

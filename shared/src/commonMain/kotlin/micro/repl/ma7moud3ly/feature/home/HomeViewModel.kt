@@ -20,6 +20,8 @@ import micro.repl.ma7moud3ly.model.MicroScript
 import micro.repl.ma7moud3ly.managers.TerminalManager
 import micro.repl.ma7moud3ly.model.ConnectionStatus
 import micro.repl.ma7moud3ly.model.MicroDevice
+import micro.repl.ma7moud3ly.platform.currentPlatform
+import micro.repl.ma7moud3ly.platform.isMobile
 import org.koin.core.annotation.KoinViewModel
 
 
@@ -61,8 +63,14 @@ class HomeViewModel(
 
     ////// Connection
 
+    /**
+     * Looks for boards. A phone connects to a known board straight away; desktop
+     * and web list every port for the user to pick from.
+     */
     fun connect() {
-        viewModelScope.launch { boardManager.detectUsbDevices() }
+        viewModelScope.launch {
+            boardManager.detectUsbDevices(autoConnect = currentPlatform.isMobile)
+        }
     }
 
     fun disconnect() {
