@@ -11,10 +11,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import micro.repl.ma7moud3ly.shared.resources.Res
+import micro.repl.ma7moud3ly.shared.resources.home_no_device
 import micro.repl.ma7moud3ly.shared.resources.terminal_reset_msg
 import micro.repl.ma7moud3ly.shared.resources.terminal_soft_reset_msg
 import micro.repl.ma7moud3ly.shared.resources.terminal_terminate_msg
 import micro.repl.ma7moud3ly.ui.components.MessageToast
+import micro.repl.ma7moud3ly.ui.components.asErrorMessage
 import micro.repl.ma7moud3ly.ui.components.asSuccessMessage
 import micro.repl.ma7moud3ly.ui.components.rememberMessageState
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
@@ -42,6 +44,9 @@ fun HomeScreen(
         viewModel.commands.collect { command ->
             when (command) {
                 HomeCommand.FileOpened -> openEditor()
+                HomeCommand.NoDevices -> messageToast.show(
+                    getString(Res.string.home_no_device).asErrorMessage
+                )
                 else -> command.message?.let {
                     messageToast.show(getString(it).asSuccessMessage)
                 }
@@ -89,5 +94,5 @@ private val HomeCommand.message: StringResource?
         HomeCommand.DeviceReset -> Res.string.terminal_reset_msg
         HomeCommand.DeviceSoftReset -> Res.string.terminal_soft_reset_msg
         HomeCommand.ExecutionTerminated -> Res.string.terminal_terminate_msg
-        HomeCommand.FileOpened -> null
+        HomeCommand.FileOpened, HomeCommand.NoDevices -> null
     }

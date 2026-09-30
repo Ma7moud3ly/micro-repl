@@ -20,6 +20,7 @@ koinCore = "4.2.2"
 kotlinx-coroutines = "1.11.0"
 kotlinxDatetime = "0.8.0"
 material3 = "1.12.0-alpha03"
+compose-material-icons = "1.7.3"
 adaptive = "1.2.0"
 multiplatformSettings = "1.3.0"
 serialization-json = "1.11.0"
@@ -35,7 +36,7 @@ androidx-core = "1.19.1"
 androidx-espresso = "3.7.0"
 androidx-lifecycle = "2.11.0"
 androidx-material3 = "1.4.0"
-androidx-navigation3 = "1.2.0-beta01"
+androidx-navigation3 = "1.2.0"
 jbNavigation3 = "1.2.0-beta01"
 androidx-testExt = "1.3.0"
 desugarJdk = "2.1.5"
@@ -43,7 +44,7 @@ firebaseBom = "34.19.0"
 nemoEditor = "1.0.4"
 usbSerialForAndroid = "3.9.0"
 #jvm
-jSerialComm = "2.11.0"
+jSerialComm = "2.11.4"
 #web
 kotlin-wrappers = "2026.9.2"
 
@@ -52,6 +53,7 @@ kotlin-wrappers = "2026.9.2"
 compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "composeMultiplatform" }
 compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "composeMultiplatform" }
 compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
+compose-materialIconsExtended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "compose-material-icons" }
 compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "composeMultiplatform" }
 compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMultiplatform" }
 compose-uiTooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "composeMultiplatform" }

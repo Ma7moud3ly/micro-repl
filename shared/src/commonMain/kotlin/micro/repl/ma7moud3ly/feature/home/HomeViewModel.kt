@@ -18,6 +18,7 @@ import micro.repl.ma7moud3ly.managers.BoardManager
 import micro.repl.ma7moud3ly.managers.ScriptManager
 import micro.repl.ma7moud3ly.model.MicroScript
 import micro.repl.ma7moud3ly.managers.TerminalManager
+import micro.repl.ma7moud3ly.model.ConnectionError
 import micro.repl.ma7moud3ly.model.ConnectionStatus
 import micro.repl.ma7moud3ly.model.MicroDevice
 import micro.repl.ma7moud3ly.platform.currentPlatform
@@ -63,13 +64,11 @@ class HomeViewModel(
 
     ////// Connection
 
-    /**
-     * Looks for boards. A phone connects to a known board straight away; desktop
-     * and web list every port for the user to pick from.
-     */
     fun connect() {
         viewModelScope.launch {
             boardManager.detectUsbDevices(autoConnect = currentPlatform.isMobile)
+            val error = (status.value as? ConnectionStatus.Error)?.error
+            if (error == ConnectionError.NO_DEVICES) _commands.trySend(HomeCommand.NoDevices)
         }
     }
 

@@ -31,7 +31,6 @@ sealed interface HomeCommand {
     data object DeviceReset : HomeCommand
     data object DeviceSoftReset : HomeCommand
     data object ExecutionTerminated : HomeCommand
-
-    /** A script was picked and is ready for the editor. */
+    data object NoDevices : HomeCommand
     data object FileOpened : HomeCommand
 }

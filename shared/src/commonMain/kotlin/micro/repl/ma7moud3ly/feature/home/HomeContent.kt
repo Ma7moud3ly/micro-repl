@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.ma7moud3ly.nemo.model.EditorTheme
 import micro.repl.ma7moud3ly.BuildInfo
+import micro.repl.ma7moud3ly.feature.home.dialog.SelectPortDialog
 import micro.repl.ma7moud3ly.model.ConnectionStatus
 import micro.repl.ma7moud3ly.shared.resources.Res
 import micro.repl.ma7moud3ly.shared.resources.circuit_python
@@ -141,8 +142,15 @@ internal fun HomeScreenContent(
             is ConnectionStatus.Error ->
                 SectionDisconnected(uiEvents = uiEvents)
 
-            is ConnectionStatus.Approve ->
-                SectionApprove(devices = status.devices, uiEvents = uiEvents)
+            is ConnectionStatus.Approve -> {
+                SectionDisconnected(uiEvents = uiEvents)
+                SelectPortDialog(
+                    devices = status.devices,
+                    onConnect = { uiEvents(HomeEvents.ApproveDevice(it)) },
+                    onRefresh = { uiEvents(HomeEvents.Connect) },
+                    onDismiss = { uiEvents(HomeEvents.DenyDevice) }
+                )
+            }
 
             is ConnectionStatus.Connecting ->
                 ProgressView()

@@ -120,10 +120,10 @@ class BoardManager(
     }
 
     /**
-     * Called when the user denies permission to access a USB device.
+     * Called when the user closes the device list without picking one.
      */
     fun onDenyDevice() {
-        throwError(error = ConnectionError.NOT_SUPPORTED)
+        throwError(error = ConnectionError.NO_DEVICES)
     }
 
     /**
