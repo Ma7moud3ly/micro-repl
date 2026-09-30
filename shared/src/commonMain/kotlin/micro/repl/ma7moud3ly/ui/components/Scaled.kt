@@ -14,12 +14,10 @@ import micro.repl.ma7moud3ly.platform.isMobile
 
 
 /** How much larger text and controls are on a screen viewed from further away. */
-internal const val DESKTOP_SCALE = 1.3f
+internal const val DESKTOP_SCALE = 1.2f
 
 /**
  * The size to draw a control at, grown off mobile by the same factor the theme
  * grows text by.
  */
-val Dp.scaled: Dp
-    @Composable get() =
-        if (LocalPlatform.current.isMobile) this else this * DESKTOP_SCALE
+val Dp.scaled: Dp @Composable get() = if (LocalPlatform.current.isMobile) this else this * DESKTOP_SCALE
