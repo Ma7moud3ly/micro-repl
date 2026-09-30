@@ -40,10 +40,10 @@ fun SegmentPair(
         color = Color.Transparent,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
-        Row(modifier = Modifier.height(cellHeight)) {
+        Row(modifier = Modifier.height(cellHeight.scaled)) {
             SegmentCell(cellWidth, cellHeight, startEnabled, onStart, start)
             VerticalDivider(
-                modifier = Modifier.height(cellHeight),
+                modifier = Modifier.height(cellHeight.scaled),
                 color = MaterialTheme.colorScheme.outline
             )
             SegmentCell(cellWidth, cellHeight, endEnabled, onEnd, end)
@@ -61,7 +61,7 @@ fun SegmentCell(
 ) {
     Box(
         modifier = Modifier
-            .size(width = width, height = height)
+            .size(width = width.scaled, height = height.scaled)
             .alpha(if (enabled) 1f else 0.4f)
             .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center
@@ -84,6 +84,6 @@ fun SegmentIcon(icon: DrawableResource, tint: Color) {
         painter = painterResource(icon),
         contentDescription = null,
         tint = tint,
-        modifier = Modifier.size(14.dp)
+        modifier = Modifier.size(14.dp.scaled)
     )
 }

@@ -9,6 +9,8 @@ package micro.repl.ma7moud3ly.managers
 
 import micro.repl.ma7moud3ly.platform.LocalFilesManager
 import micro.repl.ma7moud3ly.model.MicroScript
+import micro.repl.ma7moud3ly.platform.AppLog
+import micro.repl.ma7moud3ly.platform.ScriptPicker
 import org.koin.core.annotation.Single
 
 /**
@@ -19,7 +21,8 @@ import org.koin.core.annotation.Single
 @Single
 class ScriptManager(
     private val localFilesManager: LocalFilesManager,
-    private val storageManager: StorageManager
+    private val storageManager: StorageManager,
+    private val scriptPicker: ScriptPicker
 ) {
 
     /** The script the next screen should work on. */
@@ -34,6 +37,7 @@ class ScriptManager(
     fun open(script: MicroScript, blank: Boolean = false) {
         this.script = script
         this.blank = blank
+        AppLog.v(TAG, script.path)
     }
 
     /**
@@ -54,5 +58,25 @@ class ScriptManager(
             e.printStackTrace()
             script
         }
+    }
+
+    /**
+     * Shows the file picker and hands what was chosen to the editor.
+     */
+    suspend fun pickAScript(): MicroScript? {
+        val script = scriptPicker.open() ?: return null
+        open(script)
+        return script
+    }
+
+    /**
+     * Show script save as dialog
+     */
+    suspend fun save(script: MicroScript): MicroScript? {
+        return scriptPicker.save(script)
+    }
+
+    companion object {
+        private const val TAG = "ScriptManager"
     }
 }

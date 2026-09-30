@@ -95,6 +95,8 @@ kotlin {
             implementation(libs.nemo.editor)
 
             // the file picker
+            implementation(libs.filekit.core)
+            implementation(libs.filekit.dialogs)
             implementation(libs.filekit.dialogs.compose)
 
             // settings storage

@@ -26,6 +26,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import micro.repl.ma7moud3ly.platform.AppDispatchers
 import micro.repl.ma7moud3ly.platform.LocalFilesManager
+import micro.repl.ma7moud3ly.platform.ScriptPicker
 import micro.repl.ma7moud3ly.platform.SerialPortManager
 import micro.repl.ma7moud3ly.managers.StorageManager
 import micro.repl.ma7moud3ly.model.EditorMode
@@ -60,7 +61,7 @@ internal fun previewEditorManager(
         localFilesManager = scriptsManager,
         storageManager = storageManager,
         remoteFilesManager = RemoteFilesManager(ReplManager(serialPort, PreviewDispatchers)),
-        scriptManager = ScriptManager(scriptsManager, storageManager),
+        scriptManager = ScriptManager(scriptsManager, storageManager, FakeScriptPicker),
         themesManager = ThemesManager(storageManager),
         boardManager = BoardManager(serialPort, storageManager).apply {
             isConnected = canRun
@@ -132,4 +133,9 @@ private class FakeSerialPortManager : SerialPortManager {
 
 private object PreviewDispatchers : AppDispatchers {
     override val io: CoroutineDispatcher = Dispatchers.Unconfined
+}
+
+private object FakeScriptPicker : ScriptPicker {
+    override suspend fun open(): MicroScript? = null
+    override suspend fun save(script: MicroScript): MicroScript? = null
 }

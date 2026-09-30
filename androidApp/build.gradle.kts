@@ -134,6 +134,11 @@ dependencies {
     implementation(libs.koin.android)
 
     /**
+     * FileKit
+     */
+    implementation(libs.filekit.dialogs)
+
+    /**
      * Firebase
      */
     "gmsImplementation"(platform(libs.firebase.bom))

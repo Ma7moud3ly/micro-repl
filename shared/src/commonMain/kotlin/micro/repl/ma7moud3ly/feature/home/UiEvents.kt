@@ -14,6 +14,7 @@ sealed interface HomeEvents {
     data object OpenExplorer : HomeEvents
     data object OpenEditor : HomeEvents
     data object OpenScripts : HomeEvents
+    data object OpenFile : HomeEvents
     data object Reset : HomeEvents
     data object SoftReset : HomeEvents
     data object Terminate : HomeEvents
@@ -30,4 +31,7 @@ sealed interface HomeCommand {
     data object DeviceReset : HomeCommand
     data object DeviceSoftReset : HomeCommand
     data object ExecutionTerminated : HomeCommand
+
+    /** A script was picked and is ready for the editor. */
+    data object FileOpened : HomeCommand
 }

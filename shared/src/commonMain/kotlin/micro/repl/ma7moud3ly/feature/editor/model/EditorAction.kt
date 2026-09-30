@@ -11,5 +11,6 @@ sealed interface EditorAction {
     data object RunScript : EditorAction
     data object SaveScript : EditorAction
     data object NewScript : EditorAction
+    data object OpenScript : EditorAction
     data object CloseScript : EditorAction
 }

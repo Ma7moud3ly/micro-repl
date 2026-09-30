@@ -50,6 +50,7 @@ class EditorSession(
     val asMicroScript: MicroScript
         get() = MicroScript(
             content = codeState.code,
+            initialName = script.name,
             path = script.path,
             editorMode = script.editorMode
         )
@@ -60,8 +61,16 @@ class EditorSession(
     }
 
     /** Points the session at a new path, for "save as". */
-    fun moveTo(path: String) {
-        script = script.copy(path = path)
+    fun moveTo(path: String, fileName: String = "") {
+        script = script.copy(path = path, initialName = fileName)
+    }
+
+    /** Replaces the buffer and the file it belongs to, clearing the undo history. */
+    fun openScript(script: MicroScript) {
+        codeState.updateText(script.content)
+        codeState.clearHistory()
+        this.script = script
+        savedContent = script.content
     }
 
     /** Empties the editor for a new, unnamed script, keeping the current mode. */

@@ -199,6 +199,7 @@ class EditorManager(
         pendingAction = null
         when (action) {
             EditorAction.NewScript -> reset()
+            EditorAction.OpenScript -> _commands.trySend(EditorCommand.RequestOpen)
             EditorAction.CloseScript -> _commands.trySend(EditorCommand.Close)
             EditorAction.RunScript -> {
                 scriptManager.open(asMicroScript)
@@ -242,6 +243,17 @@ class EditorManager(
         if (isOpen) persistSettings()
     }
 
+    /**
+     * Shows the file picker and loads what was chosen into the editor.
+     *
+     * @return false if the picker was dismissed or the file could not be read.
+     */
+    suspend fun openScriptFile(): Boolean {
+        val script = scriptManager.pickAScript() ?: return false
+        session.openScript(script)
+        return true
+    }
+
     /** Empties the buffer for a new, unnamed script. */
     private fun reset() {
         session.reset()
@@ -260,8 +272,16 @@ class EditorManager(
      */
     private suspend fun save() {
         if (script.isLocal) {
-            val saved = localFilesManager.write(script.path, codeState.code)
-            if (saved) session.markSaved()
+            // the scripts folder first, then the platform's own save dialog for a
+            // file that came from outside it
+            if (localFilesManager.write(script.path, codeState.code)) {
+                session.markSaved()
+            } else {
+                val saved = scriptManager.save(session.asMicroScript) ?: return
+                // the dialog decides the location, so the session follows it there
+                session.moveTo(saved.path, saved.name)
+                session.markSaved()
+            }
         } else {
             remoteFilesManager.write(path = script.path, content = codeState.code)
             session.markSaved()
@@ -273,8 +293,8 @@ class EditorManager(
      */
     private suspend fun saveFileAs(name: String) {
         val directory = localFilesManager.scriptDirectory()
-        if (directory.isEmpty()) return
-        session.moveTo("$directory/$name")
+        // without a scripts folder the name is only what the save dialog suggests
+        session.moveTo(if (directory.isEmpty()) name else "$directory/$name")
         AppLog.v(TAG, "saveFileAs - ${script.path}")
         save()
     }
