@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 
 /** The widest a column of content grows to once the window is past compact. */
-private val MaxContentWidth: Dp = 720.dp
+private val MaxContentWidth: Dp = 1200.dp
 
 /** Whether the window is narrower than the medium breakpoint - a phone, typically. */
 @Composable

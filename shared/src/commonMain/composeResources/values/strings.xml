@@ -34,8 +34,9 @@
     <string name="home_terminal">Terminal</string>
     <string name="home_explorer">Explorer</string>
     <string name="home_editor">Editor</string>
-    <string name="home_open">Open</string>
-    <string name="home_sub_open">Pick a file</string>
+    <string name="home_quick_actions">Quick actions</string>
+    <string name="home_open_file">Open File</string>
+    <string name="home_new_script">New Script</string>
     <string name="home_scripts">Scripts</string>
     <string name="home_needs_device">Needs device</string>
     <string name="home_sub_local_files">Local files</string>

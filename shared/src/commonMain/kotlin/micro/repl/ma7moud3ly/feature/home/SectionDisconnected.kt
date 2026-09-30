@@ -35,6 +35,7 @@ import micro.repl.ma7moud3ly.shared.resources.Res
 import micro.repl.ma7moud3ly.shared.resources.home_connect_device
 import micro.repl.ma7moud3ly.shared.resources.home_no_device
 import micro.repl.ma7moud3ly.shared.resources.home_no_device_msg
+import micro.repl.ma7moud3ly.shared.resources.ic_usb
 import micro.repl.ma7moud3ly.ui.components.contentWidth
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import org.jetbrains.compose.resources.stringResource
@@ -83,7 +84,7 @@ private fun EmptyStateCard(onConnect: () -> Unit) {
             .dashedBorder()
             .padding(16.dp)
     ) {
-        IconBadge(text = ">_", size = 36.dp)
+        IconBadge(icon = Res.drawable.ic_usb, size = 36.dp)
         Text(
             text = stringResource(Res.string.home_no_device),
             style = MaterialTheme.typography.bodyLarge,
