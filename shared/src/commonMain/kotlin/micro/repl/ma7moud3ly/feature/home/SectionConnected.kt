@@ -32,11 +32,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import micro.repl.ma7moud3ly.feature.home.dialog.DeviceDetailsDialog
 import micro.repl.ma7moud3ly.model.MicroDevice
 import micro.repl.ma7moud3ly.shared.resources.Res
+import micro.repl.ma7moud3ly.ui.components.scaled
+import micro.repl.ma7moud3ly.shared.resources.ic_stop
+import micro.repl.ma7moud3ly.shared.resources.ic_restart_alt
+import micro.repl.ma7moud3ly.shared.resources.ic_power_settings_new
+import androidx.compose.material3.Icon
 import micro.repl.ma7moud3ly.shared.resources.circuit_python
 import micro.repl.ma7moud3ly.shared.resources.home_details
 import micro.repl.ma7moud3ly.shared.resources.micro_python
@@ -184,18 +190,21 @@ private fun DeviceCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 ActionCell(
+                    icon = Res.drawable.ic_power_settings_new,
                     title = Res.string.terminal_reset,
                     modifier = Modifier.weight(1f),
                     onClick = onReset
                 )
                 CellDivider()
                 ActionCell(
+                    icon = Res.drawable.ic_restart_alt,
                     title = Res.string.terminal_soft_reset,
                     modifier = Modifier.weight(1f),
                     onClick = onSoftReset
                 )
                 CellDivider()
                 ActionCell(
+                    icon = Res.drawable.ic_stop,
                     title = Res.string.terminal_terminate,
                     modifier = Modifier.weight(1f),
                     color = LocalStatusColors.current.error,
@@ -208,21 +217,31 @@ private fun DeviceCard(
 
 @Composable
 private fun ActionCell(
+    icon: DrawableResource,
     title: StringResource,
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.onSurface,
     onClick: () -> Unit
 ) {
-    Box(
-        modifier = modifier.clickable(onClick = onClick),
-        contentAlignment = Alignment.Center
+    Row(
+        modifier = modifier
+            .clickable(onClick = onClick)
+            .padding(vertical = 13.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
+        verticalAlignment = Alignment.CenterVertically
     ) {
+        Icon(
+            painter = painterResource(icon),
+            contentDescription = null,
+            tint = color,
+            modifier = Modifier.size(16.dp.scaled)
+        )
         Text(
             text = stringResource(title),
             style = MaterialTheme.typography.bodyMedium,
             fontSize = 13.sp,
             color = color,
-            modifier = Modifier.padding(vertical = 13.dp)
+            maxLines = 1
         )
     }
 }
@@ -252,11 +271,11 @@ private fun DeviceLogo(src: DrawableResource) {
     }
 }
 
-/** Small rounded outlined box holding a mono glyph (device / runtime mark). */
+/** Small rounded outlined box holding an icon (device / runtime mark). */
 @Composable
 internal fun IconBadge(
-    text: String,
-    size: androidx.compose.ui.unit.Dp
+    icon: DrawableResource,
+    size: Dp
 ) {
     val radius = if (size >= 40.dp) 10.dp else 9.dp
     Surface(
@@ -266,11 +285,11 @@ internal fun IconBadge(
         modifier = Modifier.size(size)
     ) {
         Box(contentAlignment = Alignment.Center) {
-            Text(
-                text = text,
-                fontFamily = fontConsolas,
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onSurface
+            Icon(
+                painter = painterResource(icon),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.size(size / 2)
             )
         }
     }

@@ -12,12 +12,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
@@ -25,10 +22,8 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -50,9 +45,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Devices.DESKTOP
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
@@ -62,23 +55,10 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.delay
 import micro.repl.ma7moud3ly.model.MicroScript
 import micro.repl.ma7moud3ly.shared.resources.Res
-import micro.repl.ma7moud3ly.shared.resources.line_break
-import micro.repl.ma7moud3ly.shared.resources.micro_python
-import micro.repl.ma7moud3ly.shared.resources.run
-import micro.repl.ma7moud3ly.shared.resources.term_down
-import micro.repl.ma7moud3ly.shared.resources.term_up
-import micro.repl.ma7moud3ly.shared.resources.terminal_clear
+import micro.repl.ma7moud3ly.shared.resources.ic_keyboard_return
+import micro.repl.ma7moud3ly.shared.resources.ic_play_arrow
 import micro.repl.ma7moud3ly.shared.resources.terminal_new_line
-import micro.repl.ma7moud3ly.shared.resources.terminal_reset
-import micro.repl.ma7moud3ly.shared.resources.terminal_run
-import micro.repl.ma7moud3ly.shared.resources.terminal_terminate
-import micro.repl.ma7moud3ly.ui.components.ActionButton
-import micro.repl.ma7moud3ly.ui.components.BackButton
-import micro.repl.ma7moud3ly.ui.components.isCompactDevice
 import micro.repl.ma7moud3ly.ui.components.MyScreen
-import micro.repl.ma7moud3ly.ui.components.SegmentIcon
-import micro.repl.ma7moud3ly.ui.components.SegmentLabel
-import micro.repl.ma7moud3ly.ui.components.SegmentPair
 import micro.repl.ma7moud3ly.ui.components.scaled
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
@@ -142,7 +122,7 @@ fun TerminalScreenContent(
         spacedBy = 8.dp,
         modifier = Modifier.padding(vertical = 8.dp),
         header = {
-            Header(
+            TerminalToolbar(
                 microScript = microScript,
                 uiEvents = uiEvents,
                 onZoomIn = { fontSize = fontSize.zoomIn() },
@@ -265,8 +245,9 @@ private fun TerminalInputFiled(
             )
         )
         Icon(
-            painter = painterResource(if (multiLine()) Res.drawable.run
-                else Res.drawable.line_break
+            painter = painterResource(
+                if (multiLine()) Res.drawable.ic_play_arrow
+                else Res.drawable.ic_keyboard_return
             ),
             contentDescription = stringResource(Res.string.terminal_new_line),
             modifier = Modifier
@@ -278,172 +259,6 @@ private fun TerminalInputFiled(
                     } else onInputChanges(inp + "\r\n")
                 },
             tint = MaterialTheme.colorScheme.primary
-        )
-    }
-}
-
-@Composable
-private fun Header(
-    microScript: () -> MicroScript,
-    onZoomIn: () -> Unit,
-    onZoomOut: () -> Unit,
-    uiEvents: (TerminalEvents) -> Unit
-) {
-    Surface(color = MaterialTheme.colorScheme.surface) {
-        Column(modifier = Modifier.statusBarsPadding()) {
-            TerminalAppBar(
-                microScript = microScript,
-                onZoomIn = onZoomIn,
-                onZoomOut = onZoomOut,
-                uiEvents = uiEvents
-            )
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-            if (isCompactDevice()) {
-                TerminalActions(
-                    uiEvents = uiEvents,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    fillWidth = true
-                )
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-            }
-        }
-    }
-}
-
-@Composable
-private fun TerminalAppBar(
-    microScript: () -> MicroScript,
-    onZoomIn: () -> Unit,
-    onZoomOut: () -> Unit,
-    uiEvents: (TerminalEvents) -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Row(
-            modifier = Modifier.weight(1f),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            BackButton { uiEvents(TerminalEvents.Back) }
-            ScriptTitle(
-                modifier = Modifier.weight(1f, fill = false),
-                microScript = microScript
-            )
-        }
-        Spacer(Modifier.width(8.dp))
-        if(isCompactDevice().not()){
-            TerminalActions(uiEvents)
-            Spacer(Modifier.width(12.dp))
-        }
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // text size
-            SegmentPair(
-                cellWidth = 28.dp, cellHeight = 24.dp,
-                onStart = onZoomOut, onEnd = onZoomIn,
-                start = { SegmentLabel("A−", MaterialTheme.colorScheme.onSurfaceVariant) },
-                end = { SegmentLabel("A+", MaterialTheme.colorScheme.onSurfaceVariant) }
-            )
-            // scroll: jump to top / latest
-            SegmentPair(
-                cellWidth = 26.dp, cellHeight = 24.dp,
-                onStart = { uiEvents(TerminalEvents.MoveUp) },
-                onEnd = { uiEvents(TerminalEvents.MoveDown) },
-                start = {
-                    SegmentIcon(
-                        Res.drawable.term_up,
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                },
-                end = {
-                    SegmentIcon(
-                        Res.drawable.term_down,
-                        MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            )
-        }
-    }
-}
-
-@Composable
-private fun ScriptTitle(
-    microScript: () -> MicroScript,
-    modifier: Modifier = Modifier
-) {
-    val script = microScript()
-    if (script.exists) Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(2.dp),
-        verticalAlignment = Alignment.Bottom
-    ) {
-        if (script.isLocal.not()) {
-            Text(
-                text = stringResource(Res.string.micro_python),
-                fontFamily = fontConsolas,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1
-            )
-        }
-        Text(
-            text = script.displayName,
-            fontFamily = fontConsolas,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface,
-            maxLines = 1,
-            overflow = TextOverflow.MiddleEllipsis,
-            modifier = Modifier.weight(1f, fill = false)
-        )
-    }
-}
-
-
-/** Run / Reset / Clear / Terminate. */
-@Composable
-private fun TerminalActions(
-    uiEvents: (TerminalEvents) -> Unit,
-    modifier: Modifier = Modifier,
-    fillWidth: Boolean = false
-) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(7.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // the buttons share a row of their own, and size to their text beside the title
-        val button = if (fillWidth) Modifier.weight(1f) else Modifier
-        ActionButton(
-            text = Res.string.terminal_run,
-            modifier = button,
-            filled = true,
-            onClick = { uiEvents(TerminalEvents.Run) }
-        )
-        ActionButton(
-            text = Res.string.terminal_reset,
-            modifier = button,
-            onClick = { uiEvents(TerminalEvents.SoftReset) }
-        )
-        ActionButton(
-            text = Res.string.terminal_clear,
-            modifier = button,
-            onClick = { uiEvents(TerminalEvents.Clear) }
-        )
-        ActionButton(
-            text = Res.string.terminal_terminate,
-            modifier = button,
-            danger = true,
-            onClick = { uiEvents(TerminalEvents.Terminate) }
         )
     }
 }
