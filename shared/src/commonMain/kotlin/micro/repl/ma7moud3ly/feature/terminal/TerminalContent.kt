@@ -141,6 +141,8 @@ fun TerminalScreenContent(
             input = terminalInput,
             fontSize = { fontSize },
             onKeyboardSend = { uiEvents(TerminalEvents.Run) },
+            onHistoryUp = { uiEvents(TerminalEvents.MoveUp) },
+            onHistoryDown = { uiEvents(TerminalEvents.MoveDown) },
             onInputChanges = onInputChanges
         )
     }
@@ -182,6 +184,8 @@ private fun TerminalInputFiled(
     input: () -> String,
     fontSize: () -> TextUnit,
     onKeyboardSend: () -> Unit,
+    onHistoryUp: () -> Unit,
+    onHistoryDown: () -> Unit,
     onInputChanges: (input: String) -> Unit,
 ) {
     val inp = input()
@@ -213,13 +217,17 @@ private fun TerminalInputFiled(
             modifier = Modifier
                 .weight(1f)
                 .wrapContentHeight()
-                // a physical keyboard sends on Enter, and breaks a line on shift+Enter
                 .onPreviewKeyEvent { event ->
-                    val send = event.type == KeyEventType.KeyDown &&
-                            event.key == Key.Enter &&
-                            event.isShiftPressed.not()
-                    if (send) onKeyboardSend()
-                    send
+                    if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                    when (event.key) {
+                        // a physical keyboard sends on Enter, and breaks a line on shift+Enter
+                        Key.Enter if event.isShiftPressed.not() -> onKeyboardSend()
+                        // up and down step through the history, and move the cursor in a multi-line input
+                        Key.DirectionUp if multiLine().not() -> onHistoryUp()
+                        Key.DirectionDown if multiLine().not() -> onHistoryDown()
+                        else -> return@onPreviewKeyEvent false
+                    }
+                    true
                 }
                 .background(
                     color = if (multiLine()) MaterialTheme.colorScheme

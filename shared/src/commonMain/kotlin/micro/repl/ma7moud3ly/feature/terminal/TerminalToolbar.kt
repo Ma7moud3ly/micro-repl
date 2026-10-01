@@ -25,13 +25,13 @@ import micro.repl.ma7moud3ly.shared.resources.ic_stop
 import micro.repl.ma7moud3ly.shared.resources.ic_terminal
 import micro.repl.ma7moud3ly.shared.resources.ic_text_decrease
 import micro.repl.ma7moud3ly.shared.resources.ic_text_increase
-import micro.repl.ma7moud3ly.shared.resources.ic_vertical_align_bottom
-import micro.repl.ma7moud3ly.shared.resources.ic_vertical_align_top
+import micro.repl.ma7moud3ly.shared.resources.ic_keyboard_arrow_down
+import micro.repl.ma7moud3ly.shared.resources.ic_keyboard_arrow_up
 import micro.repl.ma7moud3ly.shared.resources.micro_python
 import micro.repl.ma7moud3ly.shared.resources.terminal_clear
 import micro.repl.ma7moud3ly.shared.resources.terminal_repl
-import micro.repl.ma7moud3ly.shared.resources.terminal_scroll_bottom
-import micro.repl.ma7moud3ly.shared.resources.terminal_scroll_top
+import micro.repl.ma7moud3ly.shared.resources.terminal_history_down
+import micro.repl.ma7moud3ly.shared.resources.terminal_history_up
 import micro.repl.ma7moud3ly.shared.resources.terminal_soft_reset
 import micro.repl.ma7moud3ly.shared.resources.terminal_terminate
 import micro.repl.ma7moud3ly.ui.components.AppToolbar
@@ -47,7 +47,7 @@ import org.jetbrains.compose.resources.stringResource
 
 /**
  * The terminal's top bar: the running script, or "REPL" when there is none,
- * then the board actions, text size and scrolling.
+ * then the board actions, text size and command history.
  */
 @Composable
 internal fun TerminalToolbar(
@@ -86,7 +86,7 @@ internal fun TerminalToolbar(
 }
 
 /**
- * The board actions, text size and scrolling, all inline. The board
+ * The board actions, text size and command history, all inline. The board
  * actions show their labels when [showLabels] is set.
  */
 @Composable
@@ -139,13 +139,13 @@ private fun WideActions(
         }
         ToolbarGroup {
             ToolbarButton(
-                icon = Res.drawable.ic_vertical_align_top,
-                label = Res.string.terminal_scroll_top,
+                icon = Res.drawable.ic_keyboard_arrow_up,
+                label = Res.string.terminal_history_up,
                 onClick = { uiEvents(TerminalEvents.MoveUp) }
             )
             ToolbarButton(
-                icon = Res.drawable.ic_vertical_align_bottom,
-                label = Res.string.terminal_scroll_bottom,
+                icon = Res.drawable.ic_keyboard_arrow_down,
+                label = Res.string.terminal_history_down,
                 onClick = { uiEvents(TerminalEvents.MoveDown) }
             )
         }
@@ -153,7 +153,7 @@ private fun WideActions(
 }
 
 /**
- * Soft reset, clear and terminate inline; text size and scrolling under "more".
+ * Soft reset, clear and terminate inline; text size and command history under "more".
  */
 @Composable
 private fun CompactActions(
@@ -197,16 +197,16 @@ private fun CompactActions(
             )
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             ToolbarMenuItem(
-                icon = Res.drawable.ic_vertical_align_top,
-                label = Res.string.terminal_scroll_top,
+                icon = Res.drawable.ic_keyboard_arrow_up,
+                label = Res.string.terminal_history_up,
                 onClick = {
                     dismiss()
                     uiEvents(TerminalEvents.MoveUp)
                 }
             )
             ToolbarMenuItem(
-                icon = Res.drawable.ic_vertical_align_bottom,
-                label = Res.string.terminal_scroll_bottom,
+                icon = Res.drawable.ic_keyboard_arrow_down,
+                label = Res.string.terminal_history_down,
                 onClick = {
                     dismiss()
                     uiEvents(TerminalEvents.MoveDown)

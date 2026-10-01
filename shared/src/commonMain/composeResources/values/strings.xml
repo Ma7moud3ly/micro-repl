@@ -105,8 +105,8 @@
     <string name="terminal_soft_reset_msg">Reset Interpreter</string>
     <string name="terminal_clear">Clear</string>
     <string name="terminal_new_line">New line</string>
-    <string name="terminal_scroll_top">Scroll to top</string>
-    <string name="terminal_scroll_bottom">Scroll to bottom</string>
+    <string name="terminal_history_up">Previous command</string>
+    <string name="terminal_history_down">Next command</string>
     <string name="terminal_repl">REPL</string>
 
     <string name="scripts_empty">No recent scripts yet</string>
