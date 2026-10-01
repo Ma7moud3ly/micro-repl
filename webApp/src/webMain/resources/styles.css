@@ -5,3 +5,10 @@ html, body {
     padding: 0;
     overflow: hidden;
 }
+
+/* the app's dark background while the app loads, so the page doesn't flash white */
+body {
+    background: #14161A;
+    text-align: center;
+    align-content: center;
+}
