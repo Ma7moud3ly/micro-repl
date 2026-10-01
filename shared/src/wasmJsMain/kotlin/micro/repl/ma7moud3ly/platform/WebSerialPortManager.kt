@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import micro.repl.ma7moud3ly.model.MicroDevice
 import micro.repl.ma7moud3ly.model.MicroDeviceDetails
+import micro.repl.ma7moud3ly.model.UsbVendor
 import org.koin.core.annotation.Single
 
 /**
@@ -29,25 +30,8 @@ class WebSerialPortManager : SerialPortManager {
         private const val TAG = "WebSerialPortManager"
         private const val BAUD_RATE = 115200
 
-        /**
-         * USB vendors the port picker lists, as hex ids: boards that run
-         * MicroPython and the USB-to-serial chips boards use. Other ports, as
-         * the system's `ttyS*` and Bluetooth devices, stay hidden.
-         */
-        private val BOARD_VENDOR_IDS = listOf(
-            "2E8A", // Raspberry Pi (RP2040, RP2350)
-            "303A", // Espressif (ESP32-S2, S3, C3, C6)
-            "F055", // MicroPython (pyboard)
-            "239A", // Adafruit
-            "2341", // Arduino
-            "1209", // pid.codes, open hardware boards
-            "10C4", // Silicon Labs CP210x
-            "1A86", // WCH CH340, CH9102
-            "0403", // FTDI
-            "067B", // Prolific PL2303
-            "0483", // STMicroelectronics
-            "1366"  // SEGGER J-Link
-        ).joinToString(",")
+        /** Every [UsbVendor], as hex ids for the port picker's filter. */
+        private val PICKER_VENDOR_IDS = UsbVendor.entries.joinToString(",") { it.id.toString(16) }
     }
 
     /** The browser's ports from the last [connectedDevices], by [MicroDevice.port]. */
@@ -70,9 +54,8 @@ class WebSerialPortManager : SerialPortManager {
 
     /**
      * After a click, the port the user picks in the browser's port picker, which
-     * lists only [BOARD_VENDOR_IDS];
-     * otherwise the ports this site was granted before. Empty when the picker is
-     * dismissed or the browser has no Web Serial.
+     * lists only [UsbVendor]s; otherwise the ports this site was granted before.
+     * Empty when the picker is dismissed or the browser has no Web Serial.
      */
     override suspend fun connectedDevices(): List<MicroDevice> {
         if (isSerialSupported().not()) {
@@ -80,7 +63,7 @@ class WebSerialPortManager : SerialPortManager {
             return emptyList()
         }
         val granted = try {
-            if (hasUserActivation()) listOf(serialRequestPort(BOARD_VENDOR_IDS).await())
+            if (hasUserActivation()) listOf(serialRequestPort(PICKER_VENDOR_IDS).await())
             else serialGetPorts().await().toList()
         } catch (e: Throwable) {
             AppLog.w(TAG, "connectedDevices - ${e.message}")
@@ -94,17 +77,25 @@ class WebSerialPortManager : SerialPortManager {
 
     override suspend fun requestUsbPermission(device: MicroDevice): Boolean = true
 
-    /** [MicroDevice.port] holds an id for the browser's port, kept in [ports]. */
+    /**
+     * [MicroDevice.port] holds a label for the browser's port, kept in [ports].
+     * The name comes from [UsbVendor], as the browser gives only the USB ids.
+     */
     private fun JsAny.toMicroDevice(index: Int): MicroDevice {
-        val id = "serial-${index + 1}"
+        val id = "USB ${index + 1}"
+        val vendorId = portVendorId(this)
+        val productId = portProductId(this)
+        val name = UsbVendor.of(vendorId)?.title ?: "USB serial device"
         ports[id] = this
         return MicroDevice(
             port = id,
-            board = "Serial port ${index + 1}",
+            board = name,
             isMicroPython = true,
             details = MicroDeviceDetails(
-                vendorId = portVendorId(this).toString(),
-                productId = portProductId(this).toString()
+                productName = name,
+                manufacturerName = UsbVendor.of(vendorId)?.title.orEmpty(),
+                vendorId = vendorId.toString(),
+                productId = productId.toString()
             )
         )
     }

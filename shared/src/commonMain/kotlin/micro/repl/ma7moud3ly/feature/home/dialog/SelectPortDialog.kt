@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import micro.repl.ma7moud3ly.feature.home.TestHome
 import micro.repl.ma7moud3ly.model.MicroDevice
 import micro.repl.ma7moud3ly.model.usbIds
+import micro.repl.ma7moud3ly.model.vendorAndPort
 import micro.repl.ma7moud3ly.shared.resources.Res
 import micro.repl.ma7moud3ly.shared.resources.home_ports_refreshed
 import micro.repl.ma7moud3ly.shared.resources.home_refresh
@@ -151,8 +152,6 @@ private fun SelectPortContent(
     }
 }
 
-
-/** One port: its name and description, and the USB ids when known. Tapping it connects. */
 @Composable
 private fun PortRow(
     device: MicroDevice,
@@ -190,7 +189,10 @@ private fun PortRow(
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = listOfNotNull(device.port, device.usbIds).joinToString("  ·  "),
+                text = listOfNotNull(
+                    device.vendorAndPort.takeIf { it.isNotEmpty() },
+                    device.usbIds
+                ).joinToString("  ·  "),
                 fontFamily = fontConsolas,
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
