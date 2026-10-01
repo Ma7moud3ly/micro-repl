@@ -60,7 +60,6 @@ class DesktopSerialPortManager : SerialPortManager {
 
     private val _incoming = MutableSharedFlow<ByteArray>(extraBufferCapacity = 64)
     override val incoming: SharedFlow<ByteArray> = _incoming.asSharedFlow()
-
     private val _errors = MutableSharedFlow<Exception>(extraBufferCapacity = 8)
     override val errors: SharedFlow<Exception> = _errors.asSharedFlow()
 
@@ -135,28 +134,34 @@ class DesktopSerialPortManager : SerialPortManager {
         )
     )
 
-    override fun connectToSerial(device: MicroDevice): Result<Unit> = runCatching {
-        closing = false
-        val serialPort = SerialPort.getCommPort(device.port)
-        serialPort.setComPortParameters(
-            BAUD_RATE, 8,
-            SerialPort.ONE_STOP_BIT,
-            SerialPort.NO_PARITY
-        )
-        serialPort.setComPortTimeouts(
-            SerialPort.TIMEOUT_WRITE_BLOCKING,
-            0,
-            WRITING_TIMEOUT
-        )
-        if (!serialPort.openPort()) error("cannot open ${device.port}")
-        //MicroPython is considered as CdcAcmSerial port
-        //So it requires to enable DTR to exchange data.
-        serialPort.setDTR()
-        // Listen for MicroPython outputs in onNewData
-        serialPort.addDataListener(dataListener)
-        port = serialPort
-        AppLog.i(TAG, "connectToSerial - ${device.port} is open")
-    }
+    /**
+     * Opens the port on the IO thread, so a port slow to answer (a Bluetooth COM
+     * port on Windows, for one) never blocks the UI.
+     */
+    override suspend fun connectToSerial(device: MicroDevice): Result<Unit> = withContext(Dispatchers.IO) {
+            runCatching {
+                closing = false
+                val serialPort = SerialPort.getCommPort(device.port)
+                serialPort.setComPortParameters(
+                    BAUD_RATE, 8,
+                    SerialPort.ONE_STOP_BIT,
+                    SerialPort.NO_PARITY
+                )
+                serialPort.setComPortTimeouts(
+                    SerialPort.TIMEOUT_WRITE_BLOCKING,
+                    0,
+                    WRITING_TIMEOUT
+                )
+                if (!serialPort.openPort()) error("cannot open ${device.port}")
+                //MicroPython is considered as CdcAcmSerial port
+                //So it requires to enable DTR to exchange data.
+                serialPort.setDTR()
+                // Listen for MicroPython outputs in onNewData
+                serialPort.addDataListener(dataListener)
+                port = serialPort
+                AppLog.i(TAG, "connectToSerial - ${device.port} is open")
+            }
+        }
 
     /** jSerialComm blocks here for up to [WRITING_TIMEOUT], so never on the caller's thread. */
     override suspend fun write(bytes: ByteArray) {

@@ -145,8 +145,9 @@ class BoardManager(
     /**
      * Establishes a serial connection to the given device and publishes the result.
      */
-    private fun connectToSerial(microDevice: MicroDevice) {
+    private suspend fun connectToSerial(microDevice: MicroDevice) {
         serialPort.release()
+        setStatus(ConnectionStatus.Connecting)
         serialPort.connectToSerial(microDevice)
             .onSuccess {
                 setStatus(ConnectionStatus.Connected(microDevice))

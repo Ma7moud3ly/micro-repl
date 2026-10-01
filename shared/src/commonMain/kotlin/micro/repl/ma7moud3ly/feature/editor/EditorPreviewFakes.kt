@@ -124,7 +124,7 @@ private class FakeSerialPortManager : SerialPortManager {
     override fun connectedDevices(): List<MicroDevice> = emptyList()
     override fun hasPermission(device: MicroDevice): Boolean = false
     override suspend fun requestUsbPermission(device: MicroDevice): Boolean = false
-    override fun connectToSerial(device: MicroDevice): Result<Unit> =
+    override suspend fun connectToSerial(device: MicroDevice): Result<Unit> =
         Result.failure(UnsupportedOperationException("preview"))
 
     override suspend fun write(bytes: ByteArray) = Unit

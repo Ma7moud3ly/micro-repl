@@ -34,7 +34,7 @@ interface SerialPortManager {
     suspend fun requestUsbPermission(device: MicroDevice): Boolean
 
     /** Opens the port and starts the reader. */
-    fun connectToSerial(device: MicroDevice): Result<Unit>
+    suspend fun connectToSerial(device: MicroDevice): Result<Unit>
 
     /** Blocking on some platforms, so implementations move it off the caller's thread. */
     suspend fun write(bytes: ByteArray)
