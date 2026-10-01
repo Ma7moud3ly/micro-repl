@@ -26,8 +26,18 @@ internal fun hasUserActivation(): Boolean =
 /** The ports this site was granted before. */
 internal fun serialGetPorts(): Promise<JsArray<JsAny>> = js("navigator.serial.getPorts()")
 
-/** Shows the browser's port picker. Rejects when the user dismisses it. */
-internal fun serialRequestPort(): Promise<JsAny> = js("navigator.serial.requestPort()")
+/**
+ * Shows the browser's port picker, listing only USB ports whose vendor is in
+ * [vendorIds], a comma-separated list of hex ids. Rejects when the user
+ * dismisses it.
+ */
+internal fun serialRequestPort(vendorIds: String): Promise<JsAny> = js(
+    """
+    navigator.serial.requestPort({
+        filters: vendorIds.split(',').map(id => ({ usbVendorId: parseInt(id, 16) }))
+    })
+    """
+)
 
 /** The port's USB vendor id, or -1 for a port that is not USB. */
 internal fun portVendorId(port: JsAny): Int = js("port.getInfo().usbVendorId ?? -1")

@@ -28,6 +28,26 @@ class WebSerialPortManager : SerialPortManager {
     companion object {
         private const val TAG = "WebSerialPortManager"
         private const val BAUD_RATE = 115200
+
+        /**
+         * USB vendors the port picker lists, as hex ids: boards that run
+         * MicroPython and the USB-to-serial chips boards use. Other ports, as
+         * the system's `ttyS*` and Bluetooth devices, stay hidden.
+         */
+        private val BOARD_VENDOR_IDS = listOf(
+            "2E8A", // Raspberry Pi (RP2040, RP2350)
+            "303A", // Espressif (ESP32-S2, S3, C3, C6)
+            "F055", // MicroPython (pyboard)
+            "239A", // Adafruit
+            "2341", // Arduino
+            "1209", // pid.codes, open hardware boards
+            "10C4", // Silicon Labs CP210x
+            "1A86", // WCH CH340, CH9102
+            "0403", // FTDI
+            "067B", // Prolific PL2303
+            "0483", // STMicroelectronics
+            "1366"  // SEGGER J-Link
+        ).joinToString(",")
     }
 
     /** The browser's ports from the last [connectedDevices], by [MicroDevice.port]. */
@@ -49,7 +69,8 @@ class WebSerialPortManager : SerialPortManager {
     override val isPortOpen: Boolean get() = port != null
 
     /**
-     * After a click, the port the user picks in the browser's port picker;
+     * After a click, the port the user picks in the browser's port picker, which
+     * lists only [BOARD_VENDOR_IDS];
      * otherwise the ports this site was granted before. Empty when the picker is
      * dismissed or the browser has no Web Serial.
      */
@@ -59,7 +80,7 @@ class WebSerialPortManager : SerialPortManager {
             return emptyList()
         }
         val granted = try {
-            if (hasUserActivation()) listOf(serialRequestPort().await())
+            if (hasUserActivation()) listOf(serialRequestPort(BOARD_VENDOR_IDS).await())
             else serialGetPorts().await().toList()
         } catch (e: Throwable) {
             AppLog.w(TAG, "connectedDevices - ${e.message}")
