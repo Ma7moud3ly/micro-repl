@@ -34,10 +34,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import micro.repl.ma7moud3ly.platform.LocalPlatform
-import micro.repl.ma7moud3ly.platform.isMobile
+import micro.repl.ma7moud3ly.platform.isWeb
 import micro.repl.ma7moud3ly.shared.resources.Res
 import micro.repl.ma7moud3ly.shared.resources.home_editor
 import micro.repl.ma7moud3ly.shared.resources.home_explorer
@@ -71,8 +72,8 @@ import org.jetbrains.compose.resources.stringResource
 
 /**
  * The "Workspace" tiles, then the quick actions. Terminal and Explorer need a
- * live device and are disabled when [connected] is false; Editor and Scripts
- * always work.
+ * live device and are disabled when [connected] is false; Editor and Recent
+ * scripts always work. Recent scripts is left out on web.
  */
 @Composable
 internal fun Workspace(
@@ -114,8 +115,7 @@ internal fun Workspace(
                 event = HomeEvents.OpenEditor
             )
         )
-        // local scripts live on the device's own storage
-        if (platform.isMobile) {
+        if (platform.isWeb.not()) {
             add(
                 WorkspaceEntry(
                     icon = Res.drawable.ic_article,
@@ -233,7 +233,9 @@ private fun RowScope.WorkspaceTile(
                 text = stringResource(tile.sub),
                 fontFamily = fontConsolas,
                 fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
     }

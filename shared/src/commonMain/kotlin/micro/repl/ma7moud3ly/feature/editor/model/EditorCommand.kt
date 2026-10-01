@@ -16,9 +16,6 @@ sealed interface EditorCommand {
     /** Ask whether to save, before the pending action goes through. */
     data object RequestSave : EditorCommand
 
-    /** Ask for a name - the script has content but no path yet. */
-    data object RequestSaveAs : EditorCommand
-
     /** A plain save finished; nothing is pending. */
     data object Saved : EditorCommand
 

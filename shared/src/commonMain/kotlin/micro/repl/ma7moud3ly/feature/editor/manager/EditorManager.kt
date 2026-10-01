@@ -26,6 +26,7 @@ import micro.repl.ma7moud3ly.platform.LocalFilesManager
 import micro.repl.ma7moud3ly.managers.StorageManager
 import micro.repl.ma7moud3ly.feature.editor.model.EditorAction
 import micro.repl.ma7moud3ly.feature.editor.model.EditorCommand
+import micro.repl.ma7moud3ly.model.EditorMode
 import micro.repl.ma7moud3ly.model.MicroScript
 import micro.repl.ma7moud3ly.platform.AppLog
 import org.koin.core.annotation.Factory
@@ -151,6 +152,11 @@ class EditorManager(
      * or needs to ask.
      */
     suspend fun onAction(action: EditorAction) {
+        // "save as" always asks where, and leaves nothing pending
+        if (action == EditorAction.SaveScriptAs) {
+            if (saveToFile()) _commands.trySend(EditorCommand.Saved)
+            return
+        }
         pendingAction = action
         when {
             saveExisting() -> when (action) {
@@ -169,7 +175,14 @@ class EditorManager(
                 else -> _commands.trySend(EditorCommand.RequestSave)
             }
 
-            saveNew() -> _commands.trySend(EditorCommand.RequestSaveAs)
+            // a new script is named and placed in the platform's save dialog
+            saveNew() -> {
+                val saved = saveToFile()
+                if (saved && action == EditorAction.SaveScript) {
+                    _commands.trySend(EditorCommand.Saved)
+                }
+                finishPendingAction()
+            }
 
             else -> finishPendingAction()
         }
@@ -183,17 +196,6 @@ class EditorManager(
     }
 
     fun onSaveDismissed() {
-        finishPendingAction()
-    }
-
-    ////// Save-as prompt
-
-    suspend fun onSaveAsConfirmed(name: String) {
-        saveFileAs(name)
-        finishPendingAction()
-    }
-
-    fun onSaveAsDismissed() {
         finishPendingAction()
     }
 
@@ -264,6 +266,22 @@ class EditorManager(
         session.reset()
     }
 
+    /**
+     * Saves the buffer to a file picked in the platform's save dialog, which
+     * becomes the local script being edited.
+     *
+     * @return false if the dialog was dismissed or the file could not be written.
+     */
+    private suspend fun saveToFile(): Boolean {
+        // no path, so the dialog always asks where
+        val script = asMicroScript.copy(path = "", editorMode = EditorMode.LOCAL)
+        val saved = scriptManager.save(script) ?: return false
+        session.moveTo(saved)
+        session.markSaved()
+        AppLog.v(TAG, "saveToFile - ${saved.path}")
+        return true
+    }
+
     /** True if the script exists and has unsaved changes. */
     private fun saveExisting(): Boolean = session.isDirty
 
@@ -291,17 +309,6 @@ class EditorManager(
             remoteFilesManager.write(path = script.path, content = codeState.code)
             session.markSaved()
         }
-    }
-
-    /**
-     * Saves the current script under a new file name.
-     */
-    private suspend fun saveFileAs(name: String) {
-        val directory = localFilesManager.scriptDirectory()
-        // without a scripts folder the name is only what the save dialog suggests
-        session.moveTo(if (directory.isEmpty()) name else "$directory/$name")
-        AppLog.v(TAG, "saveFileAs - ${script.path}")
-        save()
     }
 
     /** Cheap enough to stay synchronous: the platform write itself is async. */

@@ -34,7 +34,6 @@ class EditorViewModel(
     }
 
     val saveDialogState = MyDialogState(visible = false)
-    val saveAsNewDialogState = MyDialogState(visible = false)
     val messageToastState = MessageToastState()
 
     private val _events = Channel<EditorCommand>(Channel.BUFFERED)
@@ -52,7 +51,6 @@ class EditorViewModel(
             editorManager.commands.collect { command ->
                 when (command) {
                     EditorCommand.RequestSave -> saveDialogState.show()
-                    EditorCommand.RequestSaveAs -> saveAsNewDialogState.show()
                     EditorCommand.Saved -> messageToastState.show("Saved...".asSuccessMessage)
                     EditorCommand.RequestOpen -> editorManager.openScriptFile()
                     EditorCommand.Run, EditorCommand.Close -> _events.trySend(command)
@@ -79,16 +77,6 @@ class EditorViewModel(
 
     fun onSaveDismissed() {
         editorManager.onSaveDismissed()
-    }
-
-    ////// Save-as prompt
-
-    fun onSaveAsConfirmed(name: String) {
-        viewModelScope.launch { editorManager.onSaveAsConfirmed(name) }
-    }
-
-    fun onSaveAsDismissed() {
-        editorManager.onSaveAsDismissed()
     }
 
     override fun onCleared() {

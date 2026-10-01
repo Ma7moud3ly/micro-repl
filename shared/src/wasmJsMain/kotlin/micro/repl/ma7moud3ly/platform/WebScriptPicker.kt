@@ -50,4 +50,11 @@ class WebScriptPicker : ScriptPicker {
             null
         }
     }
+
+    /** The browser keeps no access to a file between sessions. */
+    override suspend fun bookmark(): String? = null
+
+    override suspend fun reopen(bookmark: String): MicroScript? = null
+
+    override fun forget(bookmark: String) = Unit
 }

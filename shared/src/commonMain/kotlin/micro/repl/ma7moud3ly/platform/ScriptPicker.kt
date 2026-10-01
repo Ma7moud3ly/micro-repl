@@ -39,4 +39,23 @@ interface ScriptPicker {
      * null if the dialog was dismissed or the file could not be written.
      */
     suspend fun save(script: MicroScript): MicroScript?
+
+    /**
+     * A bookmark for the file last opened or saved, keeping read and write
+     * access to it across sessions.
+     *
+     * @return the bookmark, or null when there is no file or the platform can't
+     * keep access.
+     */
+    suspend fun bookmark(): String?
+
+    /**
+     * Reads the file behind [bookmark], and remembers it like [open] does.
+     *
+     * @return the script, or null if the file is gone or can't be read.
+     */
+    suspend fun reopen(bookmark: String): MicroScript?
+
+    /** Gives up the access [bookmark] kept. */
+    fun forget(bookmark: String)
 }

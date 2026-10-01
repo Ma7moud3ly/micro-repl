@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 import micro.repl.ma7moud3ly.platform.LocalFilesManager
 import micro.repl.ma7moud3ly.managers.ScriptManager
 import micro.repl.ma7moud3ly.model.MicroScript
+import micro.repl.ma7moud3ly.model.RecentScript
 import micro.repl.ma7moud3ly.platform.AppLog
 import org.koin.core.annotation.KoinViewModel
 
@@ -32,8 +33,23 @@ class ScriptsViewModel(
         viewModelScope.launch { localFilesManager.refresh() }
     }
 
-    /** Scripts on this device. Backed by a snapshot list, so edits recompose. */
+    /** Scripts in the app's own folder. Backed by a snapshot list, so edits recompose. */
     val scripts: List<MicroScript> get() = localFilesManager.scripts
+
+    /** Files opened or saved through the file dialogs, newest first. */
+    val recentScripts: List<RecentScript> get() = scriptManager.recentScripts
+
+    /**
+     * Reads [recent] back and hands it to the screen being opened.
+     *
+     * @return false if the file is gone or can't be read; it is then dropped
+     * from [recentScripts].
+     */
+    suspend fun canOpenRecent(recent: RecentScript): Boolean = scriptManager.openRecent(recent) != null
+
+    fun removeRecent(recent: RecentScript) {
+        scriptManager.removeRecent(recent)
+    }
 
     /** The script a rename or delete dialog is about to act on. */
     var selectedScript by mutableStateOf<MicroScript?>(null)

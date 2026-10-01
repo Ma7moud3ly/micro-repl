@@ -138,4 +138,7 @@ private object PreviewDispatchers : AppDispatchers {
 private object FakeScriptPicker : ScriptPicker {
     override suspend fun open(): MicroScript? = null
     override suspend fun save(script: MicroScript): MicroScript? = null
+    override suspend fun bookmark(): String? = null
+    override suspend fun reopen(bookmark: String): MicroScript? = null
+    override fun forget(bookmark: String) = Unit
 }

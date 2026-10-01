@@ -34,13 +34,13 @@
     <string name="home_quick_actions">Quick actions</string>
     <string name="home_open_file">Open File</string>
     <string name="home_new_script">New Script</string>
-    <string name="home_scripts">Scripts</string>
+    <string name="home_scripts">Recent scripts</string>
     <string name="home_needs_device">Needs device</string>
     <string name="home_sub_local_files">Local files</string>
     <string name="home_sub_live_repl">Live REPL</string>
     <string name="home_sub_device_files">Device files</string>
     <string name="home_sub_editor_open">Edit files</string>
-    <string name="home_sub_scripts">Saved scripts</string>
+    <string name="home_sub_scripts">Recently opened</string>
 
     <!-- device details -->
     <string name="home_select_port">Select a port</string>
@@ -62,6 +62,7 @@
 
     <string name="editor_untitled">untitled</string>
     <string name="editor_save">Save</string>
+    <string name="editor_save_as">Save as</string>
     <string name="editor_open">Open</string>
     <string name="editor_new">New</string>
     <string name="editor_run_on_device">Run on Device</string>
@@ -108,9 +109,14 @@
     <string name="terminal_scroll_bottom">Scroll to bottom</string>
     <string name="terminal_repl">REPL</string>
 
-    <string name="scripts_empty">"No scripts saved yet!"</string>
-    <string name="scripts_local">Local Scripts</string>
+    <string name="scripts_empty">No recent scripts yet</string>
+    <string name="scripts_local">Recent scripts</string>
     <string name="scripts_new">New</string>
+    <string name="scripts_recent">Recent files</string>
+    <string name="scripts_app">App scripts</string>
+    <string name="scripts_remove">Remove from list</string>
+    <string name="scripts_recent_missing">Couldn&#8217;t open this file. It may have been moved or deleted.</string>
+    <string name="scripts_deprecated">App scripts will be removed soon. Open a script and use Save as to keep it as a file.</string>
     <string name="scripts_share_failed">Couldn&#8217;t share this script</string>
 
 </resources>

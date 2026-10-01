@@ -10,6 +10,7 @@ package micro.repl.ma7moud3ly.managers
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.set
 import kotlinx.serialization.json.Json
+import micro.repl.ma7moud3ly.model.RecentScript
 import micro.repl.ma7moud3ly.platform.AppLog
 import org.koin.core.annotation.Single
 
@@ -60,12 +61,29 @@ class StorageManager(private val settings: Settings) {
             settings[KEY_SCRIPT] = value
         }
 
+    /** Files opened or saved through the file dialogs, newest first. */
+    var recentScripts: List<RecentScript>
+        get() {
+            val json = settings.getStringOrNull(KEY_RECENT_SCRIPTS).orEmpty()
+            if (json.isEmpty()) return emptyList()
+            return try {
+                Json.decodeFromString<List<RecentScript>>(json)
+            } catch (e: Exception) {
+                AppLog.e(TAG, "recentScripts - cannot read $json", e)
+                emptyList()
+            }
+        }
+        set(value) {
+            settings[KEY_RECENT_SCRIPTS] = Json.encodeToString(value)
+        }
+
     private companion object {
         const val TAG = "StorageManager"
         const val KEY_PRODUCTS = "products"
         const val KEY_SHOW_LINES = "show_lines"
         const val KEY_FONT_SIZE = "font_size"
         const val KEY_SCRIPT = "script"
+        const val KEY_RECENT_SCRIPTS = "recent_scripts"
         const val KEY_THEME = "editor_theme"
     }
 }

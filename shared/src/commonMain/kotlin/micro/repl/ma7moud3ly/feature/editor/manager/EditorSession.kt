@@ -65,6 +65,11 @@ class EditorSession(
         script = script.copy(path = path, initialName = fileName)
     }
 
+    /** Points the session at the file [saved] was written to, keeping the buffer. */
+    fun moveTo(saved: MicroScript) {
+        script = saved
+    }
+
     /** Replaces the buffer and the file it belongs to, clearing the undo history. */
     fun openScript(script: MicroScript) {
         codeState.updateText(script.content)

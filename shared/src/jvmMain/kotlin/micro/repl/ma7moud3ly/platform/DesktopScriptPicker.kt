@@ -9,18 +9,24 @@ package micro.repl.ma7moud3ly.platform
 
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.absolutePath
+import io.github.vinceglb.filekit.bookmarkData
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.openFilePicker
 import io.github.vinceglb.filekit.dialogs.openFileSaver
 import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.fromBookmarkData
 import io.github.vinceglb.filekit.name
 import io.github.vinceglb.filekit.readString
+import io.github.vinceglb.filekit.releaseBookmark
 import io.github.vinceglb.filekit.writeString
 import micro.repl.ma7moud3ly.model.EditorMode
 import micro.repl.ma7moud3ly.model.MicroScript
 import org.koin.core.annotation.Single
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 
+@OptIn(ExperimentalEncodingApi::class)
 @Single(binds = [ScriptPicker::class])
 class DesktopScriptPicker : ScriptPicker {
     private var openedFile: PlatformFile? = null
@@ -58,6 +64,39 @@ class DesktopScriptPicker : ScriptPicker {
         } catch (e: Exception) {
             AppLog.e(TAG, "save - cannot write ${file.name}", e)
             null
+        }
+    }
+
+    override suspend fun bookmark(): String? {
+        val file = openedFile ?: return null
+        return try {
+            Base64.encode(file.bookmarkData().bytes)
+        } catch (e: Exception) {
+            AppLog.e(TAG, "bookmark - cannot keep ${file.name}", e)
+            null
+        }
+    }
+
+    override suspend fun reopen(bookmark: String): MicroScript? = try {
+        val file = PlatformFile.fromBookmarkData(Base64.decode(bookmark))
+        val script = MicroScript(
+            path = file.absolutePath(),
+            initialName = file.name,
+            content = file.readString(),
+            editorMode = EditorMode.LOCAL
+        )
+        openedFile = file
+        script
+    } catch (e: Exception) {
+        AppLog.e(TAG, "reopen - cannot read the bookmarked file", e)
+        null
+    }
+
+    override fun forget(bookmark: String) {
+        try {
+            PlatformFile.fromBookmarkData(Base64.decode(bookmark)).releaseBookmark()
+        } catch (e: Exception) {
+            AppLog.e(TAG, "forget - cannot release the bookmark", e)
         }
     }
 }

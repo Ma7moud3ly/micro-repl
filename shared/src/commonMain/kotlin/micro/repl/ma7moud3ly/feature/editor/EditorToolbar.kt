@@ -27,6 +27,7 @@ import micro.repl.ma7moud3ly.shared.resources.editor_open
 import micro.repl.ma7moud3ly.shared.resources.editor_redo
 import micro.repl.ma7moud3ly.shared.resources.editor_run_on_device
 import micro.repl.ma7moud3ly.shared.resources.editor_save
+import micro.repl.ma7moud3ly.shared.resources.editor_save_as
 import micro.repl.ma7moud3ly.shared.resources.editor_undo
 import micro.repl.ma7moud3ly.shared.resources.editor_zoom_in
 import micro.repl.ma7moud3ly.shared.resources.editor_zoom_out
@@ -38,6 +39,7 @@ import micro.repl.ma7moud3ly.shared.resources.ic_line_numbers
 import micro.repl.ma7moud3ly.shared.resources.ic_palette
 import micro.repl.ma7moud3ly.shared.resources.ic_redo
 import micro.repl.ma7moud3ly.shared.resources.ic_save
+import micro.repl.ma7moud3ly.shared.resources.ic_save_as
 import micro.repl.ma7moud3ly.shared.resources.ic_text_decrease
 import micro.repl.ma7moud3ly.shared.resources.ic_text_increase
 import micro.repl.ma7moud3ly.shared.resources.ic_undo
@@ -90,8 +92,8 @@ internal fun EditorToolbar(
 }
 
 /**
- * Run, the file actions, undo and redo and the text size inline, then line
- * numbers and the theme under "more". The file actions show their labels when
+ * Run, the file actions, undo and redo and the text size inline, then save as,
+ * line numbers and the theme under "more". The file actions show their labels when
  * [showLabels] is set.
  */
 @Composable
@@ -167,6 +169,16 @@ private fun WideActions(
         }
         ToolbarMenu { dismiss ->
             ToolbarMenuItem(
+                icon = Res.drawable.ic_save_as,
+                label = Res.string.editor_save_as,
+                iconTint = MaterialTheme.colorScheme.tertiary,
+                onClick = {
+                    dismiss()
+                    uiEvents(EditorEvent.SaveAs)
+                }
+            )
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            ToolbarMenuItem(
                 icon = Res.drawable.ic_line_numbers,
                 label = Res.string.editor_lines,
                 checked = editorManager.showLines,
@@ -222,6 +234,15 @@ private fun CompactActions(
             onClick = { uiEvents(EditorEvent.Run) }
         )
         ToolbarMenu { dismiss ->
+            ToolbarMenuItem(
+                icon = Res.drawable.ic_save_as,
+                label = Res.string.editor_save_as,
+                iconTint = MaterialTheme.colorScheme.tertiary,
+                onClick = {
+                    dismiss()
+                    uiEvents(EditorEvent.SaveAs)
+                }
+            )
             if (editorManager.isLocal) ToolbarMenuItem(
                 icon = Res.drawable.ic_add,
                 label = Res.string.editor_new,

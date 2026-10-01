@@ -13,7 +13,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import micro.repl.ma7moud3ly.feature.editor.model.EditorAction
 import micro.repl.ma7moud3ly.feature.editor.model.EditorCommand
-import micro.repl.ma7moud3ly.feature.editor.dialog.FileSaveAsDialog
 import micro.repl.ma7moud3ly.feature.editor.dialog.FileSaveDialog
 import micro.repl.ma7moud3ly.feature.editor.model.EditorEvent
 import micro.repl.ma7moud3ly.ui.components.MessageToast
@@ -29,7 +28,6 @@ fun EditorScreen(
 ) {
     val messageToast = remember { viewModel.messageToastState }
     val saveDialog = remember { viewModel.saveDialogState }
-    val saveAsNewDialog = remember { viewModel.saveAsNewDialogState }
     val theme = LocalEditorTheme.current
 
     LaunchedEffect(Unit) {
@@ -60,13 +58,6 @@ fun EditorScreen(
         onDismiss = { viewModel.onSaveDismissed() }
     )
 
-    FileSaveAsDialog(
-        state = saveAsNewDialog,
-        name = { "main.py" },
-        onOk = { name -> viewModel.onSaveAsConfirmed(name) },
-        onDismiss = { viewModel.onSaveAsDismissed() }
-    )
-
     MessageToast(state = messageToast)
 
     EditorScreenContent(
@@ -75,6 +66,7 @@ fun EditorScreen(
             when (it) {
                 is EditorEvent.Run -> viewModel.onAction(EditorAction.RunScript)
                 is EditorEvent.Save -> viewModel.onAction(EditorAction.SaveScript)
+                is EditorEvent.SaveAs -> viewModel.onAction(EditorAction.SaveScriptAs)
                 is EditorEvent.New -> viewModel.onAction(EditorAction.NewScript)
                 is EditorEvent.Open -> viewModel.onAction(EditorAction.OpenScript)
                 is EditorEvent.Back -> viewModel.onAction(EditorAction.CloseScript)
