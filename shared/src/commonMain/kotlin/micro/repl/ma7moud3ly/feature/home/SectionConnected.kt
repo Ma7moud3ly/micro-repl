@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import micro.repl.ma7moud3ly.model.MicroDevice
+import micro.repl.ma7moud3ly.model.vendorAndPort
 import micro.repl.ma7moud3ly.shared.resources.Res
 import micro.repl.ma7moud3ly.shared.resources.circuit_python
 import micro.repl.ma7moud3ly.shared.resources.home_change
@@ -157,8 +158,9 @@ private fun DeviceCard(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                    if (device.port.isNotEmpty()) Text(
-                        text = device.port,
+                    val vendorAndPort = device.vendorAndPort
+                    if (vendorAndPort.isNotEmpty()) Text(
+                        text = vendorAndPort,
                         fontFamily = fontConsolas,
                         fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,

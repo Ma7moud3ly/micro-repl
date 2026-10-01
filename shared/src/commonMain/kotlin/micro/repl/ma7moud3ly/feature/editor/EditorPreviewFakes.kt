@@ -121,7 +121,7 @@ private class FakeSerialPortManager : SerialPortManager {
     override val incoming: SharedFlow<ByteArray> = MutableSharedFlow()
     override val errors: SharedFlow<Exception> = MutableSharedFlow()
     override val isPortOpen: Boolean = false
-    override fun connectedDevices(): List<MicroDevice> = emptyList()
+    override suspend fun connectedDevices(): List<MicroDevice> = emptyList()
     override fun hasPermission(device: MicroDevice): Boolean = false
     override suspend fun requestUsbPermission(device: MicroDevice): Boolean = false
     override suspend fun connectToSerial(device: MicroDevice): Result<Unit> =

@@ -26,3 +26,17 @@ val MicroDevice.usbIds: String?
     }
 
 fun Int.toHex(): String = toString(16).uppercase().padStart(4, '0')
+
+/** The board's USB vendor, when it is one of [UsbVendor]. */
+val MicroDevice.vendor: UsbVendor?
+    get() = UsbVendor.of(details?.vendorId?.toIntOrNull())
+
+/**
+ * The detected vendor's name and the port, as one line. The vendor is left out
+ * when unknown, or when [MicroDevice.board] already names it.
+ */
+val MicroDevice.vendorAndPort: String
+    get() = listOfNotNull(
+        vendor?.title?.takeIf { it != board },
+        port.takeIf { it.isNotEmpty() }
+    ).joinToString("  ·  ")

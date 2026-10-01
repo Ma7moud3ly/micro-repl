@@ -24,13 +24,14 @@ data class StatusColors(
 
 
 /**
- * Connection-status accents pulled from the theme's syntax palette, so they
- * stay legible on every theme instead of being fixed reds/greens.
+ * Status accents: a fixed green, amber and red in a dark or light shade to
+ * match the theme. [StatusColors.muted] and [StatusColors.selected] come from
+ * the theme itself.
  */
 fun EditorTheme.toStatusColors() = StatusColors(
-    ok = syntax.string.toColor(),
-    warn = syntax.number.toColor(),
-    error = syntax.type.toColor(),
+    ok = if (dark) Color(0xFF3ADB8B) else Color(0xFF12804E),
+    warn = if (dark) Color(0xFFE8A93B) else Color(0xFF9A6A0B),
+    error = if (dark) Color(0xFFEC7C63) else Color(0xFFB3402A),
     // comments are the theme's own "muted text" role
     muted = syntax.comment.toColor(),
     selected = currentLineBackground.toColor()

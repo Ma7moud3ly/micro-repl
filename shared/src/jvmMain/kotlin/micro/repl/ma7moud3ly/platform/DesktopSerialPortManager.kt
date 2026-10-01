@@ -70,7 +70,7 @@ class DesktopSerialPortManager : SerialPortManager {
      * listed, as each device also shows up as a `tty.*` port that waits for a
      * carrier signal.
      */
-    override fun connectedDevices(): List<MicroDevice> =
+    override suspend fun connectedDevices(): List<MicroDevice> =
         SerialPort.getCommPorts()
             .filterNot { it.systemPortName.startsWith("tty.") }
             .map { it.toMicroDevice() }
