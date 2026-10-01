@@ -40,6 +40,7 @@ class ExplorerViewModel(
 ) : ViewModel() {
 
     init {
+        remoteFilesManager.clear()
         viewModelScope.launch {
             terminalManager.terminateExecution()
             remoteFilesManager.listDir(root.value)
