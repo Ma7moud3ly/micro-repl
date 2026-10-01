@@ -188,6 +188,8 @@ private fun TerminalInputFiled(
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
     fun multiLine() = inp.contains("\n")
+
+    LaunchedEffect(Unit) { focusRequester.requestFocus() }
     Row(
         modifier = Modifier
             .fillMaxWidth()
