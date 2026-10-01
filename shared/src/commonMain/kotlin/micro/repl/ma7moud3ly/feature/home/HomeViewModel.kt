@@ -18,8 +18,11 @@ import micro.repl.ma7moud3ly.managers.BoardManager
 import micro.repl.ma7moud3ly.managers.ScriptManager
 import micro.repl.ma7moud3ly.model.MicroScript
 import micro.repl.ma7moud3ly.managers.TerminalManager
+import micro.repl.ma7moud3ly.model.ConnectionError
 import micro.repl.ma7moud3ly.model.ConnectionStatus
 import micro.repl.ma7moud3ly.model.MicroDevice
+import micro.repl.ma7moud3ly.platform.currentPlatform
+import micro.repl.ma7moud3ly.platform.isMobile
 import org.koin.core.annotation.KoinViewModel
 
 
@@ -62,11 +65,24 @@ class HomeViewModel(
     ////// Connection
 
     fun connect() {
-        viewModelScope.launch { boardManager.detectUsbDevices() }
+        viewModelScope.launch {
+            detectDevices(autoConnect = currentPlatform.isMobile)
+        }
     }
 
+    /** Closes the board, then lists every port to pick the next one from. */
     fun disconnect() {
         boardManager.onDisconnectDevice()
+        viewModelScope.launch {
+            detectDevices(autoConnect = false)
+        }
+    }
+
+    /** Scans for devices, reporting [HomeCommand.NoDevices] when nothing is attached. */
+    private suspend fun detectDevices(autoConnect: Boolean) {
+        boardManager.detectUsbDevices(autoConnect = autoConnect)
+        val error = (status.value as? ConnectionStatus.Error)?.error
+        if (error == ConnectionError.NO_DEVICES) _commands.trySend(HomeCommand.NoDevices)
     }
 
     fun approveDevice(microDevice: MicroDevice) {

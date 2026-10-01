@@ -31,7 +31,7 @@ class WebSerialPortManager : SerialPortManager {
 
     override suspend fun requestUsbPermission(device: MicroDevice): Boolean = false
 
-    override fun connectToSerial(device: MicroDevice): Result<Unit> =
+    override suspend fun connectToSerial(device: MicroDevice): Result<Unit> =
         Result.failure(UnsupportedOperationException("no serial support on web yet"))
 
     override suspend fun write(bytes: ByteArray) = Unit

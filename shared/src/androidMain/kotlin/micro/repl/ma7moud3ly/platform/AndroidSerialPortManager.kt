@@ -19,7 +19,6 @@ import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.os.Build
 import android.os.Build.VERSION.SDK_INT
-import android.util.Log
 import com.hoho.android.usbserial.driver.UsbSerialPort
 import com.hoho.android.usbserial.driver.UsbSerialProber
 import com.hoho.android.usbserial.util.SerialInputOutputManager
@@ -103,7 +102,7 @@ class AndroidSerialPortManager(
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     override suspend fun requestUsbPermission(device: MicroDevice): Boolean {
         val usbDevice = device.usbDevice() ?: return false
-        Log.i(TAG, "requestUsbPermission")
+        AppLog.i(TAG, "requestUsbPermission")
 
         return suspendCancellableCoroutine { continuation ->
             val receiver = object : BroadcastReceiver() {
@@ -112,7 +111,7 @@ class AndroidSerialPortManager(
                     runCatching { this@AndroidSerialPortManager.context.unregisterReceiver(this) }
                     val granted =
                         intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)
-                    Log.i(TAG, "permission granted = $granted")
+                    AppLog.i(TAG, "permission granted = $granted")
                     if (continuation.isActive) continuation.resume(granted)
                 }
             }
@@ -137,33 +136,42 @@ class AndroidSerialPortManager(
         }
     }
 
-    override fun connectToSerial(device: MicroDevice): Result<Unit> = runCatching {
-        closing = false
-        val usbDevice: UsbDevice = device.usbDevice() ?: error("no usb device")
-        val allDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(usbManager)
-        if (allDrivers.isNullOrEmpty()) error("no drivers")
+    /** Opens the device on the IO thread, as every USB control transfer blocks. */
+    override suspend fun connectToSerial(device: MicroDevice): Result<Unit> =
+        withContext(Dispatchers.IO) {
+            runCatching<Unit> {
+                closing = false
+                val usbDevice: UsbDevice = device.usbDevice() ?: error("no usb device")
+                val allDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(usbManager)
+                if (allDrivers.isNullOrEmpty()) error("no drivers")
 
-        val ports = allDrivers[0].ports
-        if (ports.isEmpty()) error("no ports")
-        val connection = usbManager.openDevice(usbDevice) ?: error("cannot open device")
-        Log.v(TAG, "connection - $connection")
+                val ports = allDrivers[0].ports
+                if (ports.isEmpty()) error("no ports")
+                val connection = usbManager.openDevice(usbDevice) ?: error("cannot open device")
+                AppLog.v(TAG, "connection - $connection")
 
-        //Select port index = 0, MicroPython usually has one port
-        port = ports[0]
-        Log.v(TAG, "port - $port")
-        //MicroPython is considered  as CdcAcmSerial port
-        //So it requires to enable DTR to exchange data.
-        port?.open(connection)
-        port?.dtr = true
-        //Set serial connection parameters
-        port?.setParameters(115200, 8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE)
-        // Listen for MicroPython outputs in onNewData callback
-        serialInputOutputManager = SerialInputOutputManager(port, this)
-        serialInputOutputManager?.start()
+                //Select port index = 0, MicroPython usually has one port
+                port = ports[0]
+                AppLog.v(TAG, "port - $port")
+                //MicroPython is considered  as CdcAcmSerial port
+                //So it requires to enable DTR to exchange data.
+                port?.open(connection)
+                port?.dtr = true
+                //Set serial connection parameters
+                port?.setParameters(
+                    115200, 8, UsbSerialPort.STOPBITS_1,
+                    UsbSerialPort.PARITY_NONE
+                )
+                // Listen for MicroPython outputs in onNewData callback
+                serialInputOutputManager = SerialInputOutputManager(
+                    port, this@AndroidSerialPortManager
+                )
+                serialInputOutputManager?.start()
 
-        if (!isPortOpen) error("port did not open")
-        Log.i(TAG, "is open ${port?.isOpen}")
-    }
+                if (!isPortOpen) error("port did not open")
+                AppLog.i(TAG, "is open ${port?.isOpen}")
+            }
+        }
 
     /** usb-serial blocks here for up to [WRITING_TIMEOUT], so never on the caller's thread. */
     override suspend fun write(bytes: ByteArray) {
@@ -177,7 +185,7 @@ class AndroidSerialPortManager(
     }
 
     override fun release() {
-        Log.i(TAG, "release")
+        AppLog.i(TAG, "release")
         closing = true
         try {
             serialInputOutputManager?.stop()
@@ -195,7 +203,7 @@ class AndroidSerialPortManager(
 
     override fun onRunError(e: Exception?) {
         if (closing) return
-        Log.e(TAG, "onRunError - ${e?.message}")
+        AppLog.e(TAG, "onRunError - ${e?.message}")
         _errors.tryEmit(e ?: Exception())
     }
 }

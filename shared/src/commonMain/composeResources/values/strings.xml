@@ -4,7 +4,6 @@
     <string name="dialog_cancel">Cancel</string>
     <string name="dialog_yes">Yes</string>
     <string name="dialog_no">No</string>
-    <string name="dialog_approve">Yes Approve</string>
 
     <string name="micro_python">MicroPython</string>
     <string name="circuit_python">Circuit Python</string>
@@ -20,9 +19,7 @@
     <string name="home_status_waiting">waiting for device</string>
 
     <!-- connection -->
-    <string name="home_disconnect">Disconnect</string>
-    <string name="home_change_device">Change device</string>
-    <string name="home_details">Details</string>
+    <string name="home_change">Change</string>
 
     <!-- empty state -->
     <string name="home_no_device">No device connected</string>
@@ -46,11 +43,10 @@
     <string name="home_sub_scripts">Saved scripts</string>
 
     <!-- device details -->
-    <string name="home_device_is_flashed">Are you sure that one of the connected devices is a supported port flashed with MicroPython firmware?</string>
-    <string name="home_device_product_name">Product Name</string>
-    <string name="home_device_manufacturer">Manufacturer</string>
-    <string name="home_device_vendor_id">Vendor Id</string>
-    <string name="home_device_product_id">Product Id</string>
+    <string name="home_select_port">Select a port</string>
+    <string name="home_select_port_msg">Pick your board's port</string>
+    <string name="home_refresh">Refresh</string>
+    <string name="home_ports_refreshed">Ports refreshed</string>
 
     <!-- theme picker -->
     <string name="home_theme">Theme</string>

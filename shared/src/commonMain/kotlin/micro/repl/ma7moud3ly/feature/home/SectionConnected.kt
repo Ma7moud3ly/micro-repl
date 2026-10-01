@@ -9,6 +9,7 @@ package micro.repl.ma7moud3ly.feature.home
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -27,30 +29,28 @@ import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import micro.repl.ma7moud3ly.feature.home.dialog.DeviceDetailsDialog
 import micro.repl.ma7moud3ly.model.MicroDevice
 import micro.repl.ma7moud3ly.shared.resources.Res
-import micro.repl.ma7moud3ly.ui.components.scaled
-import micro.repl.ma7moud3ly.shared.resources.ic_stop
-import micro.repl.ma7moud3ly.shared.resources.ic_restart_alt
-import micro.repl.ma7moud3ly.shared.resources.ic_power_settings_new
-import androidx.compose.material3.Icon
 import micro.repl.ma7moud3ly.shared.resources.circuit_python
-import micro.repl.ma7moud3ly.shared.resources.home_details
+import micro.repl.ma7moud3ly.shared.resources.home_change
+import micro.repl.ma7moud3ly.shared.resources.ic_power_settings_new
+import micro.repl.ma7moud3ly.shared.resources.ic_restart_alt
+import micro.repl.ma7moud3ly.shared.resources.ic_stop
 import micro.repl.ma7moud3ly.shared.resources.micro_python
 import micro.repl.ma7moud3ly.shared.resources.terminal_reset
 import micro.repl.ma7moud3ly.shared.resources.terminal_soft_reset
 import micro.repl.ma7moud3ly.shared.resources.terminal_terminate
-import micro.repl.ma7moud3ly.ui.components.rememberMyDialogState
 import micro.repl.ma7moud3ly.ui.components.contentWidth
+import micro.repl.ma7moud3ly.ui.components.scaled
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.LocalStatusColors
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
@@ -96,19 +96,12 @@ fun SectionConnected(
             .padding(horizontal = 20.dp, vertical = 24.dp),
         verticalArrangement = Arrangement.spacedBy(22.dp)
     ) {
-        val detailsDialog = rememberMyDialogState()
         DeviceCard(
             device = device,
-            onOpenDetails = { detailsDialog.show() },
+            onChangeDevice = { uiEvents(HomeEvents.Disconnect) },
             onReset = { uiEvents(HomeEvents.Reset) },
             onSoftReset = { uiEvents(HomeEvents.SoftReset) },
             onTerminate = { uiEvents(HomeEvents.Terminate) }
-        )
-        DeviceDetailsDialog(
-            state = detailsDialog,
-            microDevice = device,
-            onDisconnect = { uiEvents(HomeEvents.Disconnect) },
-            onForgetDevice = { uiEvents(HomeEvents.ForgetDevice(device)) }
         )
         Workspace(connected = true, uiEvents = uiEvents)
     }
@@ -117,7 +110,7 @@ fun SectionConnected(
 @Composable
 private fun DeviceCard(
     device: MicroDevice,
-    onOpenDetails: () -> Unit,
+    onChangeDevice: () -> Unit,
     onReset: () -> Unit,
     onSoftReset: () -> Unit,
     onTerminate: () -> Unit
@@ -128,11 +121,10 @@ private fun DeviceCard(
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
         Column {
-            // header — tap to open device details
+            // header
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable(onClick = onOpenDetails)
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(14.dp)
@@ -174,14 +166,7 @@ private fun DeviceCard(
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-                Text(
-                    text = stringResource(Res.string.home_details),
-                    style = MaterialTheme.typography.labelMedium,
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    textDecoration = TextDecoration.Underline,
-                    modifier = Modifier.clickable(onClick = onOpenDetails)
-                )
+                ChangeButton(onClick = onChangeDevice)
             }
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             // actions
@@ -213,6 +198,24 @@ private fun DeviceCard(
             }
         }
     }
+}
+
+/** A small bordered "Change" chip, to pick another port. */
+@Composable
+private fun ChangeButton(onClick: () -> Unit) {
+    val shape = RoundedCornerShape(6.dp)
+    Text(
+        text = stringResource(Res.string.home_change),
+        fontSize = 11.sp,
+        fontWeight = FontWeight.Medium,
+        color = MaterialTheme.colorScheme.onSurface,
+        maxLines = 1,
+        modifier = Modifier
+            .clip(shape)
+            .border(BorderStroke(1.dp, MaterialTheme.colorScheme.outline), shape)
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = 10.dp, vertical = 4.dp)
+    )
 }
 
 @Composable

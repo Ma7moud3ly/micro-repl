@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.ma7moud3ly.nemo.model.EditorTheme
 import micro.repl.ma7moud3ly.BuildInfo
+import micro.repl.ma7moud3ly.feature.home.dialog.SelectPortDialog
 import micro.repl.ma7moud3ly.model.ConnectionStatus
 import micro.repl.ma7moud3ly.shared.resources.Res
 import micro.repl.ma7moud3ly.shared.resources.circuit_python
@@ -128,7 +129,7 @@ internal fun HomeScreenContent(
                 uiEvents = uiEvents
             )
         },
-        footer = { Footer(uiEvents = uiEvents) },
+        footer = { Footer() },
         modifier = Modifier
             .padding(0.dp)
             .verticalScroll(rememberScrollState()),
@@ -141,8 +142,15 @@ internal fun HomeScreenContent(
             is ConnectionStatus.Error ->
                 SectionDisconnected(uiEvents = uiEvents)
 
-            is ConnectionStatus.Approve ->
-                SectionApprove(devices = status.devices, uiEvents = uiEvents)
+            is ConnectionStatus.Approve -> {
+                SectionDisconnected(uiEvents = uiEvents)
+                SelectPortDialog(
+                    devices = status.devices,
+                    onConnect = { uiEvents(HomeEvents.ApproveDevice(it)) },
+                    onRefresh = { uiEvents(HomeEvents.Connect) },
+                    onDismiss = { uiEvents(HomeEvents.DenyDevice) }
+                )
+            }
 
             is ConnectionStatus.Connecting ->
                 ProgressView()
@@ -272,11 +280,11 @@ private fun RuntimeLogo(src: DrawableResource, isActive: Boolean) {
 }
 
 /**
- * [theme] defaults to the app-wide theme, so callers don't have to thread it down;
+ * theme defaults to the app-wide theme, so callers don't have to thread it down;
  * previews can still pass one explicitly.
  */
 
-/** Shows the active theme's colours and name; opens the theme picker. */
+/** Shows the active theme's colors and name; opens the theme picker. */
 @Composable
 private fun ThemeButton(
     theme: EditorTheme,
@@ -328,7 +336,7 @@ private fun ThemeDot(color: Color) {
 
 
 @Composable
-private fun Footer(uiEvents: (HomeEvents) -> Unit) {
+private fun Footer() {
     Column(
         modifier = Modifier.navigationBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally

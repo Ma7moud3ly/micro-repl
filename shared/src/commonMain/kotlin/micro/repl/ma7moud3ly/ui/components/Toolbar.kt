@@ -366,16 +366,33 @@ fun ToolbarMenu(
             onClick = { expanded = true },
             selected = expanded
         )
-        DropdownMenu(
+        ToolbarDropdown(
             expanded = expanded,
-            onDismissRequest = { expanded = false },
-            shape = RoundedCornerShape(8.dp),
-            containerColor = MaterialTheme.colorScheme.surface,
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+            onDismiss = { expanded = false }
         ) {
             content { expanded = false }
         }
     }
+}
+
+/**
+ * A dropdown in the toolbar menu style, placed at its parent. Holds
+ * [ToolbarMenuItem]s.
+ */
+@Composable
+fun ToolbarDropdown(
+    expanded: Boolean,
+    onDismiss: () -> Unit,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = onDismiss,
+        shape = RoundedCornerShape(8.dp),
+        containerColor = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        content = content
+    )
 }
 
 /**

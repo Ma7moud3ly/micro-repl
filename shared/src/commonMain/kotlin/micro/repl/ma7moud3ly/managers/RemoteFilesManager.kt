@@ -65,7 +65,13 @@ class RemoteFilesManager(
         AppLog.v(TAG, "path: $path")
         this.path = path
         val code = CommandsManager.listDir(path)
-        decodeFiles(replManager.writeInSilentMode(code))
+        // a board that gives no listing has nothing to show
+        _files.value = decodeFiles(replManager.writeInSilentMode(code)) ?: emptyList()
+    }
+
+    /** Empties [files], for a listing that belongs to another session. */
+    fun clear() {
+        _files.value = emptyList()
     }
 
     /**
@@ -84,7 +90,7 @@ class RemoteFilesManager(
     suspend fun remove(file: MicroFile) {
         val code = if (file.isFile) CommandsManager.removeFile(file)
         else CommandsManager.removeDirectory(file)
-        decodeFiles(replManager.writeInSilentMode(code))
+        updateFiles(replManager.writeInSilentMode(code))
     }
 
     /**
@@ -95,7 +101,7 @@ class RemoteFilesManager(
     suspend fun new(file: MicroFile) {
         val code = if (file.isFile) CommandsManager.makeFile(file)
         else CommandsManager.makeDirectory(file)
-        decodeFiles(replManager.writeInSilentMode(code))
+        updateFiles(replManager.writeInSilentMode(code))
     }
 
     /**
@@ -106,7 +112,7 @@ class RemoteFilesManager(
      */
     suspend fun rename(src: MicroFile, dst: MicroFile) {
         val code = CommandsManager.rename(src, dst)
-        decodeFiles(replManager.writeInSilentMode(code))
+        updateFiles(replManager.writeInSilentMode(code))
     }
 
     /**
@@ -145,17 +151,23 @@ class RemoteFilesManager(
         AppLog.i(TAG, "result $result")
     }
 
+    /** Publishes the listing in [json] to [files], keeping the current one if it can't be read. */
+    private fun updateFiles(json: String) {
+        decodeFiles(json)?.let { _files.value = it }
+    }
+
     /**
      * Decodes the JSON response from the board manager into a list of `MicroFile` objects.
      *
      * This method parses the JSON response received from the MicroPython board
      * and creates a list of `MicroFile` objects representing the files and
      * directories in the current working directory. objects are sorted to show directories
-     * first then files.Finally, the list is passed to the [files] flow.
+     * first then files.
      *
      * @param json The JSON response string received from the board manager.
+     * @return the files, or null when [json] is not a listing.
      */
-    private fun decodeFiles(json: String) {
+    private fun decodeFiles(json: String): List<MicroFile>? {
         val list = mutableListOf<MicroFile>()
         val jsonFormated = json.replace("(", "[").replace(")", "]").replace("'", "\"")
         val items: JsonArray?
@@ -163,7 +175,7 @@ class RemoteFilesManager(
             items = Json.parseToJsonElement(jsonFormated).jsonArray
         } catch (e: Exception) {
             e.printStackTrace()
-            return
+            return null
         }
         for (i in items.indices) {
             val item = items[i] as? JsonArray ?: continue
@@ -185,6 +197,6 @@ class RemoteFilesManager(
             }
         }
         AppLog.i(TAG, sortedFiles.toString())
-        _files.value = sortedFiles
+        return sortedFiles
     }
 }

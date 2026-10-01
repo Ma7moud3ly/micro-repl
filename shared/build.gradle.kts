@@ -67,6 +67,7 @@ kotlin {
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
+            implementation(libs.compose.materialIconsExtended)
             implementation(libs.compose.ui)
             api(libs.compose.components.resources)
             implementation(libs.compose.uiToolingPreview)
@@ -111,6 +112,10 @@ kotlin {
             implementation(libs.androidx.core.ktx)
             // the USB serial transport
             implementation(libs.usb.serial.forandroid)
+        }
+        jvmMain.dependencies {
+            // serial ports on Windows, macOS and Linux
+            implementation(libs.jserialcomm)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

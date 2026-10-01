@@ -88,12 +88,16 @@ class BoardManager(
     /**
      * Detects and lists connected USB devices, and attempts to connect
      * to a supported device.
+     *
+     * With [autoConnect] off, every device is listed for the user to pick from,
+     * supported or not.
      */
-    suspend fun detectUsbDevices() {
+    suspend fun detectUsbDevices(autoConnect: Boolean = true) {
         val deviceList = serialPort.connectedDevices()
         AppLog.i(TAG, "detectUsbDevices - deviceList =  ${deviceList.size}")
 
-        val supportedDevice: MicroDevice? = deviceList.filter { device ->
+        val supportedDevice: MicroDevice? = if (autoConnect.not()) null
+        else deviceList.filter { device ->
             val productId = device.productId
             supportedManufacturers.contains(device.details?.manufacturerName) ||
                     (productId != null && supportedProducts.contains(productId))
@@ -116,10 +120,10 @@ class BoardManager(
     }
 
     /**
-     * Called when the user denies permission to access a USB device.
+     * Called when the user closes the device list without picking one.
      */
     fun onDenyDevice() {
-        throwError(error = ConnectionError.NOT_SUPPORTED)
+        throwError(error = ConnectionError.NO_DEVICES)
     }
 
     /**
@@ -141,8 +145,9 @@ class BoardManager(
     /**
      * Establishes a serial connection to the given device and publishes the result.
      */
-    private fun connectToSerial(microDevice: MicroDevice) {
+    private suspend fun connectToSerial(microDevice: MicroDevice) {
         serialPort.release()
+        setStatus(ConnectionStatus.Connecting)
         serialPort.connectToSerial(microDevice)
             .onSuccess {
                 setStatus(ConnectionStatus.Connected(microDevice))
