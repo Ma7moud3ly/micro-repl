@@ -10,6 +10,7 @@ package micro.repl.ma7moud3ly.feature.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -24,6 +25,7 @@ import micro.repl.ma7moud3ly.model.MicroDevice
 import micro.repl.ma7moud3ly.platform.currentPlatform
 import micro.repl.ma7moud3ly.platform.isMobile
 import org.koin.core.annotation.KoinViewModel
+import kotlin.time.Duration.Companion.milliseconds
 
 
 @KoinViewModel
@@ -72,8 +74,9 @@ class HomeViewModel(
 
     /** Closes the board, then lists every port to pick the next one from. */
     fun disconnect() {
-        boardManager.onDisconnectDevice()
         viewModelScope.launch {
+            boardManager.onDisconnectDevice()
+            delay(500.milliseconds)
             detectDevices(autoConnect = false)
         }
     }

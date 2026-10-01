@@ -65,7 +65,7 @@ class AndroidSerialPortManager(
 
     override val isPortOpen: Boolean get() = port?.isOpen == true
 
-    override fun connectedDevices(): List<MicroDevice> =
+    override suspend fun connectedDevices(): List<MicroDevice> =
         usbManager.deviceList.values.map { it.toMicroDevice() }
 
     override fun hasPermission(device: MicroDevice): Boolean {

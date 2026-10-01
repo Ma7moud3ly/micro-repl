@@ -26,7 +26,7 @@ interface SerialPortManager {
     val isPortOpen: Boolean
 
     /** Devices currently attached, whether they are supported boards or not. */
-    fun connectedDevices(): List<MicroDevice>
+    suspend fun connectedDevices(): List<MicroDevice>
 
     fun hasPermission(device: MicroDevice): Boolean
 
