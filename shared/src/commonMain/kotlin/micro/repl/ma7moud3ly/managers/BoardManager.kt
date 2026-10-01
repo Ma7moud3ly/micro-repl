@@ -61,7 +61,7 @@ class BoardManager(
 
     // Devices to connect with
     // Only MicroPython is supported right now
-    private val supportedManufacturers = mutableListOf(
+    private val supportedManufacturers = listOf(
         "MicroPython" // for micro python
     )
     private var supportedProducts = storageManager.approvedProductIds()
@@ -134,15 +134,6 @@ class BoardManager(
     }
 
     /**
-     * Called when the user chooses to forget a previously connected device.
-     */
-    suspend fun onForgetDevice(microDevice: MicroDevice) {
-        onDisconnectDevice()
-        microDevice.productId?.let { removeProduct(it) }
-        detectUsbDevices()
-    }
-
-    /**
      * Establishes a serial connection to the given device and publishes the result.
      */
     private suspend fun connectToSerial(microDevice: MicroDevice) {
@@ -181,13 +172,6 @@ class BoardManager(
     /**
      * Store or Fetch supported product ids
      */
-
-    private fun removeProduct(productId: Int) {
-        supportedProducts.remove(productId)
-        supportedManufacturers.clear()
-        storageManager.saveApprovedProductIds(supportedProducts)
-        AppLog.v(TAG, "remove ProductId ---> $productId")
-    }
 
     private fun storeProductId(productId: Int) {
         if (supportedProducts.contains(productId)) return

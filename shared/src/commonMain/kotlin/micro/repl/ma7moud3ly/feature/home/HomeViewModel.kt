@@ -96,10 +96,6 @@ class HomeViewModel(
         boardManager.onDenyDevice()
     }
 
-    fun forgetDevice(microDevice: MicroDevice) {
-        viewModelScope.launch { boardManager.onForgetDevice(microDevice) }
-    }
-
     ////// Board control
 
     /** Hard reset. Only a connected board can be reset. */

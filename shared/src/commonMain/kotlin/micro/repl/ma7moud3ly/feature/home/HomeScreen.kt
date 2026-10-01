@@ -81,7 +81,6 @@ fun HomeScreen(
                 is HomeEvents.Disconnect -> viewModel.disconnect()
                 is HomeEvents.DenyDevice -> viewModel.denyDevice()
                 is HomeEvents.ApproveDevice -> viewModel.approveDevice(it.microDevice)
-                is HomeEvents.ForgetDevice -> viewModel.forgetDevice(it.microDevice)
                 is HomeEvents.ShowThemeDialog -> openThemePicker()
             }
         }

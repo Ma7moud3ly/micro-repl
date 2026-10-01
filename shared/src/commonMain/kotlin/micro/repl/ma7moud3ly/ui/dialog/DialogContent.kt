@@ -75,7 +75,7 @@ internal fun InputDialogContent(
                 .fillMaxWidth()
                 .background(
                     shape = RoundedCornerShape(8.dp),
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.surfaceVariant
                 )
                 .padding(vertical = 16.dp, horizontal = 8.dp)
         )

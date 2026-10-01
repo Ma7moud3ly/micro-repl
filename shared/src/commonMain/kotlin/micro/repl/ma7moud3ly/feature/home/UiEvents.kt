@@ -23,7 +23,6 @@ sealed interface HomeEvents {
     data object ShowThemeDialog : HomeEvents
     data object DenyDevice : HomeEvents
     data class ApproveDevice(val microDevice: MicroDevice) : HomeEvents
-    data class ForgetDevice(val microDevice: MicroDevice) : HomeEvents
 }
 
 
