@@ -142,10 +142,10 @@ class AndroidSerialPortManager(
             runCatching<Unit> {
                 closing = false
                 val usbDevice: UsbDevice = device.usbDevice() ?: error("no usb device")
-                val allDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(usbManager)
-                if (allDrivers.isNullOrEmpty()) error("no drivers")
-
-                val ports = allDrivers[0].ports
+                // the driver for the picked device
+                val driver = UsbSerialProber.getDefaultProber().probeDevice(usbDevice)
+                    ?: error("no driver for ${device.port}")
+                val ports = driver.ports
                 if (ports.isEmpty()) error("no ports")
                 val connection = usbManager.openDevice(usbDevice) ?: error("cannot open device")
                 AppLog.v(TAG, "connection - $connection")
