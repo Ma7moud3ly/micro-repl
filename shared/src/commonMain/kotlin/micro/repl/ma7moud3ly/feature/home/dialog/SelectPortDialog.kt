@@ -41,14 +41,18 @@ import micro.repl.ma7moud3ly.feature.home.TestHome
 import micro.repl.ma7moud3ly.model.MicroDevice
 import micro.repl.ma7moud3ly.model.usbIds
 import micro.repl.ma7moud3ly.shared.resources.Res
+import micro.repl.ma7moud3ly.shared.resources.home_ports_refreshed
 import micro.repl.ma7moud3ly.shared.resources.home_refresh
 import micro.repl.ma7moud3ly.shared.resources.home_select_port
 import micro.repl.ma7moud3ly.shared.resources.home_select_port_msg
 import micro.repl.ma7moud3ly.shared.resources.ic_restart_alt
 import micro.repl.ma7moud3ly.shared.resources.ic_usb
 import micro.repl.ma7moud3ly.ui.components.DialogHeader
+import micro.repl.ma7moud3ly.ui.components.MessageToast
 import micro.repl.ma7moud3ly.ui.components.MyDialog
 import micro.repl.ma7moud3ly.ui.components.ToolbarButton
+import micro.repl.ma7moud3ly.ui.components.asSuccessMessage
+import micro.repl.ma7moud3ly.ui.components.rememberMessageState
 import micro.repl.ma7moud3ly.ui.components.scaled
 import micro.repl.ma7moud3ly.ui.theme.AppTheme
 import micro.repl.ma7moud3ly.ui.theme.fontConsolas
@@ -93,12 +97,19 @@ internal fun SelectPortDialog(
         onDismiss = onDismiss,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
     ) {
+        // drawn in the dialog, as a toast from the screen stays behind it
+        val messageToast = rememberMessageState()
+        val refreshed = stringResource(Res.string.home_ports_refreshed)
         SelectPortContent(
             devices = devices,
             onConnect = onConnect,
-            onRefresh = onRefresh,
+            onRefresh = {
+                onRefresh()
+                messageToast.show(refreshed.asSuccessMessage)
+            },
             onDismiss = onDismiss
         )
+        MessageToast(state = messageToast, bottomMargin = 16.dp)
     }
 }
 

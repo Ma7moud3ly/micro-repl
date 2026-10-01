@@ -66,14 +66,23 @@ class HomeViewModel(
 
     fun connect() {
         viewModelScope.launch {
-            boardManager.detectUsbDevices(autoConnect = currentPlatform.isMobile)
-            val error = (status.value as? ConnectionStatus.Error)?.error
-            if (error == ConnectionError.NO_DEVICES) _commands.trySend(HomeCommand.NoDevices)
+            detectDevices(autoConnect = currentPlatform.isMobile)
         }
     }
 
+    /** Closes the board, then lists every port to pick the next one from. */
     fun disconnect() {
         boardManager.onDisconnectDevice()
+        viewModelScope.launch {
+            detectDevices(autoConnect = false)
+        }
+    }
+
+    /** Scans for devices, reporting [HomeCommand.NoDevices] when nothing is attached. */
+    private suspend fun detectDevices(autoConnect: Boolean) {
+        boardManager.detectUsbDevices(autoConnect = autoConnect)
+        val error = (status.value as? ConnectionStatus.Error)?.error
+        if (error == ConnectionError.NO_DEVICES) _commands.trySend(HomeCommand.NoDevices)
     }
 
     fun approveDevice(microDevice: MicroDevice) {

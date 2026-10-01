@@ -129,7 +129,7 @@ internal fun HomeScreenContent(
                 uiEvents = uiEvents
             )
         },
-        footer = { Footer(uiEvents = uiEvents) },
+        footer = { Footer() },
         modifier = Modifier
             .padding(0.dp)
             .verticalScroll(rememberScrollState()),
@@ -280,11 +280,11 @@ private fun RuntimeLogo(src: DrawableResource, isActive: Boolean) {
 }
 
 /**
- * [theme] defaults to the app-wide theme, so callers don't have to thread it down;
+ * theme defaults to the app-wide theme, so callers don't have to thread it down;
  * previews can still pass one explicitly.
  */
 
-/** Shows the active theme's colours and name; opens the theme picker. */
+/** Shows the active theme's colors and name; opens the theme picker. */
 @Composable
 private fun ThemeButton(
     theme: EditorTheme,
@@ -336,7 +336,7 @@ private fun ThemeDot(color: Color) {
 
 
 @Composable
-private fun Footer(uiEvents: (HomeEvents) -> Unit) {
+private fun Footer() {
     Column(
         modifier = Modifier.navigationBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally
