@@ -60,7 +60,6 @@
     <string name="home_report_bug">Feedback or a bug? 🐞</string>
     <string name="home_help_link">https://github.com/Ma7moud3ly/micro-repl</string>
 
-    <string name="editor_untitled">untitled</string>
     <string name="editor_save">Save</string>
     <string name="editor_save_as">Save as</string>
     <string name="editor_open">Open</string>
@@ -117,6 +116,5 @@
     <string name="scripts_remove">Remove from list</string>
     <string name="scripts_recent_missing">Couldn&#8217;t open this file. It may have been moved or deleted.</string>
     <string name="scripts_deprecated">App scripts will be removed soon. Open a script and use Save as to keep it as a file.</string>
-    <string name="scripts_share_failed">Couldn&#8217;t share this script</string>
 
 </resources>
