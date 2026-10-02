@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -29,6 +30,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
@@ -59,6 +62,8 @@ import micro.repl.ma7moud3ly.ui.theme.LocalStatusColors
 import micro.repl.ma7moud3ly.ui.theme.explorerColors
 import org.jetbrains.compose.resources.painterResource
 
+/** Width of a grid cell, with room for the name under the icon. */
+private val cellWidth = 92.dp
 private val iconSize = 60.dp
 private val microFile1 = MicroFile(
     name = "main.py",
@@ -154,7 +159,7 @@ internal fun ExplorerScreenContent(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(8.dp),
-                columns = GridCells.Adaptive(iconSize),
+                columns = GridCells.Adaptive(cellWidth),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
@@ -244,14 +249,16 @@ private fun ItemFile(
 ) {
     val isFile = microFile.isFile
     Column(
-        verticalArrangement = Arrangement.spacedBy(0.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
+            .clip(RoundedCornerShape(8.dp))
             .consumeRightClicks()
             .combinedClickable(
                 onClick = { onClick.invoke(microFile) },
                 onLongClick = { onLongClick.invoke(microFile) },
             )
+            .padding(horizontal = 4.dp, vertical = 6.dp)
     ) {
         Icon(
             painter = painterResource(
@@ -265,8 +272,10 @@ private fun ItemFile(
         Text(
             text = microFile.name,
             style = MaterialTheme.typography.labelMedium,
+            textAlign = TextAlign.Center,
             overflow = TextOverflow.Ellipsis,
-            maxLines = 1,
+            maxLines = 2,
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }
