@@ -1,0 +1,14 @@
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+/* the app's dark background while the app loads, so the page doesn't flash white */
+body {
+    background: #14161A;
+    text-align: center;
+    align-content: center;
+}

@@ -1,0 +1,383 @@
+/*
+ * Created by Mahmoud Aly - engma7moud3ly@gmail.com
+ * Project Micro REPL - https://github.com/Ma7moud3ly/micro-repl
+ * Copyright (c) 2023 . MIT license.
+ *
+ */
+
+package micro.repl.ma7moud3ly.feature.home
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import io.ma7moud3ly.nemo.model.EditorTheme
+import micro.repl.ma7moud3ly.BuildInfo
+import micro.repl.ma7moud3ly.feature.home.dialog.SelectPortDialog
+import micro.repl.ma7moud3ly.model.ConnectionStatus
+import micro.repl.ma7moud3ly.shared.resources.Res
+import micro.repl.ma7moud3ly.shared.resources.circuit_python
+import micro.repl.ma7moud3ly.shared.resources.home_footer
+import micro.repl.ma7moud3ly.shared.resources.home_help_link
+import micro.repl.ma7moud3ly.shared.resources.home_report_bug
+import micro.repl.ma7moud3ly.shared.resources.home_wordmark
+import micro.repl.ma7moud3ly.shared.resources.micro_python
+import micro.repl.ma7moud3ly.shared.resources.python
+import micro.repl.ma7moud3ly.ui.components.MyScreen
+import micro.repl.ma7moud3ly.ui.components.ProgressView
+import micro.repl.ma7moud3ly.ui.components.contentWidth
+import micro.repl.ma7moud3ly.ui.components.isCompactDevice
+import micro.repl.ma7moud3ly.ui.theme.AppTheme
+import micro.repl.ma7moud3ly.ui.theme.AppThemes
+import micro.repl.ma7moud3ly.ui.theme.LocalEditorTheme
+import micro.repl.ma7moud3ly.ui.theme.fontConsolas
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+
+@Preview
+@Composable
+private fun HomeConnectedPreview() {
+    AppTheme(theme = AppThemes.MICRO_REPL_DARK) {
+        HomeScreenContent(
+            connectionStatus = { TestHome.connected },
+            theme = AppThemes.MICRO_REPL_DARK,
+            uiEvents = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun HomeConnectedPreviewLight() {
+    AppTheme(theme = AppThemes.MICRO_REPL_LIGHT) {
+        HomeScreenContent(
+            connectionStatus = { TestHome.connected },
+            theme = AppThemes.MICRO_REPL_LIGHT,
+            uiEvents = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun HomeDisconnectedPreview() {
+    AppTheme(theme = AppThemes.MICRO_REPL_DARK) {
+        HomeScreenContent(
+            connectionStatus = { TestHome.disconnected },
+            theme = AppThemes.MICRO_REPL_DARK,
+            uiEvents = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun HomeDisconnectedPreviewLight() {
+    AppTheme(theme = AppThemes.MICRO_REPL_LIGHT) {
+        HomeScreenContent(
+            connectionStatus = { TestHome.disconnected },
+            theme = AppThemes.MICRO_REPL_LIGHT,
+            uiEvents = {}
+        )
+    }
+}
+
+
+@Composable
+internal fun HomeScreenContent(
+    connectionStatus: () -> ConnectionStatus,
+    theme: EditorTheme = LocalEditorTheme.current,
+    uiEvents: (HomeEvents) -> Unit
+) {
+    MyScreen(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = if (isCompactDevice()) Arrangement.spacedBy(0.dp)
+        else Arrangement.spacedBy(0.dp, Alignment.CenterVertically),
+        header = {
+            HomeAppBar(
+                connectionStatus = connectionStatus,
+                theme = theme,
+                uiEvents = uiEvents
+            )
+        },
+        footer = { Footer() },
+        modifier = Modifier
+            .padding(0.dp)
+            .verticalScroll(rememberScrollState()),
+        spacedBy = 0.dp
+    ) {
+        when (val status = connectionStatus()) {
+            is ConnectionStatus.Connected ->
+                SectionConnected(device = status.microDevice, uiEvents = uiEvents)
+
+            is ConnectionStatus.Error ->
+                SectionDisconnected(uiEvents = uiEvents)
+
+            is ConnectionStatus.Approve -> {
+                SectionDisconnected(uiEvents = uiEvents)
+                SelectPortDialog(
+                    devices = status.devices,
+                    onConnect = { uiEvents(HomeEvents.ApproveDevice(it)) },
+                    onRefresh = { uiEvents(HomeEvents.Connect) },
+                    onDismiss = { uiEvents(HomeEvents.DenyDevice) }
+                )
+            }
+
+            is ConnectionStatus.Connecting ->
+                ProgressView()
+        }
+    }
+}
+
+
+@Composable
+private fun ThemeBar(
+    theme: EditorTheme,
+    uiEvents: (HomeEvents) -> Unit
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Row(
+            modifier = Modifier
+                .contentWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            ThemeButton(
+                theme = theme,
+                onClick = { uiEvents(HomeEvents.ShowThemeDialog) }
+            )
+        }
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+    }
+}
+
+@Composable
+private fun HomeAppBar(
+    connectionStatus: () -> ConnectionStatus,
+    theme: EditorTheme,
+    uiEvents: (HomeEvents) -> Unit
+) {
+    val status = connectionStatus()
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Row(
+            modifier = Modifier
+                .contentWidth()
+                .statusBarsPadding()
+                .padding(start = 20.dp, top = 18.dp, end = 20.dp, bottom = 14.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Top
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    text = stringResource(Res.string.home_wordmark),
+                    fontFamily = fontConsolas,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                StatusLineView(status)
+            }
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RuntimeBadges(active = status.activeRuntime())
+                if (isCompactDevice().not()) {
+                    ThemeButton(
+                        theme = theme,
+                        onClick = { uiEvents(HomeEvents.ShowThemeDialog) }
+                    )
+                }
+            }
+        }
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        if (isCompactDevice()) {
+            ThemeBar(
+                theme = theme,
+                uiEvents = uiEvents
+            )
+        }
+    }
+}
+
+@Composable
+private fun StatusLineView(status: ConnectionStatus) {
+    val line = status.statusLine()
+    val color = line.tone.color()
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = "$ ",
+            fontFamily = fontConsolas,
+            fontSize = 12.sp,
+            color = color.copy(alpha = 0.6f)
+        )
+        Text(
+            text = stringResource(line.text),
+            fontFamily = fontConsolas,
+            fontSize = 12.sp,
+            color = color,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+@Composable
+private fun RuntimeBadges(active: RuntimeBadge?) {
+    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        RuntimeLogo(Res.drawable.python, active == RuntimeBadge.PY)
+        RuntimeLogo(Res.drawable.micro_python, active == RuntimeBadge.MICRO_PYTHON)
+        RuntimeLogo(Res.drawable.circuit_python, active == RuntimeBadge.CIRCUIT_PYTHON)
+    }
+}
+
+@Composable
+private fun RuntimeLogo(src: DrawableResource, isActive: Boolean) {
+    Surface(
+        shape = CircleShape,
+        color = Color.White,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        modifier = Modifier
+            .size(28.dp)
+            .alpha(if (isActive) 1f else 0.38f)
+    ) {
+        Image(
+            painter = painterResource(src),
+            contentDescription = null,
+            modifier = Modifier.padding(5.dp)
+        )
+    }
+}
+
+/**
+ * theme defaults to the app-wide theme, so callers don't have to thread it down;
+ * previews can still pass one explicitly.
+ */
+
+/** Shows the active theme's colors and name; opens the theme picker. */
+@Composable
+private fun ThemeButton(
+    theme: EditorTheme,
+    onClick: () -> Unit
+) {
+    Surface(
+        shape = RoundedCornerShape(9.dp),
+        color = Color.Transparent,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        onClick = onClick
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(28.dp)
+                    .padding(vertical = 6.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                    ThemeDot(Color(theme.syntax.keyword))
+                    ThemeDot(Color(theme.syntax.string))
+                    ThemeDot(Color(theme.syntax.function))
+                }
+            }
+            Text(
+                text = theme.name,
+                fontFamily = fontConsolas,
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1
+            )
+        }
+    }
+}
+
+@Composable
+private fun ThemeDot(color: Color) {
+    Box(
+        modifier = Modifier
+            .size(6.dp)
+            .clip(CircleShape)
+            .background(color)
+    )
+}
+
+
+@Composable
+private fun Footer() {
+    Column(
+        modifier = Modifier.navigationBarsPadding(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        Row(
+            modifier = Modifier
+                .contentWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = stringResource(
+                    Res.string.home_footer,
+                    BuildInfo.VERSION_NAME
+                ),
+                fontFamily = fontConsolas,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = " · ",
+                fontFamily = fontConsolas,
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            val uriHandler = LocalUriHandler.current
+            val uri = stringResource(Res.string.home_help_link)
+            Text(
+                text = stringResource(Res.string.home_report_bug),
+                fontFamily = fontConsolas,
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                //textDecoration = TextDecoration.Underline,
+                modifier = Modifier.clickable {
+                    uriHandler.openUri(uri)
+                }
+            )
+        }
+    }
+}

@@ -12,3 +12,8 @@ google-services.json
 *.keystore
 *.jks
 build.ps1
+.kotlin
+**/build/
+!src/**/build/
+xcuserdata
+node_modules/
