@@ -136,11 +136,13 @@ object CommandsManager {
      *
      * @param path The path of the file to write to.
      * @param byteArray The bytes to write to the file.
+     * @param append Whether to add the bytes to the end of the file instead of replacing it.
      * @return The MicroPython command string.
      */
-    fun writeBinaryFile(path: String, byteArray: ByteArray): String {
+    fun writeBinaryFile(path: String, byteArray: ByteArray, append: Boolean = false): String {
         val content = byteArray.toPythonBytes()
-        return "b = bytes($content)\r\nf = open('$path','wb');" +
+        val mode = if (append) "ab" else "wb"
+        return "b = bytes($content)\r\nf = open('$path','$mode');" +
                 "a = f.write(b);f.close();print(a)"
     }
 

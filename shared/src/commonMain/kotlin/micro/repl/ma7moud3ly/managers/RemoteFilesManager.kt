@@ -10,12 +10,14 @@ package micro.repl.ma7moud3ly.managers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonArray
 import micro.repl.ma7moud3ly.model.MicroFile
+import micro.repl.ma7moud3ly.platform.AppDispatchers
 import micro.repl.ma7moud3ly.platform.AppLog
 import org.koin.core.annotation.Single
 
@@ -35,7 +37,8 @@ import org.koin.core.annotation.Single
  */
 @Single
 class RemoteFilesManager(
-    private val replManager: ReplManager
+    private val replManager: ReplManager,
+    private val dispatchers: AppDispatchers
 ) {
 
     private val _files = MutableStateFlow<List<MicroFile>>(emptyList())
@@ -45,6 +48,9 @@ class RemoteFilesManager(
 
     companion object {
         private const val TAG = "RemoteFilesManager"
+
+        /** The size of bytes [writeBinary] sends to the board in one write. */
+        private const val CHUNK_SIZE = 8 * 1024
     }
 
 
@@ -144,11 +150,17 @@ class RemoteFilesManager(
      * @param path The path to the file to write to.
      * @param bytes The bytes to write to the file.
      */
-    suspend fun writeBinary(path: String, bytes: ByteArray) {
+    suspend fun writeBinary(path: String, bytes: ByteArray) = withContext(dispatchers.io) {
         AppLog.v(TAG, "writeBinary-to: $path")
-        val code = CommandsManager.writeBinaryFile(path, bytes)
-        val result = replManager.writeInSilentMode(code)
-        AppLog.i(TAG, "result $result")
+        // the first chunk creates the file, the rest are appended
+        var offset = 0
+        do {
+            val chunk = bytes.copyOfRange(offset, minOf(offset + CHUNK_SIZE, bytes.size))
+            val code = CommandsManager.writeBinaryFile(path, chunk, append = offset > 0)
+            val result = replManager.writeInSilentMode(code)
+            AppLog.i(TAG, "result $result")
+            offset += CHUNK_SIZE
+        } while (offset < bytes.size)
     }
 
     /** Publishes the listing in [json] to [files], keeping the current one if it can't be read. */
