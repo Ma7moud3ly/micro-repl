@@ -30,12 +30,16 @@ fun Modifier.onFreeSpaceClick(
     } else detectTapGestures(onTap = { onClick(it.round()) })
 }
 
-/** Takes right clicks, so they never reach [onFreeSpaceClick] behind this item. */
-fun Modifier.consumeRightClicks(): Modifier = pointerInput(Unit) {
+/**
+ * Runs [onClick] on a right click, and takes the click so it never reaches
+ * [onFreeSpaceClick] behind this item.
+ */
+fun Modifier.onRightClick(onClick: () -> Unit): Modifier = pointerInput(Unit) {
     awaitEachGesture {
         val event = awaitPointerEvent()
         if (event.type == PointerEventType.Press && event.buttons.isSecondaryPressed) {
             event.changes.forEach { it.consume() }
+            onClick()
         }
     }
 }
