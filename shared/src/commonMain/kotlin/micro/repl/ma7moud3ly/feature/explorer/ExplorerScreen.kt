@@ -51,9 +51,6 @@ fun FilesExplorerScreen(
                     val refreshMessage = getString(Res.string.explorer_refresh)
                     messageToast.show(refreshMessage.asSuccessMessage)
                 }
-
-                is ExplorerCommand.Imported ->
-                    messageToast.show("saved to ${command.path}".asSuccessMessage)
             }
         }
     }
@@ -88,6 +85,7 @@ fun FilesExplorerScreen(
     ExplorerScreenContent(
         files = { files.value },
         root = { viewModel.root.value },
+        loading = { viewModel.loading },
         isMicroPython = viewModel.isMicroPython,
         uiEvents = {
             when (it) {

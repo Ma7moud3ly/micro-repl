@@ -32,7 +32,7 @@ fun ProgressView() {
         contentAlignment = Alignment.Center
     ) {
         CircularProgressIndicator(
-            color = Color.Green.copy(alpha = 0.2f)
+            color = Color.Green.copy(alpha = 0.5f)
         )
     }
 }

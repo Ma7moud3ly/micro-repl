@@ -49,6 +49,7 @@ import micro.repl.ma7moud3ly.shared.resources.ic_note_add
 import micro.repl.ma7moud3ly.shared.resources.ic_refresh
 import micro.repl.ma7moud3ly.shared.resources.ic_upload
 import micro.repl.ma7moud3ly.ui.components.MyScreen
+import micro.repl.ma7moud3ly.ui.components.ProgressView
 import micro.repl.ma7moud3ly.ui.components.ToolbarDropdown
 import micro.repl.ma7moud3ly.ui.components.ToolbarMenuItem
 import micro.repl.ma7moud3ly.ui.components.consumeRightClicks
@@ -77,6 +78,7 @@ private fun FileManagerScreenPreviewLight() {
         ExplorerScreenContent(
             files = { files },
             root = { "" },
+            loading = { false },
             uiEvents = { }
         )
     }
@@ -90,6 +92,7 @@ private fun FileManagerScreenPreviewDark() {
         ExplorerScreenContent(
             files = { files },
             root = { "" },
+            loading = { false },
             uiEvents = { }
         )
     }
@@ -103,6 +106,7 @@ private fun FileManagerScreenPreviewDesktopDark() {
         ExplorerScreenContent(
             files = { files },
             root = { "" },
+            loading = { false },
             uiEvents = { }
         )
     }
@@ -113,6 +117,7 @@ private fun FileManagerScreenPreviewDesktopDark() {
 internal fun ExplorerScreenContent(
     files: () -> List<MicroFile>,
     root: () -> String,
+    loading: () -> Boolean,
     isMicroPython: Boolean = true,
     uiEvents: (ExplorerEvents) -> Unit
 ) {
@@ -144,6 +149,7 @@ internal fun ExplorerScreenContent(
                 .weight(1f)
                 .onFreeSpaceClick(secondary = isMobile.not()) { menuOffset = it }
         ) {
+            if (loading()) ProgressView()
             LazyVerticalGrid(
                 modifier = Modifier
                     .fillMaxSize()
@@ -248,7 +254,8 @@ private fun ItemFile(
             )
     ) {
         Icon(
-            painter = painterResource(if (isFile) Res.drawable.file
+            painter = painterResource(
+                if (isFile) Res.drawable.file
                 else Res.drawable.folder
             ),
             contentDescription = microFile.name,

@@ -59,6 +59,9 @@ class ExplorerViewModel(
     val isMicroPython: Boolean =
         (boardManager.status.value as? ConnectionStatus.Connected)?.microDevice?.isMicroPython == true
 
+    var loading by mutableStateOf(false)
+        private set
+
     ////// Dialogs
 
     val importDialogState = MyDialogState()
@@ -169,9 +172,10 @@ class ExplorerViewModel(
     fun importFile(fileName: String, bytes: ByteArray) {
         val destination = root
         viewModelScope.launch {
+            loading = true
             remoteFilesManager.writeBinary(path = destination.child(fileName).value, bytes = bytes)
             remoteFilesManager.listDir()
-            _commands.trySend(ExplorerCommand.Imported(destination))
+            loading = false
         }
     }
 }

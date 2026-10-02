@@ -60,7 +60,10 @@ internal fun previewEditorManager(
     return EditorManager(
         localFilesManager = scriptsManager,
         storageManager = storageManager,
-        remoteFilesManager = RemoteFilesManager(ReplManager(serialPort, PreviewDispatchers)),
+        remoteFilesManager = RemoteFilesManager(
+            replManager = ReplManager(serialPort, PreviewDispatchers),
+            dispatchers = PreviewDispatchers
+        ),
         scriptManager = ScriptManager(scriptsManager, storageManager, FakeScriptPicker),
         themesManager = ThemesManager(storageManager),
         boardManager = BoardManager(serialPort, storageManager).apply {
