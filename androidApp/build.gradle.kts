@@ -3,7 +3,6 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeCompiler)
-    // rewrites the `modules(AppModule::class)` call in AndroidApp
     alias(libs.plugins.koinCompiler)
 }
 
