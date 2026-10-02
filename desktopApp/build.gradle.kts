@@ -20,28 +20,43 @@ dependencies {
 }
 
 compose.desktop {
+    val projectName = libs.versions.project.name.get()
+    val packageName = libs.versions.project.packageName.get()
     application {
-        mainClass = "${libs.versions.project.packageName.get()}.MainKt"
+        mainClass = "$packageName.MainKt"
+
+        buildTypes.release.proguard {
+            isEnabled.set(false)
+        }
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = libs.versions.project.packageName.get()
+            // the whole Java runtime, so no module a library needs is left out
+            includeAllModules = true
+            // the name in the start menu and the window list
+            this.packageName = projectName
             packageVersion = libs.versions.project.versionName.get()
-
+            description = libs.versions.project.description.get()
             vendor = libs.versions.project.vendor.get()
-
             // jpackage takes a different image format on each platform
             val icons = rootProject.file("shared/src/commonMain/composeResources/drawable")
             windows {
                 iconFile.set(icons.resolve("icon.ico"))
                 shortcut = true
+                menuGroup = projectName
+                // the same on every release, so a new installer replaces the old version
+                upgradeUuid = "ce9f0dd3-25a4-4ef7-8523-c8c83a03f999"
             }
             linux {
                 iconFile.set(icons.resolve("logo.png"))
                 shortcut = true
+                this.packageName = projectName.lowercase().replace(' ', '-')
+                menuGroup = "Development"
+                appCategory = "Development"
             }
             macOS {
                 iconFile.set(icons.resolve("icon.icns"))
+                bundleID = packageName
             }
         }
     }

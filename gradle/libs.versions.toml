@@ -1,7 +1,9 @@
 [versions]
 #project
+project-name = "Micro REPL"
 project-packageName = "micro.repl.ma7moud3ly"
 project-vendor = "github.com/Ma7moud3ly"
+project-description = "An IDE for MicroPython"
 project-versionCode = "19"
 project-versionName = "4.0.0"
 java-version = "17"
