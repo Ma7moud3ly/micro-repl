@@ -1,6 +1,38 @@
-Micro REPL has the following features:
+Micro REPL turns your phone into a MicroPython IDE. Plug your board in over USB and get a live REPL, a file explorer and a code editor. No laptop required.
+
+<b>Terminal</b>
 <ul>
-<li>A <strong>Terminal</strong> to access MicroPython interactive interpreter.</li>
-<li>Files <strong>Explorer</strong> (Files Manager) for MicroPython storage.</li>
-<li>A Smart <strong>Code Editor</strong> with python syntax support and code completion.</li>
+<li>A live MicroPython prompt: type code and see the result right away.</li>
+<li>Step through your command history.</li>
+<li>Soft reset the board, or stop a script that's stuck in a loop.</li>
 </ul>
+
+<b>Explorer</b>
+<ul>
+<li>Browse the files on your board.</li>
+<li>Create, rename, delete and run files and folders.</li>
+<li>Import scripts from your phone.</li>
+</ul>
+
+<b>Editor</b>
+<ul>
+<li>Python syntax highlighting, undo and redo, and line numbers.</li>
+<li>Run a script on the board in one tap and watch its output.</li>
+<li>Save to the board, or to any folder on your phone.</li>
+</ul>
+
+<b>And more</b>
+<ul>
+<li>Recent scripts: files you opened or saved come back in one tap.</li>
+<li>20+ themes that colour the whole app, not just the code.</li>
+<li>Pick the board to use from a list of connected USB devices.</li>
+<li>Works on phones and tablets.</li>
+</ul>
+
+<b>What you need</b>
+<ul>
+<li>Android 7.0 or newer, with USB On-The-Go support.</li>
+<li>A board flashed with MicroPython, such as a Raspberry Pi Pico or an ESP32.</li>
+</ul>
+
+Micro REPL is free and open source, and also runs on Windows, macOS, Linux and in the browser: https://github.com/Ma7moud3ly/micro-repl

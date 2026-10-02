@@ -1,1 +1,1 @@
-MicroPython IDE
+MicroPython IDE: live REPL, file explorer and code editor for your USB board
