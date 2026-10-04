@@ -2,6 +2,7 @@ package micro.repl.ma7moud3ly
 
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.ComposeViewport
+import com.github.terrakok.navigation3.browser.HierarchicalBrowserNavigation
 import micro.repl.ma7moud3ly.di.AppModule
 import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
@@ -14,6 +15,7 @@ fun main() {
         modules(AppModule::class)
     }
     ComposeViewport {
+        HierarchicalBrowserNavigation()
         MicroReplApp()
     }
 }

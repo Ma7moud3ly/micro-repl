@@ -22,6 +22,9 @@ kotlin {
 
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.koin.core)
+
+            // the browser's back button
+            implementation(libs.navigation3.browser)
         }
     }
 }
