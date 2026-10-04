@@ -37,6 +37,12 @@
                               repeatCount="indefinite"/>
         </circle>
     </svg>
+    <script>
+        // the dev server on localhost always serves fresh files
+        if ("serviceWorker" in navigator && location.hostname !== "localhost") {
+            navigator.serviceWorker.register("sw.js");
+        }
+    </script>
     <script type="application/javascript" src="webApp.js"></script>
 </body>
 </html>
