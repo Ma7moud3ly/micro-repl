@@ -73,7 +73,7 @@ class BoardManager(
      * stays with the caller instead of being held by this class.
      */
     suspend fun start() {
-        detectUsbDevices()
+        detectUsbDevices(listDevices = false)
         serialPort.errors.collect { e -> onRunError(e) }
     }
 
@@ -90,9 +90,9 @@ class BoardManager(
      * to a supported device.
      *
      * With [autoConnect] off, every device is listed for the user to pick from,
-     * supported or not.
+     * supported or not. With [listDevices] off, the list is never shown.
      */
-    suspend fun detectUsbDevices(autoConnect: Boolean = true) {
+    suspend fun detectUsbDevices(autoConnect: Boolean = true, listDevices: Boolean = true) {
         val deviceList = serialPort.connectedDevices()
         AppLog.i(TAG, "detectUsbDevices - deviceList =  ${deviceList.size}")
 
@@ -104,7 +104,7 @@ class BoardManager(
         }.getOrNull(0)
 
         if (supportedDevice != null) approveDevice(supportedDevice)
-        else if (deviceList.isNotEmpty()) {
+        else if (listDevices && deviceList.isNotEmpty()) {
             setStatus(ConnectionStatus.Approve(devices = deviceList))
         } else throwError(ConnectionError.NO_DEVICES)
     }

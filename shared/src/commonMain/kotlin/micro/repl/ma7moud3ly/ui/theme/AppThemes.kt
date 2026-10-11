@@ -10,6 +10,8 @@ package micro.repl.ma7moud3ly.ui.theme
 import io.ma7moud3ly.nemo.model.EditorTheme
 import io.ma7moud3ly.nemo.model.EditorThemes
 import io.ma7moud3ly.nemo.model.SyntaxColors
+import micro.repl.ma7moud3ly.platform.Platform
+import micro.repl.ma7moud3ly.platform.currentPlatform
 
 /**
  * Micro REPL's own themes, plus every theme shipped by nemo-editor.
@@ -75,5 +77,9 @@ object AppThemes {
     val DEFAULT_LIGHT = MICRO_REPL_LIGHT
 
     /** What the app starts on before the user picks anything. */
-    val DEFAULT = MICRO_REPL_DARK
+    val DEFAULT = when (currentPlatform) {
+        Platform.Android -> MICRO_REPL_DARK
+        Platform.Desktop -> EditorThemes.NEMO_LIGHT
+        Platform.Web -> EditorThemes.VS_CODE_LIGHT
+    }
 }
